@@ -285,17 +285,17 @@ function handleTimerCompleted() {
     incrementFocusSession(totalSeconds.value)
     customStatus.value = 'Yey! 1 sesi fokus selesai 🎉 Waktunya meregangkan badan ☕'
     void kirimNotifikasiSistem(
-      "⏰ Twilight's — Sesi Fokus Selesai!",
-      'Yey! 1 sesi Pomodoro selesai 🎉 Waktunya istirahat sejenak ☕',
-      false,
+      "✨ Sesi Fokus Selesai! — Twilight's",
+      'Hebat! Kamu mendapatkan +10 Koin Ikan 🐟. Waktunya istirahat sejenak bersama kucing~',
+      true,
       'twilights-pomodoro-done',
     )
   } else {
     customStatus.value = 'Istirahat selesai! Siap lanjut fokus lagi ✨'
     void kirimNotifikasiSistem(
-      "⏰ Twilight's — Waktu Istirahat Selesai!",
-      'Istirahat selesai! Siap lanjut fokus lagi ✨',
-      false,
+      "☕ Waktu Istirahat Selesai! — Twilight's",
+      'Istirahat selesai! Siap lanjut fokus lagi bersama kucing~ ✨',
+      true,
       'twilights-pomodoro-done',
     )
   }

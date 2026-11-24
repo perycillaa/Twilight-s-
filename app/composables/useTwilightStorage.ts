@@ -3152,11 +3152,11 @@ export function useTwilightStorage() {
     activeReminder.value = reminder
     triggerMascotReaction('reminder', reminder.message, 8000)
 
-    // 1. Kirim Pop-Up Notifikasi Sistem (Windows Action Center & Heads-Up Notification HP)
+    // 1. Kirim Pop-Up Notifikasi Sistem (Windows Action Center & Status Bar / Lockscreen HP)
     void kirimNotifikasiSistem(
-      "⏰ Twilight's — Pengingat Target",
-      `Waktunya: ${reminder.habitTitle} (${reminder.time})`,
-      reminder.alarmMode === 'repeat',
+      "⏰ Pengingat Target Harian — Twilight's",
+      `Waktunya menyelesaikan: "${reminder.habitTitle}" 🐾`,
+      true,
       reminder.id,
     )
 

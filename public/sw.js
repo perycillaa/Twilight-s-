@@ -98,7 +98,8 @@ self.addEventListener('fetch', (event) => {
 // Tutup notifikasi lalu fokuskan atau buka kembali jendela/tab Twilight's.
 self.addEventListener('notificationclick', (event) => {
   event.notification.close()
-  const targetUrl = (event.notification.data && event.notification.data.url) || '/'
+  const fallbackUrl = (self.registration && self.registration.scope) || '/'
+  const targetUrl = (event.notification.data && event.notification.data.url) || fallbackUrl
 
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {

@@ -152,14 +152,16 @@ export function useBackgroundResilience() {
     return Notification.permission
   }
 
-  /** Daftarkan Service Worker (/sw.js) secara aman agar notifikasi sistem didukung di HP & PC */
+  /** Daftarkan Service Worker secara aman agar notifikasi sistem didukung di HP & PC (kompatibel subpath GitHub Pages) */
   async function registerServiceWorker() {
     if (!import.meta.client) return
     syncNotificationPermission()
 
     if (!('serviceWorker' in navigator)) return
     try {
-      await navigator.serviceWorker.register('/sw.js', { scope: '/' })
+      const swUrl = new URL('sw.js', document.baseURI).href
+      const scopeUrl = new URL('./', document.baseURI).href
+      await navigator.serviceWorker.register(swUrl, { scope: scopeUrl })
       await navigator.serviceWorker.ready
       isServiceWorkerReady.value = true
     } catch {
@@ -189,38 +191,44 @@ export function useBackgroundResilience() {
   }
 
   /**
-   * Fungsi pembantu terpadu untuk mengirim Notifikasi Sistem (Windows Action Center & bilah atas HP):
-   * - Memprioritaskan `registration.showNotification(...)` via Service Worker (mendukung `vibrate` & klik fokus tab).
-   * - Otomatis fallback ke `new Notification(...)` jika Service Worker belum siap.
+   * Fungsi pembantu terpadu untuk mengirim Notifikasi Sistem (Windows Action Center & status bar / lockscreen HP):
+   * - Memeriksa `Notification.permission === 'granted'`.
+   * - Memprioritaskan `navigator.serviceWorker.ready.then(reg => reg.showNotification(...))`
+   *   dengan ikon PNG resmi, vibrate [250, 120, 250, 120, 450], requireInteraction: true, dan renotify: true.
+   * - Otomatis fallback ke `new Notification(...)` jika browser tidak menjalankan Service Worker.
    */
   async function kirimNotifikasiSistem(
     judul: string,
     pesan: string,
-    isBerulang = false,
+    requireInteraction = true,
     tag?: string,
   ): Promise<boolean> {
     if (!import.meta.client) return false
     const perm = syncNotificationPermission()
     if (perm !== 'granted') return false
 
+    const iconUrl = new URL('icons/icon-192.png', document.baseURI).href
     const uniqueTag = tag || `twilights-alert-${Date.now()}`
     const options: ExtendedNotificationOptions = {
       body: pesan,
-      icon: '/favicon.svg',
-      badge: '/favicon.svg',
+      icon: iconUrl,
+      badge: iconUrl,
       tag: uniqueTag,
       renotify: true,
-      requireInteraction: isBerulang,
-      vibrate: [300, 150, 300],
-      data: { url: '/' },
+      requireInteraction,
+      vibrate: [250, 120, 250, 120, 450],
+      data: { url: window.location.href },
     }
 
-    // 1. Jalur utama: Service Worker (wajib untuk heads-up notification di Chrome/Edge Android & optimal di Windows)
+    // 1. Jalur utama: Service Worker (wajib agar muncul di status bar & lockscreen HP Android + optimal di Windows)
     if ('serviceWorker' in navigator) {
       try {
+        if (!isServiceWorkerReady.value) {
+          await registerServiceWorker()
+        }
         const reg = await Promise.race<ServiceWorkerRegistration | null>([
           navigator.serviceWorker.ready,
-          new Promise<null>(resolve => setTimeout(() => resolve(null), 1200)),
+          new Promise<null>(resolve => setTimeout(() => resolve(null), 1500)),
         ])
         if (reg && typeof reg.showNotification === 'function') {
           await reg.showNotification(judul, options)
@@ -235,9 +243,10 @@ export function useBackgroundResilience() {
     try {
       const notif = new Notification(judul, {
         body: pesan,
-        icon: '/favicon.svg',
+        icon: iconUrl,
+        badge: iconUrl,
         tag: uniqueTag,
-        requireInteraction: isBerulang,
+        requireInteraction,
       })
       notif.onclick = () => {
         try {

@@ -1,7 +1,12 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue'
+import { useBackgroundResilience } from '~/composables/useBackgroundResilience'
 import { ALARM_SOUND_OPTIONS, useSoundEffects } from '~/composables/useSoundEffects'
-import { type KawaiiAlarmItem, useTwilightStorage } from '~/composables/useTwilightStorage'
+import {
+  type KawaiiAlarmItem,
+  VIBRATION_PATTERNS,
+  useTwilightStorage,
+} from '~/composables/useTwilightStorage'
 
 const {
   isAlarmOpen,
@@ -13,9 +18,11 @@ const {
   removeAlarm,
   setAlarmSound,
   triggerMascotReaction,
+  triggerVibration,
 } = useTwilightStorage()
 
 const { playAlarmMelody } = useSoundEffects()
+const { kirimNotifikasiSistem } = useBackgroundResilience()
 
 const DEFAULT_TAB_TITLE = "Twilight's — Cheer your day with me!"
 
@@ -156,9 +163,16 @@ function handleClockAlarmSubmit() {
   tickAlarmChecker()
 }
 
-/** Tombol "🔔 Tes Suara" sekaligus membuka izin audio browser */
+/** Tombol "🔔 Tes Suara" sekaligus menguji getar HP & mengirim 1 contoh notifikasi layar sistem */
 function handleTestAlarmSound() {
   playAlarmMelody(selectedAlarmSound.value)
+  triggerVibration(VIBRATION_PATTERNS.pomodoroDone)
+  void kirimNotifikasiSistem(
+    "✨ Tes Alarm & Notifikasi Layar — Twilight's",
+    'Suara alarm, getar HP & notifikasi sistem siap menjagamu tetap on-track 🐾',
+    true,
+    `twilights-alarm-test-${Date.now()}`,
+  )
 }
 
 function closeAlarmModal() {
