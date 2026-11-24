@@ -725,6 +725,27 @@ onUnmounted(() => {
         <!-- Bayangan lembut di bawah anak kucing -->
         <ellipse cx="55" cy="96" rx="28" ry="6" fill="#0f0a26" opacity="0.35" />
 
+        <!-- AKSESORIS BELAKANG TUBUH: ✨ Sayap Malaikat & Aura Bintang (Milestone Lv. 20 MAX) -->
+        <g v-if="equippedAccessory === 'angel-wings'">
+          <circle cx="55" cy="58" r="44" fill="#fef08a" opacity="0.16" />
+          <path
+            d="M36 72 C18 65, 6 52, 8 40 C17 44, 26 51, 32 58 C20 55, 10 58, 9 67 C18 70, 27 71, 35 74 C24 75, 16 80, 15 86 C25 87, 34 82, 40 78 Z"
+            fill="#fffdf7"
+            stroke="#fde68a"
+            stroke-width="1.3"
+            stroke-linejoin="round"
+          />
+          <path
+            d="M74 72 C92 65, 104 52, 102 40 C93 44, 84 51, 78 58 C90 55, 100 58, 101 67 C92 70, 83 71, 75 74 C86 75, 94 80, 95 86 C85 87, 76 82, 70 78 Z"
+            fill="#fffdf7"
+            stroke="#fde68a"
+            stroke-width="1.3"
+            stroke-linejoin="round"
+          />
+          <path d="M16 32 L17.2 35 L20.2 36.2 L17.2 37.4 L16 40.4 L14.8 37.4 L11.8 36.2 L14.8 35 Z" fill="#fef08a" />
+          <path d="M94 32 L95.2 35 L98.2 36.2 L95.2 37.4 L94 40.4 L92.8 37.4 L89.8 36.2 L92.8 35 Z" fill="#fef08a" />
+        </g>
+
         <!-- Ekor melengkung lucu -->
         <path
           d="M78 78 C96 76, 98 56, 86 52"
@@ -743,9 +764,33 @@ onUnmounted(() => {
         <ellipse cx="55" cy="76" rx="26" ry="20" fill="#e7e5e4" />
         <!-- Perut krem lembut -->
         <ellipse cx="55" cy="79" rx="15" ry="12" fill="#fef3c7" />
-        <!-- Pita kalung mungil pastel -->
-        <path d="M40 65 Q55 72 70 65" stroke="#f9a8d4" stroke-width="4" stroke-linecap="round" />
-        <circle cx="55" cy="70" r="3.2" fill="#fde68a" />
+        <!-- Aksesoris Leher Sinkron: 🧣 Syal Rajut / 💖 Kalung Hati Bintang / Kalung Bawaan -->
+        <g v-if="equippedAccessory === 'knit-scarf'">
+          <path
+            d="M36 63 Q55 74 74 63 Q72 72 55 75 Q38 72 36 63 Z"
+            fill="#fb7185"
+            stroke="#ffe4e6"
+            stroke-width="1.1"
+            stroke-linejoin="round"
+          />
+          <path d="M44 67 L42 73 M55 70 L55 75 M66 67 L68 73" stroke="#fef3c7" stroke-width="1.5" stroke-linecap="round" />
+          <path d="M63 68 L71 67 L73 83 L64 84 Z" fill="#f43f5e" stroke="#ffe4e6" stroke-width="1" stroke-linejoin="round" />
+          <line x1="64" y1="75" x2="72" y2="74" stroke="#fef3c7" stroke-width="1.5" />
+        </g>
+        <g v-else-if="equippedAccessory === 'soulmate-collar'">
+          <path d="M38 64 Q55 73 72 64" stroke="#ec4899" stroke-width="4.8" stroke-linecap="round" />
+          <path
+            d="M55 79 C50 75.5, 48 71, 51.5 69.2 C53.2 68.4, 54.6 69.5, 55 70.8 C55.4 69.5, 56.8 68.4, 58.5 69.2 C62 71, 60 75.5, 55 79 Z"
+            fill="#f9a8d4"
+            stroke="#fef08a"
+            stroke-width="1.2"
+          />
+        </g>
+        <g v-else>
+          <!-- Pita kalung mungil pastel bawaan -->
+          <path d="M40 65 Q55 72 70 65" stroke="#f9a8d4" stroke-width="4" stroke-linecap="round" />
+          <circle cx="55" cy="70" r="3.2" fill="#fde68a" />
+        </g>
 
         <!-- Telinga Kiri & Kanan (abu-abu lembut dengan dalam pink pastel) -->
         <path d="M33 44 L29 22 L47 33 Z" fill="#cbd5e1" stroke="#94a3b8" stroke-width="1.5" stroke-linejoin="round" />
@@ -813,6 +858,48 @@ onUnmounted(() => {
           <path d="M-2 2 L-5 10 L-1 8 Z" fill="#ec4899" />
           <path d="M2 2 L5 10 L1 8 Z" fill="#f472b6" />
           <circle cx="0" cy="0.5" r="3" fill="#fbcfe8" stroke="#ffffff" stroke-width="1.1" />
+        </g>
+
+        <!-- 4. 🌱 Tunas Daun -->
+        <g v-else-if="equippedAccessory === 'leaf-sprout'">
+          <path d="M55 29 Q54.5 20 55.5 13" stroke="#4ade80" stroke-width="2.2" stroke-linecap="round" />
+          <path d="M55 20 C46 18, 42 11, 46 7 C52 6, 55 12, 55 20 Z" fill="#4ade80" stroke="#dcfce7" stroke-width="1" />
+          <path d="M55.5 18 C63 14, 68 8, 64 5 C59 4, 55.5 11, 55.5 18 Z" fill="#22c55e" stroke="#dcfce7" stroke-width="1" />
+        </g>
+
+        <!-- 5. 📖 Buku Terbuka -->
+        <g v-else-if="equippedAccessory === 'open-book'" transform="translate(55, 22)">
+          <path d="M-18 4 Q-9 -6 0 1 Q9 -6 18 4 L16 8 Q8 1 0 6 Q-8 1 -16 8 Z" fill="#5b21b6" stroke="#fde68a" stroke-width="1.2" />
+          <path d="M-16 3 Q-8 -7 0 -1 L0 4 Q-8 -1 -14 6 Z" fill="#fffbeb" stroke="#f59e0b" stroke-width="0.9" />
+          <path d="M16 3 Q8 -7 0 -1 L0 4 Q8 -1 14 6 Z" fill="#fef3c7" stroke="#f59e0b" stroke-width="0.9" />
+          <path d="M0 4 L-1.2 9.5 L0 8.2 L1.2 9.5 Z" fill="#f472b6" />
+        </g>
+
+        <!-- 6. 🎨 Topi Baret Pastel -->
+        <g v-else-if="equippedAccessory === 'beret-hat'" transform="translate(55, 24) rotate(-10)">
+          <ellipse cx="0" cy="3" rx="20" ry="8.5" fill="#ddd6fe" stroke="#ffffff" stroke-width="1.3" />
+          <path d="M-18 5 Q0 11 18 5" stroke="#a78bfa" stroke-width="2.6" stroke-linecap="round" />
+          <path d="M-1 -5 Q1 -10 4 -8" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round" />
+          <circle cx="-10" cy="1.5" r="2" fill="#fde68a" />
+        </g>
+
+        <!-- 7. 😇 Halo Bintang -->
+        <g v-else-if="equippedAccessory === 'star-halo'">
+          <ellipse cx="55" cy="13" rx="18" ry="5" stroke="#fef08a" stroke-width="4" opacity="0.35" />
+          <ellipse cx="55" cy="13" rx="17" ry="4.5" stroke="#fde047" stroke-width="2.1" />
+          <path d="M34 10 L35 12.2 L37.2 13.2 L35 14.2 L34 16.4 L33 14.2 L30.8 13.2 L33 12.2 Z" fill="#fef08a" />
+        </g>
+
+        <!-- 8. 🎧 Headphone Lo-Fi Pastel (Band & Earcup di telinga Kucing Mini!) -->
+        <g v-else-if="equippedAccessory === 'lofi-headphones'">
+          <path d="M25 48 C25 18, 85 18, 85 48" stroke="#c084fc" stroke-width="5.5" stroke-linecap="round" />
+          <path d="M28 45 C30 22, 80 22, 82 45" stroke="#f9a8d4" stroke-width="2" stroke-linecap="round" />
+          <rect x="20" y="40" width="10" height="20" rx="5" fill="#9333ea" stroke="#f9a8d4" stroke-width="1.2" />
+          <rect x="23" y="43" width="6" height="14" rx="3" fill="#f472b6" />
+          <circle cx="25.5" cy="50" r="2" fill="#67e8f9" />
+          <rect x="80" y="40" width="10" height="20" rx="5" fill="#9333ea" stroke="#f9a8d4" stroke-width="1.2" />
+          <rect x="81" y="43" width="6" height="14" rx="3" fill="#f472b6" />
+          <circle cx="84.5" cy="50" r="2" fill="#67e8f9" />
         </g>
 
         <!-- EKSPRESI MATA ANAK KUCING MINI (DINAMIS) -->
@@ -890,6 +977,15 @@ onUnmounted(() => {
           <circle cx="42.8" cy="48.5" r="1.4" fill="#ffffff" />
           <circle cx="66" cy="50" r="4" fill="#334155" />
           <circle cx="64.8" cy="48.5" r="1.4" fill="#ffffff" />
+        </g>
+
+        <!-- 9. 👓 Kacamata Bulat Tipis di Wajah Kucing Mini -->
+        <g v-if="equippedAccessory === 'round-glasses'">
+          <circle cx="44" cy="50" r="7.5" fill="rgba(255,251,235,0.22)" stroke="#f59e0b" stroke-width="1.6" />
+          <circle cx="66" cy="50" r="7.5" fill="rgba(255,251,235,0.22)" stroke="#f59e0b" stroke-width="1.6" />
+          <path d="M51.5 50 Q55 48.2 58.5 50" stroke="#f59e0b" stroke-width="1.6" stroke-linecap="round" />
+          <line x1="30" y1="48.5" x2="36.5" y2="49.5" stroke="#f59e0b" stroke-width="1.4" />
+          <line x1="73.5" y1="49.5" x2="80" y2="48.5" stroke="#f59e0b" stroke-width="1.4" />
         </g>
 
         <!-- Pipi Merona Pink (makin cerah saat di-pet-pet / nyaman) -->

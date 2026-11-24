@@ -2,9 +2,12 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import {
   CAT_AFFINITY_MAX_LEVEL,
-  CAT_AFFINITY_XP_PER_LEVEL,
+  CAT_AFFINITY_MILESTONE_LV10,
+  HEART_CHEST_FISH_REWARD,
+  HEART_CHEST_XP_GOAL,
   SECRET_CARD_GACHA_COST,
   SECRET_CAT_CARDS,
+  getCatAffinityXpNeeded,
   useTwilightStorage,
 } from '~/composables/useTwilightStorage'
 
@@ -17,6 +20,8 @@ const {
   collectedSecretCards,
   catAffinityLevel,
   catAffinityXp,
+  catHeartChestXp,
+  catAffinityPassiveFishBonus,
   catAffinityLevelUpMessage,
   isZenMode,
   isStudyCardModalOpen,
@@ -71,11 +76,23 @@ const skyPhaseInfo = computed<{ icon: string; greeting: string }>(() => {
   return { icon: '🌙', greeting: 'Malam Tenang, Waktunya Lo-Fi' }
 })
 
-// --- Widget 2: Bilah Kasih Sayang Kucing (Cat Affinity Meter, maks Lv. 10) ---
+// --- Widget 2: Bilah Kasih Sayang Kucing (Lv. 1 -> Lv. 20 MAX ✨ + Peti Cinta 0/10) ---
 const isMaxAffinity = computed<boolean>(() => catAffinityLevel.value >= CAT_AFFINITY_MAX_LEVEL)
+const currentLevelXpNeeded = computed<number>(() => getCatAffinityXpNeeded(catAffinityLevel.value))
 const affinityProgressPercent = computed<number>(() => {
-  if (isMaxAffinity.value) return 100
-  return Math.max(0, Math.min(100, Math.round((catAffinityXp.value / CAT_AFFINITY_XP_PER_LEVEL) * 100)))
+  if (isMaxAffinity.value) {
+    return Math.max(0, Math.min(100, Math.round((catHeartChestXp.value / HEART_CHEST_XP_GOAL) * 100)))
+  }
+  return Math.max(
+    0,
+    Math.min(100, Math.round((catAffinityXp.value / currentLevelXpNeeded.value) * 100)),
+  )
+})
+const nextMilestoneHint = computed<string>(() => {
+  if (catAffinityLevel.value < CAT_AFFINITY_MILESTONE_LV10) {
+    return 'Lv. 10: +20🐟 & Kalung'
+  }
+  return 'Lv. 20: +40🐟 & Sayap'
 })
 
 onMounted(() => {
@@ -178,29 +195,44 @@ onUnmounted(() => {
         </span>
       </div>
 
-      <!-- WIDGET 2: Bilah Kasih Sayang Kucing (Cat Affinity Meter) + Hadiah +2 🐟 per Level -->
+      <!-- WIDGET 2: Bilah Kasih Sayang Kucing (Lv. 1 -> Lv. 20 MAX ✨ + 💖 Peti Cinta 0/10) -->
       <div
         class="mt-2.5 rounded-2xl border border-pink-200/30 bg-white/10 px-3 py-2 text-left shadow-sm backdrop-blur-md"
       >
-        <div class="flex items-center justify-between gap-2 text-[11px] font-bold">
-          <span class="text-pink-100">
-            {{ isMaxAffinity ? '💖 Kasih Sayang Kucing: Lv. 10 (MAX ✨)' : '💖 Kasih Sayang Kucing' }}
+        <div class="flex items-center justify-between gap-1.5 text-[11px] font-bold">
+          <span class="truncate text-pink-100">
+            {{ isMaxAffinity ? '💖 Peti Cinta' : '💖 Kasih Sayang Kucing' }}
           </span>
-          <span
-            v-if="!isMaxAffinity"
-            class="shrink-0 rounded-full border border-pink-200/35 bg-pink-300/15 px-2 py-0.5 text-[10px] font-bold text-pink-100"
-          >
-            Lv. {{ catAffinityLevel }} ({{ catAffinityXp }}/{{ CAT_AFFINITY_XP_PER_LEVEL }})
-          </span>
+          <div class="flex shrink-0 items-center gap-1">
+            <span
+              v-if="catAffinityPassiveFishBonus > 0"
+              class="rounded-full border border-amber-200/45 bg-amber-300/20 px-1.5 py-0.5 text-[9.5px] font-bold text-amber-100"
+              :title="`Bonus pasif +${catAffinityPassiveFishBonus} 🐟 setiap menyelesaikan 1 sesi Pomodoro Fokus`"
+            >
+              +{{ catAffinityPassiveFishBonus }}🐟/sesi
+            </span>
+            <span
+              v-if="isMaxAffinity"
+              class="rounded-full border border-amber-200/50 bg-gradient-to-r from-amber-300/25 via-pink-300/25 to-purple-300/25 px-2 py-0.5 text-[10px] font-bold text-amber-100"
+            >
+              Lv. 20 MAX ✨ ({{ catHeartChestXp }}/{{ HEART_CHEST_XP_GOAL }})
+            </span>
+            <span
+              v-else
+              class="rounded-full border border-pink-200/35 bg-pink-300/15 px-2 py-0.5 text-[10px] font-bold text-pink-100"
+            >
+              Lv. {{ catAffinityLevel }} ({{ catAffinityXp }}/{{ currentLevelXpNeeded }})
+            </span>
+          </div>
         </div>
 
-        <!-- Bilah Progres Pink-Ungu Lembut (otomatis Sky Blue-Cyan di tema Biru, berkilau saat MAX Lv. 10) -->
+        <!-- Bilah Progres Pink-Ungu Lembut (berubah menjadi Peti Cinta berkilau emas-pink saat Lv. 20 MAX) -->
         <div class="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-black/25 p-[1px]">
           <div
             class="h-full rounded-full transition-all duration-500"
             :class="
               isMaxAffinity
-                ? 'animate-pulse bg-gradient-to-r from-[#fde68a] via-[#f9a8d4] to-[#c084fc] shadow-[0_0_12px_rgba(249,168,212,0.85)]'
+                ? 'bg-gradient-to-r from-[#fde68a] via-[#f9a8d4] to-[#c084fc] shadow-[0_0_12px_rgba(249,168,212,0.85)]'
                 : 'ocean-progress-fill bg-gradient-to-r from-[#f9a8d4] via-[#e879f9] to-[#c084fc]'
             "
             :style="{ width: `${affinityProgressPercent}%` }"
@@ -208,10 +240,17 @@ onUnmounted(() => {
         </div>
 
         <p
-          v-if="!isMaxAffinity"
+          v-if="isMaxAffinity"
+          class="mt-1 flex items-center justify-between text-[10px] font-semibold text-purple-200/85"
+        >
+          <span>👑 Soulmate MAX • Elus / fokus isi peti</span>
+          <span class="text-amber-200/95">Penuh = +{{ HEART_CHEST_FISH_REWARD }} 🐟</span>
+        </p>
+        <p
+          v-else
           class="mt-1 flex items-center justify-between text-[10px] font-semibold text-purple-200/80"
         >
-          <span>Elus / klik kucing / selesai fokus</span>
+          <span>{{ nextMilestoneHint }}</span>
           <span class="text-amber-200/95">Naik Lv = +2 🐟</span>
         </p>
       </div>
@@ -308,7 +347,7 @@ onUnmounted(() => {
             "
             @click="activeLeftTab = 'accessories'"
           >
-            🎀 Aksesori (🐟{{ treatCoins }})
+            🎀 Aksesoris (🐟{{ treatCoins }})
           </button>
         </div>
 

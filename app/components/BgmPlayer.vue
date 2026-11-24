@@ -31,6 +31,7 @@ interface RadioChannel {
   subtitle: string
   moodIcon: string
   url: string
+  fallbackUrl?: string
 }
 
 // Total 11 stasiun Radio Online: perpaduan lo-fi tenang, fokus mendalam, dan nuansa ceria hangat
@@ -158,11 +159,12 @@ const RADIO_CHANNELS: RadioChannel[] = [
   },
   {
     id: 'nightride-neon',
-    name: 'Nightride FM',
-    shortName: 'Neon Nightride',
-    subtitle: 'Asik & Seru • Smooth Neon Synthwave',
+    name: 'Nightride / Synthwave',
+    shortName: 'Nightride / Synthwave',
+    subtitle: 'Synthwave • Neon Night Drive Beats',
     moodIcon: '🌃',
     url: 'https://stream.nightride.fm/nightride.mp3',
+    fallbackUrl: 'https://ice1.somafm.com/defcon-128-mp3',
   },
 ]
 
@@ -196,6 +198,7 @@ const radioVolume = ref<number>(60)
 const isRadioMuted = ref<boolean>(false)
 const errorMessage = ref<string>('')
 const isIntentionalStop = ref<boolean>(false)
+const hasTriedFallbackUrl = ref<boolean>(false)
 
 // --- State 5 Saluran Ambient Sound Mixer Independen (Web Audio API - 100% Offline & Persisten) ---
 const isRainEnabled = computed<boolean>(() => ambientMixerSettings.value.rain.enabled)
@@ -1084,23 +1087,36 @@ function stopHtmlRadio() {
   audio.load()
 }
 
-async function startRadioStream() {
+async function startRadioStream(useFallback = false) {
   const audio = audioRef.value
   if (!audio) return
+
+  if (!useFallback) {
+    hasTriedFallbackUrl.value = false
+  }
+
+  const chosenUrl =
+    useFallback && currentRadio.value.fallbackUrl
+      ? currentRadio.value.fallbackUrl
+      : currentRadio.value.url
 
   try {
     isIntentionalStop.value = false
     errorMessage.value = ''
     isBuffering.value = true
 
-    const url = currentRadio.value.url
-    audio.src = url.startsWith('/') ? `${url}?t=${Date.now()}` : url
+    audio.src = chosenUrl.startsWith('/') ? `${chosenUrl}?t=${Date.now()}` : chosenUrl
     audio.volume = effectiveRadioVolume.value
     audio.load()
     await audio.play()
     isRadioPlaying.value = true
   } catch (err) {
     if (isIntentionalStop.value) return
+    if (!useFallback && currentRadio.value.fallbackUrl && !hasTriedFallbackUrl.value) {
+      hasTriedFallbackUrl.value = true
+      await startRadioStream(true)
+      return
+    }
     console.warn('Radio stream gagal dimuat:', err)
     isRadioPlaying.value = false
     errorMessage.value =
@@ -1181,6 +1197,11 @@ watch(bgmPlayToggleSignal, () => {
 
 function handleAudioError() {
   if (isIntentionalStop.value || (!isRadioPlaying.value && !isBuffering.value)) return
+  if (currentRadio.value.fallbackUrl && !hasTriedFallbackUrl.value) {
+    hasTriedFallbackUrl.value = true
+    void startRadioStream(true)
+    return
+  }
   isRadioPlaying.value = false
   isBuffering.value = false
   errorMessage.value = 'Koneksi radio terputus. Coba stasiun lain atau nikmati Ambient Mixer di bawah~'

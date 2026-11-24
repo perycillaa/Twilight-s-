@@ -116,6 +116,72 @@ function getCardPalette(cozy: CozyThemeId, base: ThemeName): CardThemePalette {
       subColor: '#fbcfe8',
     }
   }
+  if (cozy === 'matcha-garden') {
+    return {
+      bgStops: ['#1b2e25', '#233b2f', '#2d4739'],
+      accent: '#86efac',
+      accentSoft: '#bbf7d0',
+      cardFill: 'rgba(236, 253, 245, 0.09)',
+      cardStroke: 'rgba(134, 239, 172, 0.36)',
+      titleColor: '#dcfce7',
+      subColor: '#bbf7d0',
+    }
+  }
+  if (cozy === 'biolum-ocean') {
+    return {
+      bgStops: ['#091e2c', '#0d2b3b', '#11384a'],
+      accent: '#22d3ee',
+      accentSoft: '#67e8f9',
+      cardFill: 'rgba(207, 250, 254, 0.09)',
+      cardStroke: 'rgba(34, 211, 238, 0.4)',
+      titleColor: '#cffafe',
+      subColor: '#a5f3fc',
+    }
+  }
+  if (cozy === 'honey-library') {
+    return {
+      bgStops: ['#241710', '#311f14', '#3d2618'],
+      accent: '#fbbf24',
+      accentSoft: '#fde68a',
+      cardFill: 'rgba(255, 251, 235, 0.09)',
+      cardStroke: 'rgba(251, 191, 36, 0.4)',
+      titleColor: '#fef3c7',
+      subColor: '#fde68a',
+    }
+  }
+  if (cozy === 'pastel-cloudland') {
+    return {
+      bgStops: ['#27294a', '#35345c', '#433e6e'],
+      accent: '#f9a8d4',
+      accentSoft: '#c4b5fd',
+      cardFill: 'rgba(255, 255, 255, 0.1)',
+      cardStroke: 'rgba(249, 168, 212, 0.42)',
+      titleColor: '#fdf2f8',
+      subColor: '#e9d5ff',
+    }
+  }
+  if (cozy === 'winter-frost') {
+    return {
+      bgStops: ['#152536', '#1d334a', '#26415e'],
+      accent: '#bae6fd',
+      accentSoft: '#e0f2fe',
+      cardFill: 'rgba(240, 249, 255, 0.1)',
+      cardStroke: 'rgba(186, 230, 253, 0.42)',
+      titleColor: '#f0f9ff',
+      subColor: '#bae6fd',
+    }
+  }
+  if (cozy === 'neon-night-city') {
+    return {
+      bgStops: ['#090514', '#110824', '#170b2e'],
+      accent: '#00f5d4',
+      accentSoft: '#ff2a85',
+      cardFill: 'rgba(15, 8, 32, 0.72)',
+      cardStroke: 'rgba(0, 245, 212, 0.55)',
+      titleColor: '#00f5d4',
+      subColor: '#ff77b7',
+    }
+  }
   if (cozy === 'astral-palace') {
     return {
       bgStops: ['#04071a', '#0b1336', '#1b1042'],
@@ -365,6 +431,110 @@ function drawThemeDecorations(
       ctx.fill()
       ctx.restore()
     }
+  } else if (cozy === 'neon-night-city') {
+    // Siluet gedung pencakar langit (City Skyline) dengan jendela neon Cyan & Magenta di bagian bawah
+    ctx.save()
+    const buildings = [
+      { x: 0, w: 96, h: 210 },
+      { x: 90, w: 80, h: 290 },
+      { x: 165, w: 105, h: 190 },
+      { x: 265, w: 74, h: 330 },
+      { x: 334, w: 112, h: 240 },
+      { x: 440, w: 90, h: 270 },
+      { x: 525, w: 86, h: 350 },
+      { x: 606, w: 104, h: 225 },
+      { x: 705, w: 82, h: 310 },
+      { x: 782, w: 110, h: 255 },
+      { x: 888, w: 92, h: 295 },
+      { x: 976, w: 108, h: 220 },
+    ]
+    for (const b of buildings) {
+      const topY = CARD_HEIGHT - b.h
+      ctx.fillStyle = 'rgba(7, 3, 18, 0.92)'
+      ctx.fillRect(b.x, topY, b.w, b.h)
+      ctx.strokeStyle = b.x % 2 === 0 ? 'rgba(0, 245, 212, 0.35)' : 'rgba(255, 42, 133, 0.35)'
+      ctx.lineWidth = 2
+      ctx.strokeRect(b.x, topY, b.w, b.h)
+      for (let wy = topY + 20; wy < CARD_HEIGHT - 24; wy += 28) {
+        for (let wx = b.x + 14; wx < b.x + b.w - 18; wx += 22) {
+          if ((wx + wy) % 3 !== 0) continue
+          ctx.fillStyle = (wx + wy) % 2 === 0 ? 'rgba(0, 245, 212, 0.65)' : 'rgba(255, 42, 133, 0.65)'
+          ctx.fillRect(wx, wy, 10, 14)
+        }
+      }
+    }
+    // Gerimis cahaya neon Cyan & Magenta
+    ctx.lineWidth = 2.5
+    ctx.lineCap = 'round'
+    for (let i = 0; i < 32; i++) {
+      const rx = ((i * 113) % (CARD_WIDTH + 60)) - 10
+      const ry = (i * 151) % (CARD_HEIGHT - 220)
+      ctx.strokeStyle = i % 2 === 0 ? 'rgba(0, 245, 212, 0.35)' : 'rgba(255, 42, 133, 0.35)'
+      ctx.beginPath()
+      ctx.moveTo(rx, ry)
+      ctx.lineTo(rx - 10, ry + 48)
+      ctx.stroke()
+    }
+    ctx.restore()
+  } else if (cozy === 'matcha-garden') {
+    const teaLeaves = [
+      { x: 110, y: 240, rot: -0.5, c: '#86efac' },
+      { x: 945, y: 320, rot: 0.4, c: '#4ade80' },
+      { x: 120, y: 820, rot: 0.7, c: '#bbf7d0' },
+      { x: 955, y: 980, rot: -0.4, c: '#86efac' },
+    ]
+    for (const leaf of teaLeaves) {
+      ctx.save()
+      ctx.translate(leaf.x, leaf.y)
+      ctx.rotate(leaf.rot)
+      ctx.fillStyle = leaf.c
+      ctx.globalAlpha = 0.7
+      ctx.beginPath()
+      ctx.ellipse(0, 0, 12, 22, 0, 0, Math.PI * 2)
+      ctx.fill()
+      ctx.restore()
+    }
+  } else if (cozy === 'biolum-ocean') {
+    const bubbles = [
+      { x: 125, y: 310, r: 22 },
+      { x: 930, y: 260, r: 28 },
+      { x: 140, y: 960, r: 18 },
+      { x: 910, y: 1080, r: 26 },
+      { x: 840, y: 420, r: 14 },
+    ]
+    for (const b of bubbles) {
+      ctx.save()
+      ctx.strokeStyle = 'rgba(34, 211, 238, 0.7)'
+      ctx.fillStyle = 'rgba(103, 232, 249, 0.16)'
+      ctx.lineWidth = 2.5
+      ctx.beginPath()
+      ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2)
+      ctx.fill()
+      ctx.stroke()
+      ctx.restore()
+    }
+  } else if (cozy === 'honey-library') {
+    for (let i = 0; i < 24; i++) {
+      const mx = ((i * 157 + 45) % (CARD_WIDTH - 90)) + 45
+      const my = ((i * 211 + 80) % (CARD_HEIGHT - 160)) + 80
+      ctx.save()
+      ctx.fillStyle = 'rgba(253, 224, 71, 0.42)'
+      ctx.beginPath()
+      ctx.arc(mx, my, (i % 4) + 2.5, 0, Math.PI * 2)
+      ctx.fill()
+      ctx.restore()
+    }
+  } else if (cozy === 'winter-frost') {
+    for (let i = 0; i < 36; i++) {
+      const fx = ((i * 139 + 30) % (CARD_WIDTH - 60)) + 30
+      const fy = ((i * 181 + 40) % (CARD_HEIGHT - 100)) + 40
+      ctx.save()
+      ctx.fillStyle = 'rgba(224, 242, 254, 0.72)'
+      ctx.beginPath()
+      ctx.arc(fx, fy, (i % 4) + 2, 0, Math.PI * 2)
+      ctx.fill()
+      ctx.restore()
+    }
   } else {
     // Bulan sabit hangat untuk tema klasik
     ctx.save()
@@ -464,8 +634,211 @@ function drawCatAccessory(
     ctx.arc(0, 0, 7, 0, Math.PI * 2)
     ctx.fill()
     ctx.stroke()
+  } else if (accessory === 'leaf-sprout') {
+    ctx.strokeStyle = '#4ade80'
+    ctx.lineWidth = 4
+    ctx.lineCap = 'round'
+    ctx.beginPath()
+    ctx.moveTo(0, 14)
+    ctx.quadraticCurveTo(-2, -10, 1, -24)
+    ctx.stroke()
+
+    ctx.fillStyle = '#4ade80'
+    ctx.strokeStyle = '#dcfce7'
+    ctx.lineWidth = 2
+    ctx.beginPath()
+    ctx.ellipse(-14, -18, 14, 7.5, -0.55, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.stroke()
+
+    ctx.fillStyle = '#22c55e'
+    ctx.beginPath()
+    ctx.ellipse(14, -22, 14, 7.5, 0.55, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.stroke()
+  } else if (accessory === 'open-book') {
+    ctx.fillStyle = '#5b21b6'
+    ctx.strokeStyle = '#fde68a'
+    ctx.lineWidth = 2.6
+    ctx.beginPath()
+    ctx.moveTo(-36, 4)
+    ctx.quadraticCurveTo(-18, -16, 0, -2)
+    ctx.quadraticCurveTo(18, -16, 36, 4)
+    ctx.lineTo(32, 13)
+    ctx.quadraticCurveTo(16, -2, 0, 10)
+    ctx.quadraticCurveTo(-16, -2, -32, 13)
+    ctx.closePath()
+    ctx.fill()
+    ctx.stroke()
+
+    ctx.fillStyle = '#fffbeb'
+    ctx.beginPath()
+    ctx.moveTo(-31, 3)
+    ctx.quadraticCurveTo(-16, -15, 0, -3)
+    ctx.lineTo(0, 6)
+    ctx.quadraticCurveTo(-15, -4, -28, 9)
+    ctx.closePath()
+    ctx.fill()
+
+    ctx.fillStyle = '#fef3c7'
+    ctx.beginPath()
+    ctx.moveTo(31, 3)
+    ctx.quadraticCurveTo(16, -15, 0, -3)
+    ctx.lineTo(0, 6)
+    ctx.quadraticCurveTo(15, -4, 28, 9)
+    ctx.closePath()
+    ctx.fill()
+  } else if (accessory === 'beret-hat') {
+    ctx.rotate(-0.16)
+    ctx.fillStyle = '#ddd6fe'
+    ctx.strokeStyle = '#ffffff'
+    ctx.lineWidth = 2.8
+    ctx.beginPath()
+    ctx.ellipse(0, 0, 42, 18, 0, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.stroke()
+    ctx.strokeStyle = '#a78bfa'
+    ctx.lineWidth = 6
+    ctx.lineCap = 'round'
+    ctx.beginPath()
+    ctx.moveTo(-38, 6)
+    ctx.quadraticCurveTo(0, 18, 38, 6)
+    ctx.stroke()
+    ctx.strokeStyle = '#8b5cf6'
+    ctx.lineWidth = 4
+    ctx.beginPath()
+    ctx.moveTo(-2, -16)
+    ctx.quadraticCurveTo(2, -26, 9, -22)
+    ctx.stroke()
+  } else if (accessory === 'star-halo') {
+    ctx.strokeStyle = 'rgba(254, 240, 138, 0.42)'
+    ctx.lineWidth = 10
+    ctx.beginPath()
+    ctx.ellipse(0, -24, 38, 10, 0, 0, Math.PI * 2)
+    ctx.stroke()
+    ctx.strokeStyle = '#fde047'
+    ctx.lineWidth = 4.5
+    ctx.beginPath()
+    ctx.ellipse(0, -24, 36, 9, 0, 0, Math.PI * 2)
+    ctx.stroke()
+    drawFourPointStar(ctx, -40, -24, 8, '#fef08a', 0.95)
+    drawFourPointStar(ctx, 40, -26, 7, '#fbcfe8', 0.95)
   }
 
+  ctx.restore()
+}
+
+/** Gambar aksesoris khusus belakang (Sayap Malaikat), wajah (Kacamata Bulat / Headphone Lo-Fi), & leher (Syal / Kalung) di Canvas */
+function drawCatBackWings(ctx: CanvasRenderingContext2D, scale: number) {
+  ctx.save()
+  ctx.scale(scale, scale)
+  ctx.fillStyle = '#fffdf7'
+  ctx.strokeStyle = '#fde68a'
+  ctx.lineWidth = 3
+  ctx.lineJoin = 'round'
+  // Sayap kiri
+  ctx.beginPath()
+  ctx.moveTo(-48, 42)
+  ctx.bezierCurveTo(-110, 22, -142, -24, -132, -56)
+  ctx.bezierCurveTo(-104, -46, -80, -26, -62, -4)
+  ctx.bezierCurveTo(-98, -14, -128, -4, -132, 24)
+  ctx.bezierCurveTo(-106, 30, -80, 32, -56, 40)
+  ctx.bezierCurveTo(-88, 46, -110, 58, -114, 78)
+  ctx.bezierCurveTo(-84, 80, -60, 68, -44, 54)
+  ctx.closePath()
+  ctx.fill()
+  ctx.stroke()
+  // Sayap kanan
+  ctx.beginPath()
+  ctx.moveTo(48, 42)
+  ctx.bezierCurveTo(110, 22, 142, -24, 132, -56)
+  ctx.bezierCurveTo(104, -46, 80, -26, 62, -4)
+  ctx.bezierCurveTo(98, -14, 128, -4, 132, 24)
+  ctx.bezierCurveTo(106, 30, 80, 32, 56, 40)
+  ctx.bezierCurveTo(88, 46, 110, 58, 114, 78)
+  ctx.bezierCurveTo(84, 80, 60, 68, 44, 54)
+  ctx.closePath()
+  ctx.fill()
+  ctx.stroke()
+  drawFourPointStar(ctx, -116, -70, 12, '#fef08a', 0.95)
+  drawFourPointStar(ctx, 116, -70, 12, '#fef08a', 0.95)
+  ctx.restore()
+}
+
+function drawCatFaceAndNeckAccessory(
+  ctx: CanvasRenderingContext2D,
+  accessory: MascotAccessoryId,
+  isMini: boolean,
+) {
+  ctx.save()
+  if (accessory === 'round-glasses') {
+    const eyeX = isMini ? 20 : 28
+    const eyeY = isMini ? -14 : -8
+    const r = isMini ? 14 : 21
+    ctx.strokeStyle = '#f59e0b'
+    ctx.fillStyle = 'rgba(255, 251, 235, 0.22)'
+    ctx.lineWidth = isMini ? 3 : 4
+    ctx.beginPath()
+    ctx.arc(-eyeX, eyeY, r, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.stroke()
+    ctx.beginPath()
+    ctx.arc(eyeX, eyeY, r, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.stroke()
+    ctx.beginPath()
+    ctx.moveTo(-eyeX + r, eyeY)
+    ctx.lineTo(eyeX - r, eyeY)
+    ctx.stroke()
+  } else if (accessory === 'lofi-headphones' && isMini) {
+    ctx.strokeStyle = '#c084fc'
+    ctx.lineWidth = 10
+    ctx.lineCap = 'round'
+    ctx.beginPath()
+    ctx.arc(0, -14, 56, Math.PI, 0)
+    ctx.stroke()
+    ctx.fillStyle = '#9333ea'
+    drawRoundedRect(ctx, -64, -28, 18, 36, 9)
+    ctx.fill()
+    drawRoundedRect(ctx, 46, -28, 18, 36, 9)
+    ctx.fill()
+    ctx.fillStyle = '#67e8f9'
+    ctx.beginPath()
+    ctx.arc(-55, -10, 4.5, 0, Math.PI * 2)
+    ctx.arc(55, -10, 4.5, 0, Math.PI * 2)
+    ctx.fill()
+  } else if (accessory === 'knit-scarf') {
+    const ny = isMini ? 18 : 54
+    const nx = isMini ? 34 : 52
+    ctx.strokeStyle = '#fb7185'
+    ctx.lineWidth = isMini ? 12 : 18
+    ctx.lineCap = 'round'
+    ctx.beginPath()
+    ctx.moveTo(-nx, ny)
+    ctx.quadraticCurveTo(0, ny + (isMini ? 18 : 26), nx, ny)
+    ctx.stroke()
+    ctx.fillStyle = '#f43f5e'
+    drawRoundedRect(ctx, isMini ? 12 : 20, ny + 4, isMini ? 15 : 22, isMini ? 28 : 40, 6)
+    ctx.fill()
+  } else if (accessory === 'soulmate-collar') {
+    const ny = isMini ? 17 : 54
+    const nx = isMini ? 30 : 46
+    ctx.strokeStyle = '#ec4899'
+    ctx.lineWidth = isMini ? 9 : 14
+    ctx.lineCap = 'round'
+    ctx.beginPath()
+    ctx.moveTo(-nx, ny)
+    ctx.quadraticCurveTo(0, ny + (isMini ? 16 : 24), nx, ny)
+    ctx.stroke()
+    ctx.fillStyle = '#f9a8d4'
+    ctx.strokeStyle = '#fef08a'
+    ctx.lineWidth = 2.5
+    ctx.beginPath()
+    ctx.arc(0, ny + (isMini ? 14 : 22), isMini ? 8 : 12, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.stroke()
+    drawFourPointStar(ctx, 0, ny + (isMini ? 14 : 22), isMini ? 5 : 8, '#fef08a', 1)
+  }
   ctx.restore()
 }
 
@@ -488,8 +861,13 @@ function drawBothCats(
   ctx.save()
   ctx.translate(445, 425)
 
+  // Sayap Malaikat di belakang kucing putih (jika dipakai)
+  if (accessory === 'angel-wings') {
+    drawCatBackWings(ctx, 0.92)
+  }
+
   // Band headphone atas
-  ctx.strokeStyle = '#f9a8d4'
+  ctx.strokeStyle = accessory === 'lofi-headphones' ? '#c084fc' : '#f9a8d4'
   ctx.lineWidth = 18
   ctx.lineCap = 'round'
   ctx.beginPath()
@@ -604,13 +982,19 @@ function drawBothCats(
   ctx.quadraticCurveTo(7, 25, 14, 16)
   ctx.stroke()
 
-  // Aksesori kepala Kucing Putih
+  // Aksesori wajah, leher & kepala Kucing Putih
+  drawCatFaceAndNeckAccessory(ctx, accessory, false)
   drawCatAccessory(ctx, accessory, 0, -86, 1.35)
   ctx.restore()
 
   // --- 2. KUCING MINI ABU-ABU (Kanan-Tengah: cx = 675, cy = 468) ---
   ctx.save()
   ctx.translate(675, 474)
+
+  // Sayap Malaikat di belakang kucing mini (jika dipakai)
+  if (accessory === 'angel-wings') {
+    drawCatBackWings(ctx, 0.56)
+  }
 
   // Ekor melengkung lucu
   ctx.strokeStyle = '#cbd5e1'
@@ -728,7 +1112,8 @@ function drawBothCats(
   ctx.quadraticCurveTo(0, 12, 9, 4)
   ctx.stroke()
 
-  // Aksesori kepala Kucing Mini (sinkron 100%!)
+  // Aksesori wajah, leher & kepala Kucing Mini (sinkron 100%!)
+  drawCatFaceAndNeckAccessory(ctx, accessory, true)
   drawCatAccessory(ctx, accessory, 0, -58, 0.88)
   ctx.restore()
 }
@@ -776,10 +1161,13 @@ async function renderStudyCard() {
     ctx.save()
     drawRoundedRect(ctx, 44, 44, CARD_WIDTH - 88, CARD_HEIGHT - 88, 48)
     ctx.strokeStyle = palette.cardStroke
-    ctx.lineWidth = cozy === 'astral-palace' ? 4 : 2.5
+    ctx.lineWidth = cozy === 'astral-palace' || cozy === 'neon-night-city' ? 4 : 2.5
     if (cozy === 'astral-palace') {
       ctx.shadowColor = 'rgba(253, 224, 71, 0.45)'
       ctx.shadowBlur = 24
+    } else if (cozy === 'neon-night-city') {
+      ctx.shadowColor = 'rgba(0, 245, 212, 0.65)'
+      ctx.shadowBlur = 26
     }
     ctx.stroke()
     ctx.restore()
@@ -822,7 +1210,7 @@ async function renderStudyCard() {
         label: 'KASIH SAYANG',
         value:
           catAffinityLevel.value >= CAT_AFFINITY_MAX_LEVEL
-            ? 'Lv. 10 MAX'
+            ? '👑 Soulmate MAX'
             : `Lv. ${catAffinityLevel.value}`,
         icon: '💖',
       },
@@ -854,7 +1242,10 @@ async function renderStudyCard() {
       ctx.fillText(`${stat.icon}  ${stat.label}`, bx + 28, by + 44)
 
       ctx.fillStyle = '#ffffff'
-      ctx.font = '700 38px "Fredoka", "Quicksand", system-ui, sans-serif'
+      ctx.font =
+        stat.value.length > 12
+          ? '700 31px "Fredoka", "Quicksand", system-ui, sans-serif'
+          : '700 38px "Fredoka", "Quicksand", system-ui, sans-serif'
       ctx.fillText(stat.value, bx + 28, by + 94)
     })
 

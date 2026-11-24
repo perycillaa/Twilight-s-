@@ -103,38 +103,89 @@ export interface HabitItem {
 // Tipe mode ekspresi maskot kucing interaktif
 export type MascotMood = 'idle' | 'focus' | 'happy' | 'reminder' | 'celebrate'
 
-// Tipe aksesori kepala maskot kucing yang bisa ditukar dengan koin ikan kering (🐟)
-export type MascotAccessoryId = 'none' | 'pink-bow' | 'witch-hat' | 'star-crown'
+// Tipe aksesoris maskot kucing (toko koin 🐟 + eksklusif milestone Kasih Sayang Lv. 10 & Lv. 20 MAX)
+export type MascotAccessoryId =
+  | 'none'
+  | 'round-glasses'
+  | 'leaf-sprout'
+  | 'open-book'
+  | 'pink-bow'
+  | 'lofi-headphones'
+  | 'knit-scarf'
+  | 'witch-hat'
+  | 'beret-hat'
+  | 'star-halo'
+  | 'star-crown'
+  | 'soulmate-collar'
+  | 'angel-wings'
 
 export interface AccessoryItem {
   id: Exclude<MascotAccessoryId, 'none'>
   name: string
   icon: string
-  cost: number
+  cost: number | null // null = eksklusif hadiah Milestone Kasih Sayang (tidak dibeli dengan koin)
+  milestoneLevel?: 10 | 20
 }
 
 export const MASCOT_ACCESSORIES: AccessoryItem[] = [
+  { id: 'round-glasses', name: 'Kacamata Bulat', icon: '👓', cost: 12 },
+  { id: 'leaf-sprout', name: 'Tunas Daun', icon: '🌱', cost: 15 },
+  { id: 'open-book', name: 'Buku Terbuka', icon: '📖', cost: 18 },
   { id: 'pink-bow', name: 'Pita Pink', icon: '🎀', cost: 20 },
+  { id: 'lofi-headphones', name: 'Headphone Lo-Fi', icon: '🎧', cost: 22 },
+  { id: 'knit-scarf', name: 'Syal Rajut', icon: '🧣', cost: 25 },
   { id: 'witch-hat', name: 'Topi Penyihir', icon: '🧙', cost: 30 },
+  { id: 'beret-hat', name: 'Topi Baret', icon: '🎨', cost: 30 },
+  { id: 'star-halo', name: 'Halo Bintang', icon: '😇', cost: 45 },
   { id: 'star-crown', name: 'Mahkota Bintang', icon: '👑', cost: 50 },
+  { id: 'soulmate-collar', name: 'Kalung Hati Bintang', icon: '💖', cost: null, milestoneLevel: 10 },
+  { id: 'angel-wings', name: 'Sayap Malaikat', icon: '✨', cost: null, milestoneLevel: 20 },
 ]
 
-// Tipe 5 Tema Latar Belakang Beranimasi (Cozy Themes) di Toko Aksesori
+export const SHOP_PURCHASABLE_ACCESSORY_IDS: Exclude<MascotAccessoryId, 'none'>[] =
+  MASCOT_ACCESSORIES.filter(item => item.cost !== null).map(item => item.id)
+
+const VALID_ACCESSORY_IDS = new Set<string>(['none', ...MASCOT_ACCESSORIES.map(a => a.id)])
+
+function isValidAccessoryId(val: unknown): val is MascotAccessoryId {
+  return typeof val === 'string' && VALID_ACCESSORY_IDS.has(val)
+}
+
+function sanitizeOwnedAccessories(raw: unknown): MascotAccessoryId[] {
+  const unique = new Set<MascotAccessoryId>()
+  if (Array.isArray(raw)) {
+    for (const item of raw) {
+      if (isValidAccessoryId(item) && item !== 'none') {
+        unique.add(item)
+      }
+    }
+  }
+  return Array.from(unique)
+}
+
+// Tipe 11 Tema Latar Belakang Beranimasi (Cozy Themes) di Toko Aksesoris
 export type CozyThemeId =
   | 'classic'
   | 'midnight-rain'
   | 'autumn-cafe'
+  | 'matcha-garden'
   | 'sakura-lantern'
+  | 'biolum-ocean'
+  | 'honey-library'
+  | 'pastel-cloudland'
+  | 'winter-frost'
   | 'astral-palace'
+  | 'neon-night-city'
 
 export interface CozyThemeOption {
   id: CozyThemeId
   name: string
   icon: string
-  cost: number | null // null = eksklusif hadiah 7-Day Full Goal Streak (tidak bisa dibeli koin)
+  cost: number | null // null = eksklusif hadiah 7-Day Full Goal Streak atau Koleksi 100% Toko
   description: string
   swatchClass: string
   streakRequired?: number
+  isUltimateCollection?: boolean
 }
 
 export const ASTRAL_PALACE_STREAK_GOAL = 7
@@ -173,12 +224,52 @@ export const COZY_THEMES: CozyThemeOption[] = [
     swatchClass: 'bg-gradient-to-br from-[#3b1f14] via-[#9a4a24] to-[#fbbf24]',
   },
   {
+    id: 'matcha-garden',
+    name: 'Matcha Garden',
+    icon: '🍵',
+    cost: 35,
+    description: 'Hijau matcha & sage tenang dengan daun teh melayang pelan',
+    swatchClass: 'bg-gradient-to-br from-[#1b2e25] via-[#2d4739] to-[#86efac]',
+  },
+  {
     id: 'sakura-lantern',
     name: 'Sakura Lantern Festival',
     icon: '🌸',
     cost: 40,
     description: 'Langit ungu-magenta, kelopak sakura & lentera emas',
     swatchClass: 'bg-gradient-to-br from-[#3b124d] via-[#be3a7a] to-[#fde68a]',
+  },
+  {
+    id: 'biolum-ocean',
+    name: 'Bioluminescent Ocean',
+    icon: '🌊',
+    cost: 45,
+    description: 'Biru laut dalam dengan gelembung cahaya cyan naik perlahan',
+    swatchClass: 'bg-gradient-to-br from-[#091e2c] via-[#11384a] to-[#22d3ee]',
+  },
+  {
+    id: 'honey-library',
+    name: 'Honey Library',
+    icon: '🍯',
+    cost: 50,
+    description: 'Cokelat perpustakaan hangat & amber dengan debu emas berkilau',
+    swatchClass: 'bg-gradient-to-br from-[#241710] via-[#3d2618] to-[#fbbf24]',
+  },
+  {
+    id: 'pastel-cloudland',
+    name: 'Pastel Cloudland',
+    icon: '☁️',
+    cost: 55,
+    description: 'Langit lavender-biru lembut dengan awan bergerak & kilau bintang',
+    swatchClass: 'bg-gradient-to-br from-[#27294a] via-[#433e6e] to-[#f9a8d4]',
+  },
+  {
+    id: 'winter-frost',
+    name: 'Winter Frost',
+    icon: '❄️',
+    cost: 60,
+    description: 'Biru es sejuk menenangkan dengan salju halus turun perlahan',
+    swatchClass: 'bg-gradient-to-br from-[#152536] via-[#26415e] to-[#bae6fd]',
   },
   {
     id: 'astral-palace',
@@ -189,7 +280,20 @@ export const COZY_THEMES: CozyThemeOption[] = [
     description: 'Aurora Borealis, bulan perak, bintang jatuh & debu emas',
     swatchClass: 'bg-gradient-to-br from-[#08102d] via-[#10b981] to-[#fde047]',
   },
+  {
+    id: 'neon-night-city',
+    name: 'Neon Night City',
+    icon: '🌃',
+    cost: null,
+    isUltimateCollection: true,
+    description: 'Skyline kota neon malam, gerimis Cyan-Magenta & pendaran ganda',
+    swatchClass: 'bg-gradient-to-br from-[#090514] via-[#00f5d4] to-[#ff2a85]',
+  },
 ]
+
+export const NEON_CITY_REQUIRED_THEME_IDS: CozyThemeId[] = COZY_THEMES.filter(
+  t => t.id !== 'classic' && t.id !== 'neon-night-city',
+).map(t => t.id)
 
 interface CozyThemeRecord {
   owned: CozyThemeId[]
@@ -421,14 +525,10 @@ function sanitizeCollectedSecretCards(raw: unknown): string[] {
   return Array.from(unique)
 }
 
+const VALID_COZY_THEME_IDS = new Set<string>(COZY_THEMES.map(t => t.id))
+
 function isValidCozyThemeId(val: unknown): val is CozyThemeId {
-  return (
-    val === 'classic' ||
-    val === 'midnight-rain' ||
-    val === 'autumn-cafe' ||
-    val === 'sakura-lantern' ||
-    val === 'astral-palace'
-  )
+  return typeof val === 'string' && VALID_COZY_THEME_IDS.has(val)
 }
 
 function sanitizeOwnedCozyThemes(raw: unknown): CozyThemeId[] {
@@ -679,23 +779,56 @@ interface GameDailyClaimRecord {
 }
 
 export const MAX_GAME_DAILY_REWARDS = 3
-export const CAT_AFFINITY_MAX_LEVEL = 10
+export const CAT_AFFINITY_MAX_LEVEL = 20
+export const CAT_AFFINITY_MILESTONE_LV10 = 10
 export const CAT_AFFINITY_XP_PER_LEVEL = 10
+export const CAT_AFFINITY_HIGH_XP_PER_LEVEL = 15
 export const CAT_AFFINITY_LEVELUP_FISH_REWARD = 2
+export const CAT_AFFINITY_LV10_MILESTONE_FISH = 20
+export const CAT_AFFINITY_LV20_MILESTONE_FISH = 40
+export const HEART_CHEST_XP_GOAL = 10
+export const HEART_CHEST_FISH_REWARD = 3
+
+/** Kebutuhan XP Kasih Sayang per level: 10 poin (Lv. 1–9), 15 poin (Lv. 10–19) */
+export function getCatAffinityXpNeeded(level: number): number {
+  return level >= CAT_AFFINITY_MILESTONE_LV10
+    ? CAT_AFFINITY_HIGH_XP_PER_LEVEL
+    : CAT_AFFINITY_XP_PER_LEVEL
+}
 
 interface CatAffinityRecord {
   level: number
   xp: number
+  heartChestXp?: number
+  claimedLv10Reward?: boolean
+  claimedLv20Reward?: boolean
 }
 
-function sanitizeCatAffinity(raw: unknown): CatAffinityRecord {
+function sanitizeCatAffinity(raw: unknown): Required<CatAffinityRecord> {
   const obj = (raw && typeof raw === 'object' ? raw : {}) as Partial<CatAffinityRecord>
   const level = Math.max(1, Math.min(CAT_AFFINITY_MAX_LEVEL, Math.floor(Number(obj.level) || 1)))
+  const needed = getCatAffinityXpNeeded(level)
+  const rawXp = Math.max(0, Math.floor(Number(obj.xp) || 0))
+  const claimedLv10Reward = Boolean(obj.claimedLv10Reward)
+  const claimedLv20Reward = Boolean(obj.claimedLv20Reward)
+  // Data lama di Lv. 10 tersimpan dengan xp=10 (batas MAX lama) -> reset ke 0 agar mulus menuju Lv. 11 (0/15)
   const xp =
     level >= CAT_AFFINITY_MAX_LEVEL
-      ? CAT_AFFINITY_XP_PER_LEVEL
-      : Math.max(0, Math.min(CAT_AFFINITY_XP_PER_LEVEL - 1, Math.floor(Number(obj.xp) || 0)))
-  return { level, xp }
+      ? CAT_AFFINITY_HIGH_XP_PER_LEVEL
+      : level === CAT_AFFINITY_MILESTONE_LV10 && !claimedLv10Reward && rawXp >= CAT_AFFINITY_XP_PER_LEVEL
+        ? 0
+        : Math.min(needed - 1, rawXp)
+  const heartChestXp =
+    level >= CAT_AFFINITY_MAX_LEVEL
+      ? Math.max(0, Math.min(HEART_CHEST_XP_GOAL - 1, Math.floor(Number(obj.heartChestXp) || 0)))
+      : 0
+  return {
+    level,
+    xp,
+    heartChestXp,
+    claimedLv10Reward,
+    claimedLv20Reward,
+  }
 }
 
 // Cooldown anti-spam XP Kasih Sayang Kucing (klik 2 dtk, elusan 1.5 dtk)
@@ -844,10 +977,46 @@ export function useTwilightStorage() {
     'twilights-last-drawn-card',
     () => null,
   )
-  // Level & poin XP Bilah Kasih Sayang Kucing (Lv. 1 .. Lv. 10 MAX, +2 🐟 setiap naik level)
+  // Level & poin XP Bilah Kasih Sayang Kucing (Lv. 1 .. Lv. 20 MAX + Peti Cinta 0/10 + Milestone Lv. 10 & Lv. 20)
   const catAffinityLevel = useState<number>('twilights-cat-affinity-level', () => 1)
   const catAffinityXp = useState<number>('twilights-cat-affinity-xp', () => 0)
+  const catHeartChestXp = useState<number>('twilights-cat-heart-chest-xp', () => 0)
+  const claimedLv10Reward = useState<boolean>('twilights-claimed-lv10-reward', () => false)
+  const claimedLv20Reward = useState<boolean>('twilights-claimed-lv20-reward', () => false)
   const catAffinityLevelUpMessage = useState<string>('twilights-cat-affinity-levelup', () => '')
+
+  // Bonus pasif Koin Ikan tiap selesai 1 sesi Pomodoro Fokus (+1 🐟 di Lv. 10–19, +2 🐟 di Lv. 20 MAX)
+  const catAffinityPassiveFishBonus = computed<number>(() => {
+    if (catAffinityLevel.value >= CAT_AFFINITY_MAX_LEVEL) return 2
+    if (catAffinityLevel.value >= CAT_AFFINITY_MILESTONE_LV10) return 1
+    return 0
+  })
+
+  // Progres Koleksi 100% Toko untuk membuka Tema Rahasia Ultimate: 🌃 Neon Night City
+  const neonCityCollectionProgress = computed<{
+    current: number
+    total: number
+    percent: number
+    isComplete: boolean
+  }>(() => {
+    const ownedAccCount = SHOP_PURCHASABLE_ACCESSORY_IDS.filter(id =>
+      ownedAccessories.value.includes(id),
+    ).length
+    const ownedThemeCount = NEON_CITY_REQUIRED_THEME_IDS.filter(
+      id =>
+        ownedCozyThemes.value.includes(id) ||
+        (id === 'astral-palace' && fullGoalStreak.value >= ASTRAL_PALACE_STREAK_GOAL),
+    ).length
+    const current = ownedAccCount + ownedThemeCount
+    const total = SHOP_PURCHASABLE_ACCESSORY_IDS.length + NEON_CITY_REQUIRED_THEME_IDS.length
+    const percent = total > 0 ? Math.min(100, Math.round((current / total) * 100)) : 0
+    return {
+      current,
+      total,
+      percent,
+      isComplete: current >= total,
+    }
+  })
   const dailyMood = useState<DailyMoodId | null>('twilights-daily-mood', () => null)
   const dailyRewardClaimedDate = useState<string>('twilights-daily-reward-date', () => '')
   const dailyRewardCardMessage = useState<string>('twilights-daily-reward-card', () => '')
@@ -1054,6 +1223,9 @@ export function useTwilightStorage() {
       const affinityData: CatAffinityRecord = {
         level: catAffinityLevel.value,
         xp: catAffinityXp.value,
+        heartChestXp: catHeartChestXp.value,
+        claimedLv10Reward: claimedLv10Reward.value,
+        claimedLv20Reward: claimedLv20Reward.value,
       }
       localStorage.setItem(STORAGE_KEYS.CAT_AFFINITY, JSON.stringify(affinityData))
 
@@ -1121,6 +1293,13 @@ export function useTwilightStorage() {
       fullGoalStreakLastDate: fullGoalStreakLastDate.value,
       fullGoalStreakRewardClaimedDate: fullGoalStreakRewardClaimedDate.value,
       collectedSecretCards: collectedSecretCards.value,
+      catAffinity: {
+        level: catAffinityLevel.value,
+        xp: catAffinityXp.value,
+        heartChestXp: catHeartChestXp.value,
+        claimedLv10Reward: claimedLv10Reward.value,
+        claimedLv20Reward: claimedLv20Reward.value,
+      },
       ambientMixerSettings: ambientMixerSettings.value,
       quickNotes: quickNotes.value,
       dailyMood: dailyMood.value,
@@ -1253,17 +1432,19 @@ export function useTwilightStorage() {
     if (typeof d.streakLastDate === 'string') streakLastDate.value = d.streakLastDate
     if (typeof d.treatCoins === 'number') treatCoins.value = Math.max(0, d.treatCoins)
     if (Array.isArray(d.ownedAccessories)) {
-      ownedAccessories.value = d.ownedAccessories.filter(
-        (id): id is MascotAccessoryId => id === 'pink-bow' || id === 'witch-hat' || id === 'star-crown',
-      )
+      ownedAccessories.value = sanitizeOwnedAccessories(d.ownedAccessories)
     }
-    if (
-      d.equippedAccessory === 'none' ||
-      d.equippedAccessory === 'pink-bow' ||
-      d.equippedAccessory === 'witch-hat' ||
-      d.equippedAccessory === 'star-crown'
-    ) {
+    if (isValidAccessoryId(d.equippedAccessory)) {
       equippedAccessory.value = d.equippedAccessory
+    }
+    const cloudAffinity = d.twilights_cat_affinity ?? d.catAffinity
+    if (cloudAffinity && typeof cloudAffinity === 'object') {
+      const cleanAffinity = sanitizeCatAffinity(cloudAffinity)
+      catAffinityLevel.value = cleanAffinity.level
+      catAffinityXp.value = cleanAffinity.xp
+      catHeartChestXp.value = cleanAffinity.heartChestXp
+      claimedLv10Reward.value = cleanAffinity.claimedLv10Reward
+      claimedLv20Reward.value = cleanAffinity.claimedLv20Reward
     }
     if (Array.isArray(d.ownedCozyThemes)) {
       ownedCozyThemes.value = sanitizeOwnedCozyThemes(d.ownedCozyThemes)
@@ -1671,6 +1852,7 @@ export function useTwilightStorage() {
       }
       treatCoins.value += ASTRAL_PALACE_STREAK_FISH_REWARD
       fullGoalStreakRewardClaimedDate.value = todayStr
+      checkAndUnlockNeonCity(false)
 
       const celebrationMsg = unlockedAstralNow
         ? '🎉 Luar Biasa! 7-Day Full Goal Streak Tercapai! Hadiah +15 🐟 & Tema 👑 Astral Crystal Palace terbuka!'
@@ -1690,6 +1872,7 @@ export function useTwilightStorage() {
       !ownedCozyThemes.value.includes('astral-palace')
     ) {
       ownedCozyThemes.value = [...ownedCozyThemes.value, 'astral-palace']
+      checkAndUnlockNeonCity(true)
     }
 
     return false
@@ -1876,6 +2059,9 @@ export function useTwilightStorage() {
         twilights_cat_affinity: {
           level: catAffinityLevel.value,
           xp: catAffinityXp.value,
+          heartChestXp: catHeartChestXp.value,
+          claimedLv10Reward: claimedLv10Reward.value,
+          claimedLv20Reward: claimedLv20Reward.value,
         },
         quickNotes: quickNotes.value,
         dailyMood: dailyMood.value,
@@ -1963,25 +2149,20 @@ export function useTwilightStorage() {
       if (typeof d.treatCoins === 'number') {
         treatCoins.value = Math.max(0, d.treatCoins)
       }
-      // Pulihkan Level & Poin Kasih Sayang Kucing
+      // Pulihkan Level, Poin, Peti Cinta & Flag Milestone Kasih Sayang Kucing
       const importedAffinity = d.twilights_cat_affinity ?? d.catAffinity
       if (importedAffinity && typeof importedAffinity === 'object') {
         const cleanAffinity = sanitizeCatAffinity(importedAffinity)
         catAffinityLevel.value = cleanAffinity.level
         catAffinityXp.value = cleanAffinity.xp
+        catHeartChestXp.value = cleanAffinity.heartChestXp
+        claimedLv10Reward.value = cleanAffinity.claimedLv10Reward
+        claimedLv20Reward.value = cleanAffinity.claimedLv20Reward
       }
       if (Array.isArray(d.ownedAccessories)) {
-        ownedAccessories.value = d.ownedAccessories.filter(
-          (id): id is MascotAccessoryId =>
-            id === 'pink-bow' || id === 'witch-hat' || id === 'star-crown',
-        )
+        ownedAccessories.value = sanitizeOwnedAccessories(d.ownedAccessories)
       }
-      if (
-        d.equippedAccessory === 'none' ||
-        d.equippedAccessory === 'pink-bow' ||
-        d.equippedAccessory === 'witch-hat' ||
-        d.equippedAccessory === 'star-crown'
-      ) {
+      if (isValidAccessoryId(d.equippedAccessory)) {
         equippedAccessory.value = d.equippedAccessory
       }
       // Pulihkan Tema Latar Belakang Beranimasi (Cozy Themes) & 7-Day Full Goal Streak
@@ -2129,6 +2310,8 @@ export function useTwilightStorage() {
       }
 
       habitResetVersion.value += 1
+      grantPendingCatAffinityMilestones(false)
+      checkAndUnlockNeonCity(false)
       syncTodayProgress()
       void pushStateToCloud(true)
       playVictoryMelody()
@@ -2172,22 +2355,99 @@ export function useTwilightStorage() {
   }
 
   /**
-   * Sistem Koin Hadiah & Aksesori Maskot:
-   * - Jika aksesori sudah dimiliki: pasang / lepas langsung.
+   * Cek apakah seluruh aksesoris toko (10 item) & seluruh tema latar belakang lainnya (9 item)
+   * sudah dimiliki/terbuka. Jika ya, buka otomatis Tema Rahasia Ultimate 🌃 Neon Night City!
+   */
+  function checkAndUnlockNeonCity(showCelebration = true): boolean {
+    if (ownedCozyThemes.value.includes('neon-night-city')) return false
+    if (!neonCityCollectionProgress.value.isComplete) return false
+
+    ownedCozyThemes.value = [...ownedCozyThemes.value, 'neon-night-city']
+    if (showCelebration) {
+      const unlockMsg =
+        '🌃 ULTIMATE UNLOCK! Koleksi 100% Toko tercapai — Tema Rahasia Neon Night City terbuka! Coba pasang & putar radio Nightride / Synthwave~ ✨'
+      celebrationCount.value += 1
+      playVictoryMelody()
+      showDailyRewardCard(unlockMsg)
+      showMiniToast(unlockMsg)
+      triggerMascotReaction('celebrate', unlockMsg, 6800)
+    }
+    return true
+  }
+
+  /**
+   * Berikan hadiah Milestone Kasih Sayang Kucing Lv. 10 & Lv. 20 MAX (anti-klaim ganda via flag):
+   * - Lv. 10 (Sahabat Sejati): +20 🐟 + aksesori eksklusif 💖 Kalung Hati Bintang + bonus pasif +1 🐟/sesi
+   * - Lv. 20 (MAX ✨): +40 🐟 + aksesori legendaris ✨ Sayap Malaikat + gelar 👑 Soulmate MAX + bonus pasif +2 🐟/sesi + Peti Cinta
+   */
+  function grantPendingCatAffinityMilestones(showCelebration = true): string[] {
+    const messages: string[] = []
+
+    if (catAffinityLevel.value >= CAT_AFFINITY_MILESTONE_LV10 && !claimedLv10Reward.value) {
+      claimedLv10Reward.value = true
+      treatCoins.value += CAT_AFFINITY_LV10_MILESTONE_FISH
+      if (!ownedAccessories.value.includes('soulmate-collar')) {
+        ownedAccessories.value = [...ownedAccessories.value, 'soulmate-collar']
+      }
+      messages.push(
+        '💖 Milestone Lv. 10 Sahabat Sejati! Hadiah +20 🐟, aksesoris 💖 Kalung Hati Bintang terbuka, & bonus pasif +1 🐟/sesi fokus!',
+      )
+    }
+
+    if (catAffinityLevel.value >= CAT_AFFINITY_MAX_LEVEL && !claimedLv20Reward.value) {
+      claimedLv20Reward.value = true
+      treatCoins.value += CAT_AFFINITY_LV20_MILESTONE_FISH
+      if (!ownedAccessories.value.includes('angel-wings')) {
+        ownedAccessories.value = [...ownedAccessories.value, 'angel-wings']
+      }
+      messages.push(
+        '👑 MILESTONE Lv. 20 MAX ✨! Hadiah 2x: +40 🐟, ✨ Sayap Malaikat, gelar 👑 Soulmate MAX, bonus pasif +2 🐟/sesi & 💖 Peti Cinta terbuka!',
+      )
+    }
+
+    if (messages.length > 0 && showCelebration) {
+      const topMsg = messages[messages.length - 1]!
+      catAffinityLevelUpMessage.value = topMsg
+      if (catAffinityToastTimer) clearTimeout(catAffinityToastTimer)
+      catAffinityToastTimer = setTimeout(() => {
+        catAffinityLevelUpMessage.value = ''
+      }, 6500)
+
+      celebrationCount.value += 1
+      playVictoryMelody()
+      showDailyRewardCard(topMsg)
+      showMiniToast(topMsg)
+      triggerMascotReaction('celebrate', topMsg, 6500)
+    }
+
+    return messages
+  }
+
+  /**
+   * Sistem Koin Hadiah & Aksesoris Maskot:
+   * - Jika aksesoris sudah dimiliki: pasang / lepas langsung.
+   * - Jika aksesoris eksklusif Milestone (cost === null): tampilkan syarat levelnya.
    * - Jika belum dimiliki dan koin cukup: tukar koin 🐟 lalu pasang langsung!
    */
   function buyOrEquipAccessory(accessoryId: MascotAccessoryId): { ok: boolean; message: string } {
     if (accessoryId === 'none') {
       equippedAccessory.value = 'none'
       persistAll()
-      return { ok: true, message: 'Aksesori dilepas~' }
+      return { ok: true, message: 'Aksesoris dilepas~' }
     }
 
     const item = MASCOT_ACCESSORIES.find(a => a.id === accessoryId)
-    if (!item) return { ok: false, message: 'Aksesori tidak ditemukan.' }
+    if (!item) return { ok: false, message: 'Aksesoris tidak ditemukan.' }
 
-    // Jika sudah dimiliki, cukup pasang atau lepas
-    if (ownedAccessories.value.includes(accessoryId)) {
+    const isUnlockedByMilestone =
+      (item.milestoneLevel === 10 && catAffinityLevel.value >= CAT_AFFINITY_MILESTONE_LV10) ||
+      (item.milestoneLevel === 20 && catAffinityLevel.value >= CAT_AFFINITY_MAX_LEVEL)
+
+    // Jika sudah dimiliki (atau sudah memenuhi milestone), cukup pasang atau lepas
+    if (ownedAccessories.value.includes(accessoryId) || isUnlockedByMilestone) {
+      if (!ownedAccessories.value.includes(accessoryId)) {
+        ownedAccessories.value = [...ownedAccessories.value, accessoryId]
+      }
       const nextEquipped = equippedAccessory.value === accessoryId ? 'none' : accessoryId
       equippedAccessory.value = nextEquipped
       persistAll()
@@ -2201,6 +2461,15 @@ export function useTwilightStorage() {
       }
     }
 
+    // Item eksklusif milestone Kasih Sayang (tidak dibeli dengan koin)
+    if (item.cost === null) {
+      const reqLv = item.milestoneLevel ?? 10
+      return {
+        ok: false,
+        message: `🔒 Eksklusif Milestone Kasih Sayang Lv. ${reqLv}${reqLv === 20 ? ' MAX' : ''} (Saat ini Lv. ${catAffinityLevel.value})`,
+      }
+    }
+
     // Jika belum dimiliki, cek apakah koin 🐟 cukup
     if (treatCoins.value < item.cost) {
       return {
@@ -2209,23 +2478,27 @@ export function useTwilightStorage() {
       }
     }
 
-    // Tukar koin dan langsung pasang aksesori di kepala maskot!
+    // Tukar koin dan langsung pasang aksesoris pada kedua kucing!
     treatCoins.value -= item.cost
     ownedAccessories.value = [...ownedAccessories.value, accessoryId]
     equippedAccessory.value = accessoryId
+    const unlockedNeon = checkAndUnlockNeonCity(true)
     persistAll()
 
-    playVictoryMelody()
-    triggerMascotReaction('celebrate', `Makasih! ${item.name} ini lucu banget! ${item.icon}✨`, 3800)
-    showMiniToast(`Berhasil menukar ${item.name} ${item.icon}!`)
+    if (!unlockedNeon) {
+      playVictoryMelody()
+      triggerMascotReaction('celebrate', `Makasih! ${item.name} ini lucu banget! ${item.icon}✨`, 3800)
+      showMiniToast(`Berhasil menukar ${item.name} ${item.icon}!`)
+    }
     return { ok: true, message: `${item.name} berhasil dibuka & dipakai!` }
   }
 
   /**
-   * Toko Tema Latar Belakang Beranimasi (Cozy Themes):
+   * Toko Tema Latar Belakang Beranimasi (11 Cozy Themes):
    * - Twilight Klasik selalu terbuka (default).
-   * - Midnight Rainy Window (20 🐟), Cozy Autumn Cafe (30 🐟), Sakura Lantern Festival (40 🐟): beli pakai koin lalu langsung dipakai.
-   * - Astral Crystal Palace: tidak dijual, hanya terbuka setelah 7-Day Full Goal Streak (100% Daily Habit Tracker 7 hari beruntun).
+   * - 8 tema berbayar koin 🐟: beli lalu langsung dipakai.
+   * - Astral Crystal Palace: hadiah 7-Day Full Goal Streak.
+   * - Neon Night City: Ultimate Completion Reward (koleksi 100% aksesoris toko & tema lainnya).
    */
   function buyOrEquipCozyTheme(cozyId: CozyThemeId): { ok: boolean; message: string } {
     const item = COZY_THEMES.find(t => t.id === cozyId)
@@ -2233,7 +2506,8 @@ export function useTwilightStorage() {
 
     const isUnlocked =
       ownedCozyThemes.value.includes(cozyId) ||
-      (cozyId === 'astral-palace' && fullGoalStreak.value >= ASTRAL_PALACE_STREAK_GOAL)
+      (cozyId === 'astral-palace' && fullGoalStreak.value >= ASTRAL_PALACE_STREAK_GOAL) ||
+      (cozyId === 'neon-night-city' && neonCityCollectionProgress.value.isComplete)
 
     if (cozyId === 'astral-palace' && !isUnlocked) {
       const progress = Math.min(fullGoalStreak.value, ASTRAL_PALACE_STREAK_GOAL)
@@ -2243,12 +2517,27 @@ export function useTwilightStorage() {
       }
     }
 
+    if (cozyId === 'neon-night-city' && !isUnlocked) {
+      const prog = neonCityCollectionProgress.value
+      return {
+        ok: false,
+        message: `🔒 Koleksi 100% Toko (${prog.current}/${prog.total} Koleksi) untuk membuka Neon Night City!`,
+      }
+    }
+
     const themeReactions: Record<CozyThemeId, string> = {
       classic: 'Kembali ke suasana Twilight Klasik yang hangat~ 💜✨',
       'midnight-rain': 'Rintik hujan malam & lampu kota blur bikin fokus makin tenang~ 🌧️✨',
       'autumn-cafe': 'Aroma kopi & daun gugur musim gugur yang cozy banget~ 🍂☕',
+      'matcha-garden': 'Taman hijau matcha yang sejuk & menenangkan pikiran~ 🍵🍃',
       'sakura-lantern': 'Indahnya kelopak sakura & lentera malam berkilau~ 🌸🏮',
+      'biolum-ocean': 'Gelembung cahaya cyan di lautan malam yang magis~ 🌊✨',
+      'honey-library': 'Hangatnya perpustakaan madu & debu emas berkilau~ 🍯📖',
+      'pastel-cloudland': 'Melayang di langit awan pastel berbintang lembut~ ☁️✨',
+      'winter-frost': 'Salju lembut musim dingin yang damai untuk fokus~ ❄️✨',
       'astral-palace': 'Megahnya Aurora Borealis di Istana Kristal Astral! 👑✨',
+      'neon-night-city':
+        '🎉 Selamat Kolektor Sejati! Neon Night City aktif — cocok banget sambil putar radio 🌃 Nightride / Synthwave! ✨',
     }
 
     if (isUnlocked) {
@@ -2258,6 +2547,19 @@ export function useTwilightStorage() {
       activeCozyTheme.value = cozyId
       applyCozyThemeToDocument(cozyId)
       persistAll()
+
+      if (cozyId === 'neon-night-city') {
+        playVictoryMelody()
+        showMiniToast(
+          '🎉 Selamat! Tema 🌃 Neon Night City aktif — coba putar stasiun 🌃 Nightride / Synthwave di BGM Player! 🎧✨',
+        )
+        triggerMascotReaction('celebrate', themeReactions[cozyId], 5200)
+        return {
+          ok: true,
+          message: '🌃 Neon Night City aktif! Coba putar radio 🌃 Nightride / Synthwave~',
+        }
+      }
+
       playPopTing()
       triggerMascotReaction('happy', themeReactions[cozyId], 3200)
       return { ok: true, message: `Tema ${item.name} ${item.icon} dipasang!` }
@@ -2275,11 +2577,14 @@ export function useTwilightStorage() {
     ownedCozyThemes.value = [...ownedCozyThemes.value, cozyId]
     activeCozyTheme.value = cozyId
     applyCozyThemeToDocument(cozyId)
+    const unlockedNeon = checkAndUnlockNeonCity(true)
     persistAll()
 
-    playVictoryMelody()
-    triggerMascotReaction('celebrate', themeReactions[cozyId], 4200)
-    showMiniToast(`Tema ${item.name} ${item.icon} berhasil dibeli & dipakai! ✨`)
+    if (!unlockedNeon) {
+      playVictoryMelody()
+      triggerMascotReaction('celebrate', themeReactions[cozyId], 4200)
+      showMiniToast(`Tema ${item.name} ${item.icon} berhasil dibeli & dipakai! ✨`)
+    }
     return { ok: true, message: `${item.name} berhasil dibeli & dipakai!` }
   }
 
@@ -2528,15 +2833,15 @@ export function useTwilightStorage() {
         isStarCursorEnabled.value = savedStarCursor === 'true'
       }
 
-      // 8. Muat Koin Hadiah (🐟), Aksesori Maskot & Kasih Sayang Kucing
+      // 8. Muat Koin Hadiah (🐟), Aksesoris Maskot & Kasih Sayang Kucing
       const savedTreats = localStorage.getItem(STORAGE_KEYS.TREATS)
       if (savedTreats) {
         const parsedTreats = JSON.parse(savedTreats) as Partial<TreatRecord>
         treatCoins.value = Math.max(0, Number(parsedTreats.coins) || 0)
         if (Array.isArray(parsedTreats.owned)) {
-          ownedAccessories.value = parsedTreats.owned
+          ownedAccessories.value = sanitizeOwnedAccessories(parsedTreats.owned)
         }
-        if (parsedTreats.equipped) {
+        if (isValidAccessoryId(parsedTreats.equipped)) {
           equippedAccessory.value = parsedTreats.equipped
         }
       }
@@ -2545,6 +2850,9 @@ export function useTwilightStorage() {
         const cleanAffinity = sanitizeCatAffinity(JSON.parse(savedAffinity))
         catAffinityLevel.value = cleanAffinity.level
         catAffinityXp.value = cleanAffinity.xp
+        catHeartChestXp.value = cleanAffinity.heartChestXp
+        claimedLv10Reward.value = cleanAffinity.claimedLv10Reward
+        claimedLv20Reward.value = cleanAffinity.claimedLv20Reward
       }
 
       // 8b. Muat Tema Latar Belakang Beranimasi (Cozy Themes) & 7-Day Full Goal Streak
@@ -2704,6 +3012,11 @@ export function useTwilightStorage() {
       const syncedWeekly = [...weeklyProgress.value]
       syncedWeekly[todayIndex.value] = todayCompletionRate.value
       weeklyProgress.value = syncedWeekly
+
+      // Migrasi otomatis pengguna lama di Lv. 10 -> buka Lv. 11 & klaim hadiah Milestone Lv. 10 (+20 🐟 & Kalung) 1x!
+      grantPendingCatAffinityMilestones(true)
+      // Cek juga jika koleksi toko sudah 100% untuk membuka Neon Night City otomatis
+      checkAndUnlockNeonCity(true)
 
       isHydrated.value = true
       persistAll(false)
@@ -3098,11 +3411,15 @@ export function useTwilightStorage() {
   }
 
   /**
-   * Tambah poin XP Bilah Kasih Sayang Kucing (maks Lv. 10):
+   * Tambah poin XP Bilah Kasih Sayang Kucing (maks Lv. 20 MAX ✨ + Peti Cinta berulang 0/10):
    * - 'pet'   : +1 XP tiap ~1.5 detik elusan nyaman
    * - 'click' : +1 XP per klik semangat (cooldown 2 detik anti-spam)
    * - 'focus' : +5 XP setiap menyelesaikan 1 sesi timer fokus penuh
-   * Setiap naik level (10 XP/level) otomatis memberi hadiah +2 🐟 ke saldo ikan & toast perayaan!
+   * - 'gacha' : +1 XP untuk kartu rahasia duplikat
+   * Lv. 1–9 butuh 10 XP/level, Lv. 10–19 butuh 15 XP/level (+2 🐟/level).
+   * Milestone Lv. 10: +20 🐟 + 💖 Kalung Hati Bintang + bonus pasif +1 🐟/sesi.
+   * Milestone Lv. 20 MAX: +40 🐟 + ✨ Sayap Malaikat + gelar 👑 Soulmate MAX + bonus pasif +2 🐟/sesi.
+   * Setelah Lv. 20 MAX: mengisi 💖 Peti Cinta (0/10) -> penuh memberi +3 🐟 berulang tanpa batas!
    */
   function addCatAffinityXp(amount: number, source: 'pet' | 'click' | 'focus' | 'gacha'): boolean {
     const cleanAmount = Math.max(0, Math.floor(amount))
@@ -3117,64 +3434,111 @@ export function useTwilightStorage() {
       lastCatPetXpAt = now
     }
 
+    // Jika sudah Lv. 20 (MAX ✨): jalankan siklus 💖 Peti Cinta (0/10 -> +3 🐟) tanpa batas!
     if (catAffinityLevel.value >= CAT_AFFINITY_MAX_LEVEL) {
       catAffinityLevel.value = CAT_AFFINITY_MAX_LEVEL
-      catAffinityXp.value = CAT_AFFINITY_XP_PER_LEVEL
-      return false
+      catAffinityXp.value = CAT_AFFINITY_HIGH_XP_PER_LEVEL
+      grantPendingCatAffinityMilestones(true)
+
+      let nextChestXp = catHeartChestXp.value + cleanAmount
+      let chestsOpened = 0
+      while (nextChestXp >= HEART_CHEST_XP_GOAL) {
+        nextChestXp -= HEART_CHEST_XP_GOAL
+        chestsOpened += 1
+      }
+      catHeartChestXp.value = nextChestXp
+
+      if (chestsOpened > 0) {
+        const chestFish = chestsOpened * HEART_CHEST_FISH_REWARD
+        treatCoins.value += chestFish
+        const chestMsg = `💖 Peti Cinta penuh! Kucingmu memberikan hadiah +${chestFish} 🐟`
+        catAffinityLevelUpMessage.value = chestMsg
+        if (catAffinityToastTimer) clearTimeout(catAffinityToastTimer)
+        catAffinityToastTimer = setTimeout(() => {
+          catAffinityLevelUpMessage.value = ''
+        }, 4500)
+        playVictoryMelody()
+        showMiniToast(chestMsg)
+        triggerMascotReaction('celebrate', chestMsg, 4200)
+      }
+
+      persistAll()
+      return true
     }
 
     let nextXp = catAffinityXp.value + cleanAmount
     let nextLevel = catAffinityLevel.value
     let levelsGained = 0
 
-    while (nextXp >= CAT_AFFINITY_XP_PER_LEVEL && nextLevel < CAT_AFFINITY_MAX_LEVEL) {
-      nextXp -= CAT_AFFINITY_XP_PER_LEVEL
+    while (nextLevel < CAT_AFFINITY_MAX_LEVEL) {
+      const needed = getCatAffinityXpNeeded(nextLevel)
+      if (nextXp < needed) break
+      nextXp -= needed
       nextLevel += 1
       levelsGained += 1
     }
 
     catAffinityLevel.value = nextLevel
-    catAffinityXp.value = nextLevel >= CAT_AFFINITY_MAX_LEVEL ? CAT_AFFINITY_XP_PER_LEVEL : nextXp
+    catAffinityXp.value = nextLevel >= CAT_AFFINITY_MAX_LEVEL ? CAT_AFFINITY_HIGH_XP_PER_LEVEL : nextXp
+    if (nextLevel >= CAT_AFFINITY_MAX_LEVEL && nextXp > 0) {
+      catHeartChestXp.value = Math.min(HEART_CHEST_XP_GOAL - 1, nextXp)
+    }
 
     if (levelsGained > 0) {
       const bonusFish = levelsGained * CAT_AFFINITY_LEVELUP_FISH_REWARD
       treatCoins.value += bonusFish
-      const celebrationMsg = `🎉 Level Up! Lv. ${nextLevel} — Hadiah +${bonusFish} 🐟 diterima!`
-      catAffinityLevelUpMessage.value = celebrationMsg
+      const milestoneMsgs = grantPendingCatAffinityMilestones(true)
 
-      if (catAffinityToastTimer) clearTimeout(catAffinityToastTimer)
-      catAffinityToastTimer = setTimeout(() => {
-        catAffinityLevelUpMessage.value = ''
-      }, 4200)
+      if (milestoneMsgs.length === 0) {
+        const celebrationMsg = `🎉 Level Up! Lv. ${nextLevel} — Hadiah +${bonusFish} 🐟 diterima!`
+        catAffinityLevelUpMessage.value = celebrationMsg
 
-      playVictoryMelody()
-      showMiniToast(celebrationMsg)
-      triggerMascotReaction(
-        'celebrate',
-        nextLevel >= CAT_AFFINITY_MAX_LEVEL
-          ? `Yeay! Kasih sayang kita MAX (Lv. 10 ✨)! +${bonusFish} 🐟 buatmu~ 💖`
-          : `Yeay! Kita naik ke Lv. ${nextLevel}! Ini +${bonusFish} 🐟 buatmu~ 💖`,
-        4200,
-      )
+        if (catAffinityToastTimer) clearTimeout(catAffinityToastTimer)
+        catAffinityToastTimer = setTimeout(() => {
+          catAffinityLevelUpMessage.value = ''
+        }, 4200)
+
+        playVictoryMelody()
+        showMiniToast(celebrationMsg)
+        triggerMascotReaction(
+          'celebrate',
+          `Yeay! Kita naik ke Lv. ${nextLevel}! Ini +${bonusFish} 🐟 buatmu~ 💖`,
+          4200,
+        )
+      }
     }
 
     persistAll()
     return true
   }
 
-  /** Tambah 1 sesi fokus, total detik fokus hari ini, hadiah +10 🐟, & +5 XP Kasih Sayang Kucing */
+  /** Tambah 1 sesi fokus, total detik fokus hari ini, hadiah +10 🐟 (+bonus pasif Lv. 10/20), & +5 XP Kasih Sayang Kucing */
   function incrementFocusSession(durationSeconds?: number) {
     const addedSeconds =
       typeof durationSeconds === 'number' && durationSeconds > 0
         ? Math.floor(durationSeconds)
         : customTimerDurations.value.focus
+    const passiveBonus = catAffinityPassiveFishBonus.value
+    const totalFish = 10 + passiveBonus
+
     todayFocusSessions.value += 1
     totalFocusSessions.value += 1
     todayFocusSeconds.value += addedSeconds
-    treatCoins.value += 10
+    treatCoins.value += totalFish
     persistAll()
-    showMiniToast('1 sesi fokus selesai! +10 🐟 & +5 💖✨')
-    triggerMascotReaction('celebrate', 'Keren! 1 sesi fokus tuntas! +10 🐟🎉', 4200)
+
+    const bonusLabel =
+      passiveBonus === 2
+        ? ' (+2 🐟 Bonus MAX)'
+        : passiveBonus === 1
+          ? ' (+1 🐟 Bonus Lv. 10+)'
+          : ''
+    showMiniToast(`1 sesi fokus selesai! +10 🐟${bonusLabel} & +5 💖✨`)
+    triggerMascotReaction(
+      'celebrate',
+      `Keren! 1 sesi fokus tuntas! +${totalFish} 🐟🎉`,
+      4200,
+    )
     addCatAffinityXp(5, 'focus')
   }
 
@@ -3322,6 +3686,11 @@ export function useTwilightStorage() {
     lastDrawnCardResult,
     catAffinityLevel,
     catAffinityXp,
+    catHeartChestXp,
+    claimedLv10Reward,
+    claimedLv20Reward,
+    catAffinityPassiveFishBonus,
+    neonCityCollectionProgress,
     catAffinityLevelUpMessage,
     dailyMood,
     dailyRewardClaimedDate,

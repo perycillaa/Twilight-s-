@@ -147,6 +147,66 @@ const cozyBgConfig: Record<Exclude<CozyThemeId, 'classic'>, BgPalette> = {
     cloudFill: '#cbd5e1',
     tailGradient: 'from-[#fef9c3] via-amber-200 to-transparent',
   },
+  'matcha-garden': {
+    gradient: 'from-[#1b2e25] via-[#233b2f] to-[#2d4739]',
+    orb1: 'bg-emerald-400/15',
+    orb2: 'bg-lime-300/12',
+    orb3: 'bg-teal-400/12',
+    moon: '#dcfce7',
+    charmAccent: '#86efac',
+    cloudFill: '#bbf7d0',
+    tailGradient: 'from-[#f0fdf4] via-emerald-200 to-transparent',
+  },
+  'biolum-ocean': {
+    gradient: 'from-[#091e2c] via-[#0d2b3b] to-[#11384a]',
+    orb1: 'bg-cyan-400/18',
+    orb2: 'bg-teal-400/15',
+    orb3: 'bg-sky-400/15',
+    moon: '#cffafe',
+    charmAccent: '#22d3ee',
+    cloudFill: '#67e8f9',
+    tailGradient: 'from-[#ecfeff] via-cyan-300 to-transparent',
+  },
+  'honey-library': {
+    gradient: 'from-[#241710] via-[#311f14] to-[#3d2618]',
+    orb1: 'bg-amber-400/18',
+    orb2: 'bg-yellow-300/14',
+    orb3: 'bg-orange-400/12',
+    moon: '#fef3c7',
+    charmAccent: '#fbbf24',
+    cloudFill: '#fde68a',
+    tailGradient: 'from-[#fffbeb] via-amber-300 to-transparent',
+  },
+  'pastel-cloudland': {
+    gradient: 'from-[#27294a] via-[#35345c] to-[#433e6e]',
+    orb1: 'bg-pink-300/20',
+    orb2: 'bg-indigo-300/18',
+    orb3: 'bg-sky-300/16',
+    moon: '#fdf2f8',
+    charmAccent: '#f9a8d4',
+    cloudFill: '#f5d0fe',
+    tailGradient: 'from-[#ffffff] via-pink-200 to-transparent',
+  },
+  'winter-frost': {
+    gradient: 'from-[#152536] via-[#1d334a] to-[#26415e]',
+    orb1: 'bg-sky-300/16',
+    orb2: 'bg-cyan-200/14',
+    orb3: 'bg-blue-300/15',
+    moon: '#f0f9ff',
+    charmAccent: '#bae6fd',
+    cloudFill: '#e0f2fe',
+    tailGradient: 'from-[#ffffff] via-sky-200 to-transparent',
+  },
+  'neon-night-city': {
+    gradient: 'from-[#090514] via-[#110824] to-[#170b2e]',
+    orb1: 'bg-[#00f5d4]/15',
+    orb2: 'bg-[#ff2a85]/16',
+    orb3: 'bg-purple-500/16',
+    moon: '#e0f2fe',
+    charmAccent: '#00f5d4',
+    cloudFill: '#a855f7',
+    tailGradient: 'from-[#00f5d4] via-[#ff2a85] to-transparent',
+  },
 }
 
 const activeBg = computed<BgPalette>(() => {
@@ -245,6 +305,89 @@ const displayedAutumnLeaves = computed(() => scaleParticles(autumnLeaves))
 const displayedCafeMotes = computed(() => scaleParticles(cafeWarmMotes))
 const displayedSakuraPetals = computed(() => scaleParticles(sakuraPetals))
 const displayedSkyLanterns = computed(() => scaleParticles(skyLanterns))
+const displayedMatchaLeaves = computed(() => scaleParticles(matchaTeaLeaves))
+const displayedBiolumBubbles = computed(() => scaleParticles(biolumBubbles))
+const displayedHoneyDust = computed(() => scaleParticles(honeyLibraryDust))
+const displayedWinterFlakes = computed(() => scaleParticles(winterSnowflakes))
+const displayedNeonDrizzle = computed(() => scaleParticles(neonCityDrizzle))
+
+// 16 Daun Teh Hijau lembut khusus 🍵 Matcha Garden
+const matchaTeaLeaves = Array.from({ length: 16 }, (_, idx) => {
+  const colors = ['#86efac', '#4ade80', '#bbf7d0', '#34d399']
+  return {
+    left: `${(idx * 6.3 + (idx % 3) * 1.9) % 96}%`,
+    size: 14 + (idx % 4) * 4,
+    color: colors[idx % colors.length] ?? '#86efac',
+    duration: `${12 + (idx % 5) * 2.2}s`,
+    delay: `${(idx % 8) * 1.3}s`,
+    sway: `${(idx % 2 === 0 ? 1 : -1) * (24 + (idx % 4) * 10)}px`,
+    endX: `${(idx % 2 === 0 ? -1 : 1) * (18 + (idx % 3) * 12)}px`,
+  }
+})
+
+// 18 Gelembung Cahaya Cyan naik perlahan khusus 🌊 Bioluminescent Ocean
+const biolumBubbles = Array.from({ length: 18 }, (_, idx) => ({
+  left: `${(idx * 5.6 + (idx % 4) * 1.5) % 96}%`,
+  size: 8 + (idx % 5) * 6,
+  duration: `${10 + (idx % 5) * 2.4}s`,
+  delay: `${(idx % 9) * 1.2}s`,
+  sway: `${(idx % 2 === 0 ? 1 : -1) * (14 + (idx % 4) * 7)}px`,
+}))
+
+// 22 Partikel Debu Emas Berkilau khusus 🍯 Honey Library
+const honeyLibraryDust = Array.from({ length: 22 }, (_, idx) => ({
+  top: `${8 + (idx * 7.8) % 82}%`,
+  left: `${4 + (idx * 6.9) % 92}%`,
+  size: 3 + (idx % 4) * 2.5,
+  duration: `${5.4 + (idx % 5) * 1.3}s`,
+  delay: `${(idx % 7) * 0.75}s`,
+}))
+
+// 28 Salju Halus turun perlahan khusus ❄️ Winter Frost
+const winterSnowflakes = Array.from({ length: 28 }, (_, idx) => ({
+  left: `${(idx * 3.7 + (idx % 4) * 1.1) % 98}%`,
+  size: 4 + (idx % 4) * 2.5,
+  duration: `${8.5 + (idx % 5) * 2}s`,
+  delay: `${(idx % 10) * 0.9}s`,
+  sway: `${(idx % 2 === 0 ? 1 : -1) * (18 + (idx % 4) * 9)}px`,
+}))
+
+// 28 Gerimis Cahaya Neon Cyan (#00F5D4) & Magenta (#FF2A85) khusus 🌃 Neon Night City
+const neonCityDrizzle = Array.from({ length: 28 }, (_, idx) => ({
+  left: `${(idx * 3.6 + (idx % 5) * 1.3) % 99}%`,
+  height: `${18 + (idx % 4) * 10}px`,
+  isCyan: idx % 2 === 0,
+  duration: `${1.35 + (idx % 5) * 0.25}s`,
+  delay: `${(idx % 10) * 0.22}s`,
+}))
+
+// Jendela neon berkedip pada siluet gedung pencakar langit 🌃 Neon Night City
+const neonSkylineWindows = [
+  { x: 18, y: 120, color: '#00f5d4', dur: '3.6s', delay: '0.2s' },
+  { x: 34, y: 144, color: '#ff2a85', dur: '4.4s', delay: '1.1s' },
+  { x: 102, y: 84, color: '#00f5d4', dur: '3.8s', delay: '0.7s' },
+  { x: 122, y: 112, color: '#ff2a85', dur: '5.1s', delay: '1.5s' },
+  { x: 102, y: 140, color: '#a855f7', dur: '4.2s', delay: '0.4s' },
+  { x: 214, y: 66, color: '#ff2a85', dur: '3.5s', delay: '0.9s' },
+  { x: 234, y: 96, color: '#00f5d4', dur: '4.8s', delay: '2.0s' },
+  { x: 214, y: 132, color: '#00f5d4', dur: '3.9s', delay: '1.3s' },
+  { x: 332, y: 102, color: '#ff2a85', dur: '4.1s', delay: '0.5s' },
+  { x: 356, y: 128, color: '#00f5d4', dur: '3.7s', delay: '1.8s' },
+  { x: 468, y: 54, color: '#00f5d4', dur: '4.6s', delay: '0.3s' },
+  { x: 488, y: 88, color: '#ff2a85', dur: '3.4s', delay: '1.2s' },
+  { x: 468, y: 124, color: '#ff2a85', dur: '5.0s', delay: '2.1s' },
+  { x: 604, y: 92, color: '#00f5d4', dur: '4.0s', delay: '0.8s' },
+  { x: 626, y: 126, color: '#a855f7', dur: '4.7s', delay: '1.6s' },
+  { x: 734, y: 74, color: '#ff2a85', dur: '3.9s', delay: '0.4s' },
+  { x: 754, y: 106, color: '#00f5d4', dur: '4.5s', delay: '1.4s' },
+  { x: 874, y: 62, color: '#00f5d4', dur: '3.6s', delay: '1.0s' },
+  { x: 896, y: 98, color: '#ff2a85', dur: '4.9s', delay: '0.2s' },
+  { x: 874, y: 136, color: '#00f5d4', dur: '4.3s', delay: '1.9s' },
+  { x: 1018, y: 88, color: '#ff2a85', dur: '3.8s', delay: '0.6s' },
+  { x: 1042, y: 122, color: '#00f5d4', dur: '4.4s', delay: '1.7s' },
+  { x: 1138, y: 104, color: '#00f5d4', dur: '4.1s', delay: '0.9s' },
+  { x: 1162, y: 138, color: '#ff2a85', dur: '3.7s', delay: '1.3s' },
+]
 
 // 44 Rintik Hujan Miring Halus (untuk Midnight Rainy Window & sakelar Hujan BGM)
 const rainDrops = Array.from({ length: 44 }, (_, idx) => ({
@@ -657,6 +800,187 @@ onUnmounted(() => {
         </template>
       </div>
     </Transition>
+
+    <!-- === EFEK KHUSUS TEMA 6: 🍵 MATCHA GARDEN (Daun Teh Melayang Pelan) === -->
+    <div
+      v-if="activeCozyTheme === 'matcha-garden' && !isLowGraphics"
+      class="pointer-events-none absolute inset-0 overflow-hidden"
+    >
+      <svg
+        v-for="(leaf, idx) in displayedMatchaLeaves"
+        :key="`tea-${idx}`"
+        class="animate-leaf-fall absolute top-0 opacity-0 drop-shadow-[0_2px_6px_rgba(0,0,0,0.22)]"
+        :style="{
+          left: leaf.left,
+          width: `${leaf.size}px`,
+          height: `${leaf.size}px`,
+          '--leaf-duration': leaf.duration,
+          '--leaf-delay': leaf.delay,
+          '--leaf-sway': leaf.sway,
+          '--leaf-end-x': leaf.endX,
+        }"
+        viewBox="0 0 24 24"
+        fill="none"
+      >
+        <path d="M12 2 C17 6, 20 11, 17 17 C15 20, 12 22, 12 22 C12 22, 9 20, 7 17 C4 11, 7 6, 12 2 Z" :fill="leaf.color" />
+        <path d="M12 4 V21" stroke="#14532d" stroke-width="1.1" opacity="0.45" />
+      </svg>
+    </div>
+
+    <!-- === EFEK KHUSUS TEMA 7: 🌊 BIOLUMINESCENT OCEAN (Gelembung Cahaya Cyan Naik Perlahan) === -->
+    <div
+      v-if="activeCozyTheme === 'biolum-ocean' && !isLowGraphics"
+      class="pointer-events-none absolute inset-0 overflow-hidden"
+    >
+      <span
+        v-for="(bubble, idx) in displayedBiolumBubbles"
+        :key="`bubble-${idx}`"
+        class="animate-bubble-rise absolute bottom-0 rounded-full border border-cyan-300/75 bg-cyan-300/15 opacity-0 shadow-[0_0_12px_rgba(34,211,238,0.55)]"
+        :style="{
+          left: bubble.left,
+          width: `${bubble.size}px`,
+          height: `${bubble.size}px`,
+          '--bubble-duration': bubble.duration,
+          '--bubble-delay': bubble.delay,
+          '--bubble-sway': bubble.sway,
+        }"
+      />
+    </div>
+
+    <!-- === EFEK KHUSUS TEMA 8: 🍯 HONEY LIBRARY (Partikel Debu Emas Berkilau) === -->
+    <div
+      v-if="activeCozyTheme === 'honey-library' && !isLowGraphics"
+      class="pointer-events-none absolute inset-0 overflow-hidden"
+    >
+      <div class="absolute -right-24 -top-24 h-[460px] w-[460px] rounded-full bg-gradient-to-bl from-amber-300/20 via-yellow-500/10 to-transparent blur-3xl" />
+      <span
+        v-for="(dust, idx) in displayedHoneyDust"
+        :key="`honey-dust-${idx}`"
+        class="animate-warm-mote absolute rounded-full bg-amber-200/85 shadow-[0_0_12px_rgba(251,191,36,0.85)]"
+        :style="{
+          top: dust.top,
+          left: dust.left,
+          width: `${dust.size}px`,
+          height: `${dust.size}px`,
+          '--mote-duration': dust.duration,
+          '--mote-delay': dust.delay,
+        }"
+      />
+    </div>
+
+    <!-- === EFEK KHUSUS TEMA 9: ☁️ PASTEL CLOUDLAND (Awan Lembut Ekstra & Kilau Bintang) === -->
+    <div
+      v-if="activeCozyTheme === 'pastel-cloudland' && !isLowGraphics"
+      class="pointer-events-none absolute inset-0 overflow-hidden"
+    >
+      <svg
+        class="animate-cloud-drift absolute left-[18%] top-[14%] w-64 opacity-30 sm:w-80"
+        style="--drift-x: 42px; --drift-duration: 19s; --drift-delay: 0.5s"
+        viewBox="0 0 220 96"
+        fill="none"
+      >
+        <path
+          d="M36 78 H182 C198 78 208 67 208 54 C208 42 198 33 184 32 C178 16 160 8 144 15 C132 6 112 6 100 18 C84 10 64 19 59 35 C42 36 30 47 30 59 C30 70 33 78 36 78 Z"
+          fill="#fbcfe8"
+        />
+      </svg>
+      <svg
+        class="animate-cloud-drift absolute right-[12%] top-[44%] w-56 opacity-28 sm:w-72"
+        style="--drift-x: -38px; --drift-duration: 21s; --drift-delay: 2.2s"
+        viewBox="0 0 200 90"
+        fill="none"
+      >
+        <path
+          d="M42 74 H158 C174 74 186 63 186 49 C186 36 176 26 162 25 C158 11 144 4 128 8 C118 2 102 2 92 12 C78 6 60 14 56 30 C40 31 28 42 28 54 C28 65 34 74 42 74 Z"
+          fill="#bae6fd"
+        />
+      </svg>
+    </div>
+
+    <!-- === EFEK KHUSUS TEMA 10: ❄️ WINTER FROST (Salju Halus Turun Perlahan) === -->
+    <div
+      v-if="activeCozyTheme === 'winter-frost' && !isLowGraphics"
+      class="pointer-events-none absolute inset-0 overflow-hidden"
+    >
+      <span
+        v-for="(flake, idx) in displayedWinterFlakes"
+        :key="`snow-${idx}`"
+        class="animate-snow-fall absolute top-0 rounded-full bg-sky-50/90 opacity-0 shadow-[0_0_8px_rgba(186,230,253,0.85)]"
+        :style="{
+          left: flake.left,
+          width: `${flake.size}px`,
+          height: `${flake.size}px`,
+          '--snow-duration': flake.duration,
+          '--snow-delay': flake.delay,
+          '--snow-sway': flake.sway,
+        }"
+      />
+    </div>
+
+    <!-- === EFEK KHUSUS TEMA RAHASIA ULTIMATE 11: 🌃 NEON NIGHT CITY (City Skyline + Jendela Neon + Gerimis Cyan/Magenta) === -->
+    <div
+      v-if="activeCozyTheme === 'neon-night-city'"
+      class="pointer-events-none absolute inset-0 overflow-hidden"
+    >
+      <!-- Pendaran cakrawala kota neon Cyan & Magenta di bagian bawah -->
+      <div
+        class="absolute inset-x-0 bottom-0 h-52 bg-gradient-to-t from-[#ff2a85]/18 via-[#00f5d4]/10 to-transparent"
+      />
+
+      <!-- Gerimis Cahaya Neon Cyan & Magenta (0% di Ringan, 50% di Sedang, 100% di Tinggi) -->
+      <template v-if="!isLowGraphics">
+        <span
+          v-for="(drop, idx) in displayedNeonDrizzle"
+          :key="`neon-drop-${idx}`"
+          class="animate-neon-drizzle absolute top-0 w-[1.8px] rounded-full opacity-0"
+          :class="
+            drop.isCyan
+              ? 'bg-gradient-to-b from-transparent via-[#00f5d4]/80 to-[#00f5d4] shadow-[0_0_8px_#00f5d4]'
+              : 'bg-gradient-to-b from-transparent via-[#ff2a85]/80 to-[#ff2a85] shadow-[0_0_8px_#ff2a85]'
+          "
+          :style="{
+            left: drop.left,
+            height: drop.height,
+            '--drizzle-duration': drop.duration,
+            '--drizzle-delay': drop.delay,
+          }"
+        />
+      </template>
+
+      <!-- Siluet Gedung Pencakar Langit (City Skyline) dengan jendela neon berkedip lembut -->
+      <svg
+        class="absolute inset-x-0 bottom-0 h-40 w-full sm:h-48"
+        viewBox="0 0 1200 200"
+        preserveAspectRatio="none"
+        fill="none"
+      >
+        <path
+          d="M0 200 V106 H76 V200 M86 200 V68 H168 V200 M176 200 V124 H198 V48 H274 V200 M284 200 V116 H312 V88 H392 V200 M402 200 V126 H448 V36 H532 V200 M542 200 V112 H584 V78 H668 V200 M678 200 V128 H714 V58 H796 V200 M806 200 V110 H852 V44 H938 V200 M948 200 V118 H996 V72 H1082 V200 M1092 200 V90 H1200 V200 Z"
+          fill="#070312"
+          fill-opacity="0.92"
+        />
+        <!-- Garis puncak neon tipis pada gedung -->
+        <line x1="86" y1="68" x2="168" y2="68" stroke="#00f5d4" stroke-width="2" opacity="0.65" />
+        <line x1="198" y1="48" x2="274" y2="48" stroke="#ff2a85" stroke-width="2" opacity="0.7" />
+        <line x1="448" y1="36" x2="532" y2="36" stroke="#00f5d4" stroke-width="2.2" opacity="0.75" />
+        <line x1="714" y1="58" x2="796" y2="58" stroke="#ff2a85" stroke-width="2" opacity="0.65" />
+        <line x1="852" y1="44" x2="938" y2="44" stroke="#00f5d4" stroke-width="2.2" opacity="0.7" />
+        <line x1="996" y1="72" x2="1082" y2="72" stroke="#ff2a85" stroke-width="2" opacity="0.65" />
+        <!-- Lampu jendela neon berkedip lembut -->
+        <rect
+          v-for="(win, idx) in neonSkylineWindows"
+          :key="`nwin-${idx}`"
+          :x="win.x"
+          :y="win.y"
+          width="10"
+          height="14"
+          rx="1.5"
+          :fill="win.color"
+          class="animate-neon-window"
+          :style="{ '--win-duration': win.dur, '--win-delay': win.delay }"
+        />
+      </svg>
+    </div>
 
     <!-- Awan Malam Lembut Mengambang -->
     <svg

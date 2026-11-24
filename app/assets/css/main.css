@@ -184,6 +184,18 @@ html[data-cozy-theme="astral-palace"] .glass-card {
     inset 0 1px 0 rgba(254, 240, 138, 0.28);
 }
 
+/* Efek pendaran neon ganda (Dual Neon Rim Glow: Cyan #00F5D4 & Magenta #FF2A85) khusus 🌃 Neon Night City */
+html[data-cozy-theme="neon-night-city"] .glass-card,
+html[data-cozy-theme="neon-night-city"] header {
+  border-color: rgba(0, 245, 212, 0.45) !important;
+  box-shadow:
+    0 16px 40px rgba(4, 2, 12, 0.72),
+    -4px 0 22px rgba(0, 245, 212, 0.22),
+    4px 0 22px rgba(255, 42, 133, 0.24),
+    inset 0 1px 0 rgba(0, 245, 212, 0.32),
+    inset 0 -1px 0 rgba(255, 42, 133, 0.28) !important;
+}
+
 /* Efek cahaya lembut untuk judul bubble Twilight's */
 .twilight-title-glow {
   text-shadow:
@@ -533,6 +545,10 @@ html.battery-saver-mode .animate-petal-fall,
 html.battery-saver-mode .animate-lantern-rise,
 html.battery-saver-mode .animate-aurora-wave,
 html.battery-saver-mode .animate-gold-dust,
+html.battery-saver-mode .animate-bubble-rise,
+html.battery-saver-mode .animate-snow-fall,
+html.battery-saver-mode .animate-neon-window,
+html.battery-saver-mode .animate-neon-drizzle,
 html[data-graphics-quality="low"] .animate-twinkle,
 html[data-graphics-quality="low"] .animate-shooting-star,
 html[data-graphics-quality="low"] .animate-rain-drop,
@@ -544,7 +560,11 @@ html[data-graphics-quality="low"] .animate-warm-mote,
 html[data-graphics-quality="low"] .animate-petal-fall,
 html[data-graphics-quality="low"] .animate-lantern-rise,
 html[data-graphics-quality="low"] .animate-aurora-wave,
-html[data-graphics-quality="low"] .animate-gold-dust {
+html[data-graphics-quality="low"] .animate-gold-dust,
+html[data-graphics-quality="low"] .animate-bubble-rise,
+html[data-graphics-quality="low"] .animate-snow-fall,
+html[data-graphics-quality="low"] .animate-neon-window,
+html[data-graphics-quality="low"] .animate-neon-drizzle {
   animation-play-state: paused !important;
 }
 
@@ -894,6 +914,99 @@ html[data-graphics-quality="low"] .animate-gold-dust {
 .animate-gold-dust {
   will-change: transform, opacity;
   animation: goldDustFade 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* 5. Bioluminescent Ocean: gelembung cahaya cyan naik perlahan */
+@keyframes bubbleRise {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 12vh, 0) scale(0.7);
+  }
+  18% {
+    opacity: 0.78;
+  }
+  55% {
+    transform: translate3d(var(--bubble-sway, 16px), -48vh, 0) scale(1);
+  }
+  88% {
+    opacity: 0.6;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(calc(var(--bubble-sway, 16px) * -0.5), -114vh, 0) scale(1.18);
+  }
+}
+
+.animate-bubble-rise {
+  will-change: transform, opacity;
+  animation: bubbleRise var(--bubble-duration, 13s) ease-in-out infinite;
+  animation-delay: var(--bubble-delay, 0s);
+}
+
+/* 6. Winter Frost: salju halus turun perlahan */
+@keyframes snowFall {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, -10vh, 0);
+  }
+  15% {
+    opacity: 0.85;
+  }
+  55% {
+    transform: translate3d(var(--snow-sway, 24px), 52vh, 0);
+  }
+  88% {
+    opacity: 0.72;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(calc(var(--snow-sway, 24px) * -0.4), 112vh, 0);
+  }
+}
+
+.animate-snow-fall {
+  will-change: transform, opacity;
+  animation: snowFall var(--snow-duration, 11s) linear infinite;
+  animation-delay: var(--snow-delay, 0s);
+}
+
+/* 7. Neon Night City: jendela neon berkedip lembut & gerimis cahaya Cyan/Magenta */
+@keyframes neonWindowBlink {
+  0%,
+  100% {
+    opacity: 0.25;
+  }
+  50% {
+    opacity: 0.92;
+  }
+}
+
+.animate-neon-window {
+  animation: neonWindowBlink var(--win-duration, 4.5s) ease-in-out infinite;
+  animation-delay: var(--win-delay, 0s);
+}
+
+@keyframes neonDrizzle {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, -12vh, 0) rotate(10deg);
+  }
+  15% {
+    opacity: 0.85;
+  }
+  85% {
+    opacity: 0.65;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(-34px, 112vh, 0) rotate(10deg);
+  }
+}
+
+.animate-neon-drizzle {
+  will-change: transform, opacity;
+  animation: neonDrizzle var(--drizzle-duration, 1.9s) linear infinite;
+  animation-delay: var(--drizzle-delay, 0s);
 }
 
 /* --- ANIMASI 3D FLIP CARD REVEAL UNTUK GACHA "💌 PESAN RAHASIA KUCING" --- */

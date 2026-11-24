@@ -541,8 +541,35 @@ onUnmounted(() => {
           <!-- Aura lembut di belakang kucing -->
           <circle cx="110" cy="116" r="76" fill="url(#twilightCatAura)" opacity="0.92" />
 
-          <!-- AKSESORI KEPALA MASKOT (hasil tukar koin 🐟 atau selebrasi 100%) -->
-          <!-- 1. Mahkota Bintang (muncul saat dipakai ATAU saat mode selebrasi 100% jika belum memakai topi lain) -->
+          <!-- AKSESORIS BELAKANG TUBUH: ✨ Sayap Malaikat & Aura Bintang (Milestone Lv. 20 MAX) -->
+          <g v-if="equippedAccessory === 'angel-wings'">
+            <!-- Aura bintang keemasan -->
+            <circle cx="110" cy="118" r="84" fill="#fef08a" opacity="0.16" />
+            <!-- Sayap Kiri -->
+            <path
+              d="M78 148 C42 134, 16 106, 20 82 C36 88, 52 100, 66 116 C42 108, 22 114, 18 134 C34 138, 54 140, 72 146 C50 148, 32 156, 28 170 C48 172, 66 164, 80 156 Z"
+              fill="#fffdf7"
+              stroke="#fde68a"
+              stroke-width="2"
+              stroke-linejoin="round"
+            />
+            <!-- Sayap Kanan -->
+            <path
+              d="M142 148 C178 134, 204 106, 200 82 C184 88, 168 100, 154 116 C178 108, 198 114, 202 134 C186 138, 166 140, 148 146 C170 148, 188 156, 192 170 C172 172, 154 164, 140 156 Z"
+              fill="#fffdf7"
+              stroke="#fde68a"
+              stroke-width="2"
+              stroke-linejoin="round"
+            />
+            <!-- Bintang kecil berkilau di sekitar sayap -->
+            <path d="M34 68 L36 73 L41 75 L36 77 L34 82 L32 77 L27 75 L32 73 Z" fill="#fef08a" />
+            <path d="M186 68 L188 73 L193 75 L188 77 L186 82 L184 77 L179 75 L184 73 Z" fill="#fef08a" />
+            <circle cx="24" cy="154" r="2.5" fill="#fbcfe8" />
+            <circle cx="196" cy="154" r="2.5" fill="#fbcfe8" />
+          </g>
+
+          <!-- AKSESORIS KEPALA MASKOT (hasil tukar koin 🐟, Milestone, atau selebrasi 100%) -->
+          <!-- 1. Mahkota Bintang (muncul saat dipakai ATAU saat mode selebrasi 100% jika belum memakai aksesoris lain) -->
           <g
             v-if="
               equippedAccessory === 'star-crown' ||
@@ -581,19 +608,111 @@ onUnmounted(() => {
             />
           </g>
 
-          <!-- Band Headphone Atas -->
+          <!-- 3. 🌱 Tunas Daun Hijau Lucu di atas kepala -->
+          <g v-else-if="equippedAccessory === 'leaf-sprout'">
+            <path d="M110 66 Q109 48 111 36" stroke="#4ade80" stroke-width="3.6" stroke-linecap="round" />
+            <path
+              d="M110 46 C94 42, 86 30, 94 23 C104 20, 110 32, 110 46 Z"
+              fill="#4ade80"
+              stroke="#dcfce7"
+              stroke-width="1.6"
+              stroke-linejoin="round"
+            />
+            <path
+              d="M111 42 C125 35, 134 24, 127 18 C117 16, 111 28, 111 42 Z"
+              fill="#22c55e"
+              stroke="#dcfce7"
+              stroke-width="1.6"
+              stroke-linejoin="round"
+            />
+            <path d="M97 29 Q104 35 109 43" stroke="#bbf7d0" stroke-width="1.4" stroke-linecap="round" />
+            <path d="M124 24 Q118 31 112 39" stroke="#bbf7d0" stroke-width="1.4" stroke-linecap="round" />
+          </g>
+
+          <!-- 4. 📖 Buku Terbuka (halaman krem & sampul ungu-emas) bertengger di atas kepala -->
+          <g v-else-if="equippedAccessory === 'open-book'" transform="translate(110, 50)">
+            <!-- Sampul ungu-emas -->
+            <path
+              d="M-34 6 Q-18 -12 0 1 Q18 -12 34 6 L31 14 Q16 0 0 11 Q-16 0 -31 14 Z"
+              fill="#5b21b6"
+              stroke="#fde68a"
+              stroke-width="2"
+              stroke-linejoin="round"
+            />
+            <!-- Halaman krem kiri & kanan -->
+            <path
+              d="M-30 5 Q-16 -14 0 -1 L0 8 Q-15 -3 -28 10 Z"
+              fill="#fffbeb"
+              stroke="#f59e0b"
+              stroke-width="1.2"
+              stroke-linejoin="round"
+            />
+            <path
+              d="M30 5 Q16 -14 0 -1 L0 8 Q15 -3 28 10 Z"
+              fill="#fef3c7"
+              stroke="#f59e0b"
+              stroke-width="1.2"
+              stroke-linejoin="round"
+            />
+            <!-- Garis tulisan mungil & pita pembatas -->
+            <path d="M-22 1 Q-13 -5 -6 -1" stroke="#a78bfa" stroke-width="1.3" stroke-linecap="round" />
+            <path d="M6 -1 Q13 -5 22 1" stroke="#f472b6" stroke-width="1.3" stroke-linecap="round" />
+            <path d="M0 8 L-2 17 L0 15 L2 17 Z" fill="#f472b6" />
+          </g>
+
+          <!-- 5. 🎨 Topi Baret Miring (krem / ungu pastel) -->
+          <g v-else-if="equippedAccessory === 'beret-hat'" transform="translate(110, 54) rotate(-9)">
+            <ellipse cx="0" cy="4" rx="34" ry="15" fill="#ddd6fe" stroke="#ffffff" stroke-width="2" />
+            <path d="M-32 8 Q0 18 32 8" stroke="#a78bfa" stroke-width="4.5" stroke-linecap="round" />
+            <path d="M-2 -10 Q2 -18 7 -15" stroke="#8b5cf6" stroke-width="3.2" stroke-linecap="round" />
+            <circle cx="-18" cy="2" r="3.2" fill="#fde68a" stroke="#ffffff" stroke-width="1" />
+          </g>
+
+          <!-- 6. 😇 Halo Bintang (cincin cahaya emas lembut melayang di atas kepala) -->
+          <g v-else-if="equippedAccessory === 'star-halo'">
+            <ellipse
+              cx="110"
+              cy="34"
+              rx="32"
+              ry="9"
+              stroke="#fef08a"
+              stroke-width="6.5"
+              opacity="0.35"
+            />
+            <ellipse
+              cx="110"
+              cy="34"
+              rx="30"
+              ry="8"
+              stroke="#fde047"
+              stroke-width="3.4"
+            />
+            <ellipse
+              cx="110"
+              cy="34"
+              rx="30"
+              ry="8"
+              stroke="#ffffff"
+              stroke-width="1.2"
+              opacity="0.85"
+            />
+            <path d="M74 28 L75.6 31.8 L79.5 33.4 L75.6 35 L74 38.8 L72.4 35 L68.5 33.4 L72.4 31.8 Z" fill="#fef08a" />
+            <path d="M146 26 L147.4 29.4 L150.8 30.8 L147.4 32.2 L146 35.6 L144.6 32.2 L141.2 30.8 L144.6 29.4 Z" fill="#fbcfe8" />
+          </g>
+
+          <!-- Band Headphone Atas (berkilau neon pastel ekstra saat 🎧 Headphone Lo-Fi dipakai) -->
           <path
             d="M46 112 C46 58, 174 58, 174 112"
-            stroke="#f9a8d4"
-            stroke-width="13"
+            :stroke="equippedAccessory === 'lofi-headphones' ? '#c084fc' : '#f9a8d4'"
+            :stroke-width="equippedAccessory === 'lofi-headphones' ? '15' : '13'"
             stroke-linecap="round"
           />
           <path
             d="M52 106 C56 66, 164 66, 168 106"
-            stroke="#fdf2f8"
-            stroke-width="3"
+            :stroke="equippedAccessory === 'lofi-headphones' ? '#f9a8d4' : '#fdf2f8'"
+            :stroke-width="equippedAccessory === 'lofi-headphones' ? '4.5' : '3'"
             stroke-linecap="round"
-            opacity="0.55"
+            :opacity="equippedAccessory === 'lofi-headphones' ? '0.92' : '0.55'"
           />
 
           <!-- Tubuh kecil kucing -->
@@ -601,12 +720,53 @@ onUnmounted(() => {
             d="M72 174 C72 150, 148 150, 148 174 L152 192 C136 198, 84 198, 68 192 Z"
             fill="#f5ecff"
           />
-          <!-- Syal pastel -->
-          <path
-            d="M79 156 Q110 172 141 156 Q137 167 110 172 Q83 167 79 156 Z"
-            fill="#c4b5fd"
-          />
-          <circle cx="110" cy="169" r="5" fill="#fde68a" />
+          <!-- Aksesoris Leher: 🧣 Syal Rajut / 💖 Kalung Hati Bintang / Syal Default -->
+          <g v-if="equippedAccessory === 'knit-scarf'">
+            <!-- Syal rajut hangat bergaris krem & rose -->
+            <path
+              d="M73 153 Q110 174 147 153 Q145 170 110 176 Q75 170 73 153 Z"
+              fill="#fb7185"
+              stroke="#ffe4e6"
+              stroke-width="1.6"
+              stroke-linejoin="round"
+            />
+            <path d="M88 161 L84 171 M102 165 L100 175 M118 165 L120 175 M132 161 L136 171" stroke="#fef3c7" stroke-width="2.4" stroke-linecap="round" />
+            <!-- Ekor syal menggantung di kanan -->
+            <path
+              d="M126 164 L139 162 L143 189 L128 190 Z"
+              fill="#f43f5e"
+              stroke="#ffe4e6"
+              stroke-width="1.4"
+              stroke-linejoin="round"
+            />
+            <line x1="128" y1="175" x2="141" y2="174" stroke="#fef3c7" stroke-width="2.4" />
+            <line x1="129" y1="183" x2="142" y2="182" stroke="#fef3c7" stroke-width="2.4" />
+          </g>
+          <g v-else-if="equippedAccessory === 'soulmate-collar'">
+            <!-- 💖 Kalung Hati Bintang (Milestone Lv. 10) -->
+            <path
+              d="M76 155 Q110 173 144 155 Q140 167 110 173 Q80 167 76 155 Z"
+              fill="#ec4899"
+              stroke="#fde68a"
+              stroke-width="1.6"
+            />
+            <!-- Liontin hati bersinar + bintang emas -->
+            <path
+              d="M110 183 C101 177, 98 169, 104 166 C107 164.5, 109.5 166.5, 110 168.5 C110.5 166.5, 113 164.5, 116 166 C122 169, 119 177, 110 183 Z"
+              fill="#f9a8d4"
+              stroke="#fef08a"
+              stroke-width="1.8"
+            />
+            <path d="M110 169 L111.2 172 L114.2 173.2 L111.2 174.4 L110 177.4 L108.8 174.4 L105.8 173.2 L108.8 172 Z" fill="#fef08a" />
+          </g>
+          <g v-else>
+            <!-- Syal pastel bawaan -->
+            <path
+              d="M79 156 Q110 172 141 156 Q137 167 110 172 Q83 167 79 156 Z"
+              fill="#c4b5fd"
+            />
+            <circle cx="110" cy="169" r="5" fill="#fde68a" />
+          </g>
 
           <!-- Telinga Kiri & Kanan -->
           <path
@@ -654,14 +814,46 @@ onUnmounted(() => {
             <circle cx="0" cy="2" r="4.2" fill="#fdf2f8" stroke="#f472b6" stroke-width="1.5" />
           </g>
 
-          <!-- Earcup Headphone Kiri & Kanan -->
-          <rect x="38" y="96" width="22" height="42" rx="11" fill="#c084fc" />
-          <rect x="44" y="101" width="14" height="32" rx="7" fill="#f9a8d4" />
-          <circle cx="49" cy="117" r="4" fill="#fef9c3" />
+          <!-- Earcup Headphone Kiri & Kanan (cahaya pastel lo-fi ekstra saat 🎧 Headphone Lo-Fi dipakai) -->
+          <rect
+            x="38"
+            y="96"
+            width="22"
+            height="42"
+            rx="11"
+            :fill="equippedAccessory === 'lofi-headphones' ? '#9333ea' : '#c084fc'"
+            :stroke="equippedAccessory === 'lofi-headphones' ? '#f9a8d4' : 'none'"
+            :stroke-width="equippedAccessory === 'lofi-headphones' ? '2.2' : '0'"
+          />
+          <rect
+            x="44"
+            y="101"
+            width="14"
+            height="32"
+            rx="7"
+            :fill="equippedAccessory === 'lofi-headphones' ? '#f472b6' : '#f9a8d4'"
+          />
+          <circle cx="49" cy="117" :r="equippedAccessory === 'lofi-headphones' ? '5' : '4'" :fill="equippedAccessory === 'lofi-headphones' ? '#67e8f9' : '#fef9c3'" />
 
-          <rect x="160" y="96" width="22" height="42" rx="11" fill="#c084fc" />
-          <rect x="162" y="101" width="14" height="32" rx="7" fill="#f9a8d4" />
-          <circle cx="171" cy="117" r="4" fill="#fef9c3" />
+          <rect
+            x="160"
+            y="96"
+            width="22"
+            height="42"
+            rx="11"
+            :fill="equippedAccessory === 'lofi-headphones' ? '#9333ea' : '#c084fc'"
+            :stroke="equippedAccessory === 'lofi-headphones' ? '#f9a8d4' : 'none'"
+            :stroke-width="equippedAccessory === 'lofi-headphones' ? '2.2' : '0'"
+          />
+          <rect
+            x="162"
+            y="101"
+            width="14"
+            height="32"
+            rx="7"
+            :fill="equippedAccessory === 'lofi-headphones' ? '#f472b6' : '#f9a8d4'"
+          />
+          <circle cx="171" cy="117" :r="equippedAccessory === 'lofi-headphones' ? '5' : '4'" :fill="equippedAccessory === 'lofi-headphones' ? '#67e8f9' : '#fef9c3'" />
 
           <!-- EKSPRESI MATA DINAMIS KUCING UTAMA -->
           <!-- 1. Saat Diklik (Variasi A): Mata Bintang Berbinar (★ ω ★) -->
@@ -748,8 +940,17 @@ onUnmounted(() => {
             <circle cx="132.5" cy="116" r="1.1" fill="#ffffff" />
           </g>
 
-          <!-- KACAMATA FOKUS (muncul otomatis saat Pomodoro Timer atau BGM aktif!) -->
-          <g v-if="currentMascotMood === 'focus'">
+          <!-- KACAMATA BULAT (toko 👓 Kacamata Bulat) ATAU KACAMATA FOKUS (saat Pomodoro / BGM aktif) -->
+          <g v-if="equippedAccessory === 'round-glasses'">
+            <circle cx="90" cy="114" r="14.5" fill="rgba(255,251,235,0.24)" stroke="#f59e0b" stroke-width="2.4" />
+            <circle cx="130" cy="114" r="14.5" fill="rgba(255,251,235,0.24)" stroke="#f59e0b" stroke-width="2.4" />
+            <path d="M104.5 114 Q110 111 115.5 114" stroke="#f59e0b" stroke-width="2.4" stroke-linecap="round" />
+            <line x1="65" y1="112" x2="75.5" y2="113.5" stroke="#f59e0b" stroke-width="2.2" />
+            <line x1="144.5" y1="113.5" x2="155" y2="112" stroke="#f59e0b" stroke-width="2.2" />
+            <path d="M82 106 Q86 103 90 105" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" opacity="0.7" />
+            <path d="M122 106 Q126 103 130 105" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" opacity="0.7" />
+          </g>
+          <g v-else-if="currentMascotMood === 'focus'">
             <circle
               cx="90"
               cy="114"

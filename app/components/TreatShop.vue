@@ -9,7 +9,7 @@ import {
   useTwilightStorage,
 } from '~/composables/useTwilightStorage'
 
-// Ambil saldo koin 🐟, aksesori kucing, & toko Tema Latar Belakang (Cozy Themes)
+// Ambil saldo koin 🐟, aksesoris kucing, & toko Tema Latar Belakang (Cozy Themes)
 const {
   treatCoins,
   ownedAccessories,
@@ -17,6 +17,8 @@ const {
   ownedCozyThemes,
   activeCozyTheme,
   fullGoalStreak,
+  catAffinityLevel,
+  neonCityCollectionProgress,
   buyOrEquipAccessory,
   buyOrEquipCozyTheme,
 } = useTwilightStorage()
@@ -37,7 +39,14 @@ function showFeedback(message: string) {
   if (feedbackTimer) clearTimeout(feedbackTimer)
   feedbackTimer = setTimeout(() => {
     feedbackText.value = ''
-  }, 2800)
+  }, 3200)
+}
+
+function isAccessoryOwned(id: Exclude<MascotAccessoryId, 'none'>, milestoneLevel?: 10 | 20): boolean {
+  if (ownedAccessories.value.includes(id)) return true
+  if (milestoneLevel === 10 && catAffinityLevel.value >= 10) return true
+  if (milestoneLevel === 20 && catAffinityLevel.value >= 20) return true
+  return false
 }
 
 function handleSelectAccessory(id: MascotAccessoryId) {
@@ -48,6 +57,7 @@ function handleSelectAccessory(id: MascotAccessoryId) {
 function isCozyThemeOwned(id: CozyThemeId): boolean {
   if (ownedCozyThemes.value.includes(id)) return true
   if (id === 'astral-palace' && fullGoalStreak.value >= ASTRAL_PALACE_STREAK_GOAL) return true
+  if (id === 'neon-night-city' && neonCityCollectionProgress.value.isComplete) return true
   return false
 }
 
@@ -77,15 +87,22 @@ function handleSelectCozyTheme(id: CozyThemeId) {
         class="cursor-pointer rounded-full bg-white/10 px-2.5 py-0.5 text-[10px] font-semibold text-purple-200 transition hover:bg-white/20"
         @click="handleSelectAccessory('none')"
       >
-        Lepas Aksesori
+        Lepas Aksesoris
       </button>
       <span v-else class="text-[10px] font-medium text-purple-200/75">
         +10 🐟 / target
       </span>
     </div>
 
-    <!-- 1. Daftar Aksesori Kepala Kucing (dipakai bersama Kucing Putih & Kucing Mini Abu-abu) -->
-    <div class="flex flex-col gap-1.5">
+    <!-- 1. Daftar 12 Aksesoris Kucing (10 Toko Koin + 2 Milestone Eksklusif Lv. 10 & Lv. 20 MAX) -->
+    <div class="mb-1.5 flex items-center justify-between gap-2">
+      <h3 class="text-[11px] font-bold uppercase tracking-wider text-pink-200">
+        🎀 Toko Aksesoris
+      </h3>
+      <span class="text-[10px] text-purple-200/70">2 Kucing Sinkron</span>
+    </div>
+
+    <div class="flex max-h-[220px] flex-col gap-1.5 overflow-y-auto pr-0.5">
       <button
         v-for="item in MASCOT_ACCESSORIES"
         :key="item.id"
@@ -94,9 +111,11 @@ function handleSelectCozyTheme(id: CozyThemeId) {
         :class="
           equippedAccessory === item.id
             ? 'border-pink-300/80 bg-pink-300/25 text-white'
-            : ownedAccessories.includes(item.id)
+            : isAccessoryOwned(item.id, item.milestoneLevel)
               ? 'border-purple-200/30 bg-white/10 text-purple-100 hover:bg-white/20'
-              : 'border-white/15 bg-black/20 text-purple-100/85 hover:bg-white/15'
+              : item.cost === null
+                ? 'border-amber-200/25 bg-gradient-to-r from-pink-950/45 via-purple-950/45 to-amber-950/35 text-amber-100/90 hover:bg-white/10'
+                : 'border-white/15 bg-black/20 text-purple-100/85 hover:bg-white/15'
         "
         @click="handleSelectAccessory(item.id)"
       >
@@ -112,10 +131,16 @@ function handleSelectCozyTheme(id: CozyThemeId) {
           Dipakai
         </span>
         <span
-          v-else-if="ownedAccessories.includes(item.id)"
+          v-else-if="isAccessoryOwned(item.id, item.milestoneLevel)"
           class="shrink-0 rounded-full bg-purple-300/25 px-2 py-0.5 text-[10px] font-semibold text-purple-100"
         >
           Pasang
+        </span>
+        <span
+          v-else-if="item.cost === null"
+          class="shrink-0 rounded-full border border-amber-200/35 bg-amber-300/15 px-2 py-0.5 text-[9.5px] font-bold text-amber-100"
+        >
+          🔒 Lv. {{ item.milestoneLevel }}{{ item.milestoneLevel === 20 ? ' MAX' : '' }}
         </span>
         <span
           v-else
@@ -150,12 +175,16 @@ function handleSelectCozyTheme(id: CozyThemeId) {
           class="rounded-xl border px-2.5 py-2 transition"
           :class="
             activeCozyTheme === themeItem.id
-              ? themeItem.id === 'astral-palace'
-                ? 'border-amber-300/80 bg-gradient-to-r from-indigo-500/25 via-emerald-400/15 to-amber-300/20 shadow-[0_0_12px_rgba(253,224,71,0.2)]'
-                : 'border-pink-300/80 bg-pink-300/20'
-              : themeItem.id === 'astral-palace' && !isCozyThemeOwned(themeItem.id)
-                ? 'border-amber-200/25 bg-gradient-to-r from-indigo-950/55 via-purple-950/45 to-amber-950/30'
-                : 'border-white/15 bg-black/20 hover:bg-white/10'
+              ? themeItem.id === 'neon-night-city'
+                ? 'border-[#00f5d4]/80 bg-gradient-to-r from-[#090514]/85 via-[#00f5d4]/15 to-[#ff2a85]/20 shadow-[0_0_14px_rgba(0,245,212,0.28)]'
+                : themeItem.id === 'astral-palace'
+                  ? 'border-amber-300/80 bg-gradient-to-r from-indigo-500/25 via-emerald-400/15 to-amber-300/20 shadow-[0_0_12px_rgba(253,224,71,0.2)]'
+                  : 'border-pink-300/80 bg-pink-300/20'
+              : themeItem.id === 'neon-night-city' && !isCozyThemeOwned(themeItem.id)
+                ? 'border-[#00f5d4]/30 bg-gradient-to-r from-[#090514]/75 via-[#170b2e]/70 to-[#2b0c26]/60'
+                : themeItem.id === 'astral-palace' && !isCozyThemeOwned(themeItem.id)
+                  ? 'border-amber-200/25 bg-gradient-to-r from-indigo-950/55 via-purple-950/45 to-amber-950/30'
+                  : 'border-white/15 bg-black/20 hover:bg-white/10'
           "
         >
           <div class="flex items-center justify-between gap-2">
@@ -177,14 +206,16 @@ function handleSelectCozyTheme(id: CozyThemeId) {
               </div>
             </div>
 
-            <!-- Tombol Aksi: Dipakai / Pakai / Beli (X 🐟) / Terkunci Streak -->
+            <!-- Tombol Aksi: Dipakai / Pakai / Beli (X 🐟) / Terkunci Streak / Koleksi 100% Toko -->
             <span
               v-if="activeCozyTheme === themeItem.id"
               class="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold"
               :class="
-                themeItem.id === 'astral-palace'
-                  ? 'bg-amber-300 text-[#1e1038]'
-                  : 'bg-[#f9a8d4] text-[#311042]'
+                themeItem.id === 'neon-night-city'
+                  ? 'bg-gradient-to-r from-[#00f5d4] to-[#ff2a85] text-[#090514]'
+                  : themeItem.id === 'astral-palace'
+                    ? 'bg-amber-300 text-[#1e1038]'
+                    : 'bg-[#f9a8d4] text-[#311042]'
               "
             >
               Dipakai
@@ -220,6 +251,13 @@ function handleSelectCozyTheme(id: CozyThemeId) {
             </button>
 
             <span
+              v-else-if="themeItem.id === 'neon-night-city'"
+              class="shrink-0 rounded-full border border-[#00f5d4]/45 bg-[#00f5d4]/10 px-2 py-0.5 text-[9.5px] font-bold text-[#a5f3fc]"
+            >
+              🔒 100% Toko
+            </span>
+
+            <span
               v-else
               class="shrink-0 rounded-full border border-amber-200/35 bg-amber-300/15 px-2 py-0.5 text-[9.5px] font-bold text-amber-100"
             >
@@ -239,6 +277,22 @@ function handleSelectCozyTheme(id: CozyThemeId) {
               <div
                 class="h-full rounded-full bg-gradient-to-r from-emerald-300 via-cyan-300 to-amber-300 transition-all duration-500"
                 :style="{ width: `${astralStreakPercent}%` }"
+              />
+            </div>
+          </div>
+
+          <!-- Status progres Koleksi 100% Toko khusus Tema Rahasia Ultimate 🌃 Neon Night City -->
+          <div
+            v-if="themeItem.id === 'neon-night-city' && !isCozyThemeOwned(themeItem.id)"
+            class="mt-2 rounded-lg border border-[#00f5d4]/25 bg-black/35 px-2 py-1.5"
+          >
+            <p class="text-[9.5px] font-semibold leading-snug text-[#cffafe]">
+              🔒 Koleksi 100% Toko ({{ neonCityCollectionProgress.current }}/{{ neonCityCollectionProgress.total }} Koleksi) • Miliki seluruh aksesoris toko &amp; tema lainnya 🌃
+            </p>
+            <div class="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
+              <div
+                class="h-full rounded-full bg-gradient-to-r from-[#00f5d4] via-purple-400 to-[#ff2a85] transition-all duration-500"
+                :style="{ width: `${neonCityCollectionProgress.percent}%` }"
               />
             </div>
           </div>
