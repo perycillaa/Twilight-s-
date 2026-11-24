@@ -63,7 +63,7 @@ const activeAmbientIndicators = computed<{ id: string; label: string }[]>(() => 
   const s = ambientMixerSettings.value
   const list: { id: string; label: string }[] = []
   if (s.rain.enabled) list.push({ id: 'rain', label: `🌧️ Hujan ${s.rain.volume}%` })
-  if (s.brown.enabled) list.push({ id: 'brown', label: `🌊 Brown ${s.brown.volume}%` })
+  if (s.brown.enabled) list.push({ id: 'brown', label: `🌊 Ombak ${s.brown.volume}%` })
   if (s.campfire.enabled) list.push({ id: 'campfire', label: `🔥 Api Unggun ${s.campfire.volume}%` })
   if (s.nightWind.enabled) list.push({ id: 'nightWind', label: `🌙 Angin Malam ${s.nightWind.volume}%` })
   if (s.stream.enabled) list.push({ id: 'stream', label: `💧 Gemericik Air ${s.stream.volume}%` })

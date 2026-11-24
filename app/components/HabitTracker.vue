@@ -933,7 +933,7 @@ onUnmounted(() => {
         >
         <button
           type="submit"
-          class="btn-bouncy font-display shrink-0 cursor-pointer rounded-full bg-gradient-to-r from-[#f9a8d4] to-[#c4b5fd] px-4 py-2 text-sm font-semibold text-[#311042] shadow-md shadow-pink-500/20"
+          class="ocean-active-btn btn-bouncy font-display shrink-0 cursor-pointer rounded-full bg-gradient-to-r from-[#f9a8d4] to-[#c4b5fd] px-4 py-2 text-sm font-semibold text-[#311042] shadow-md shadow-pink-500/20"
         >
           + Tambah
         </button>

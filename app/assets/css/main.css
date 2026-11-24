@@ -16,22 +16,125 @@
   --twilight-bg-base: #1e1b4b;
 }
 
-/* Tema 2: Sakura Dusk (gradasi ungu-pink senja yang hangat) */
+/* Tema 2: Pastel Berry / Cotton Candy Sunset (gradasi pink pastel lembut ke peach-rose, tanpa sakura) */
 [data-theme="sakura"] {
   --twilight-accent: #fda4af;
-  --twilight-accent-soft: #fecdd3;
-  --twilight-secondary: #f9a8d4;
-  --twilight-glow: rgba(253, 164, 175, 0.55);
-  --twilight-bg-base: #3b153e;
+  --twilight-accent-soft: #fed7aa;
+  --twilight-secondary: #fbcfe8;
+  --twilight-glow: rgba(253, 164, 175, 0.52);
+  --twilight-bg-base: #5a2248;
 }
 
-/* Tema 3: Deep Ocean (biru malam tenang dengan aksen cyan pastel) */
+/* Tema 3: Ocean Night (biru laut dalam #13243A -> #1E3A5F dengan aksen sky cyan kontras tinggi) */
 [data-theme="ocean"] {
   --twilight-accent: #7dd3fc;
   --twilight-accent-soft: #bae6fd;
-  --twilight-secondary: #a5f3fc;
-  --twilight-glow: rgba(125, 211, 252, 0.5);
-  --twilight-bg-base: #0b1936;
+  --twilight-secondary: #38bdf8;
+  --twilight-glow: rgba(56, 189, 248, 0.45);
+  --twilight-bg-base: #13243a;
+}
+
+/* --- VARIAN MODE GELAP (🌙 MIDNIGHT / DARK VARIANT) UNTUK KETIGA TEMA --- */
+html[data-theme="twilight"][data-theme-mode="dark"] {
+  --twilight-bg-base: #120b1e;
+}
+
+html[data-theme="twilight"][data-theme-mode="dark"] .glass-card,
+html[data-theme="twilight"][data-theme-mode="dark"] header {
+  background-color: rgba(26, 17, 43, 0.85) !important;
+}
+
+html[data-theme="sakura"][data-theme-mode="dark"] {
+  --twilight-bg-base: #1a0d16;
+}
+
+html[data-theme="sakura"][data-theme-mode="dark"] .glass-card,
+html[data-theme="sakura"][data-theme-mode="dark"] header {
+  background-color: rgba(36, 18, 29, 0.85) !important;
+}
+
+html[data-theme="ocean"][data-theme-mode="dark"] {
+  --twilight-bg-base: #09111e;
+}
+
+html[data-theme="ocean"][data-theme-mode="dark"] .glass-card,
+html[data-theme="ocean"][data-theme-mode="dark"] header {
+  background-color: rgba(15, 28, 48, 0.88) !important;
+}
+
+/* --- PERBAIKAN KONTRAS WARNA KHUSUS TEMA BIRU (OCEAN NIGHT — NORMAL & GELAP) --- */
+html[data-theme="ocean"] body {
+  color: #f0f9ff;
+}
+
+/* Judul Utama "Twilight's": Biru Es Cerah / Sky Cyan (#7DD3FC) dengan glow biru lembut */
+html[data-theme="ocean"] .twilight-title-glow {
+  color: #7dd3fc !important;
+  text-shadow:
+    0 2px 16px rgba(56, 189, 248, 0.5),
+    0 0 32px rgba(56, 189, 248, 0.45) !important;
+}
+
+/* Batas Kartu (Border): garis tipis biru bercahaya */
+html[data-theme="ocean"] .glass-card,
+html[data-theme="ocean"] header {
+  border-color: rgba(125, 211, 252, 0.25) !important;
+}
+
+/* Teks Utama (#F0F9FF) & Teks Sekunder (#BAE6FD) menggantikan aksen pink/ungu yang tersisa */
+html[data-theme="ocean"] .text-pink-50,
+html[data-theme="ocean"] .text-pink-100,
+html[data-theme="ocean"] .text-pink-50\/95,
+html[data-theme="ocean"] .text-pink-100\/90,
+html[data-theme="ocean"] .text-pink-100\/85 {
+  color: #f0f9ff !important;
+}
+
+html[data-theme="ocean"] .text-pink-200,
+html[data-theme="ocean"] .text-pink-300,
+html[data-theme="ocean"] .text-pink-200\/90,
+html[data-theme="ocean"] .text-pink-200\/85,
+html[data-theme="ocean"] .text-pink-200\/80,
+html[data-theme="ocean"] .text-pink-200\/75,
+html[data-theme="ocean"] .text-purple-100,
+html[data-theme="ocean"] .text-purple-200,
+html[data-theme="ocean"] .text-purple-200\/80,
+html[data-theme="ocean"] .text-purple-200\/75,
+html[data-theme="ocean"] .text-purple-200\/70 {
+  color: #bae6fd !important;
+}
+
+/* Tombol Aktif (START, Tab Aktif, + Tambah): gradasi Sky Blue -> Cyan (#38BDF8 -> #0284C7) dengan kontras tinggi */
+html[data-theme="ocean"] .ocean-active-btn {
+  background-image: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%) !important;
+  background-color: #0284c7 !important;
+  color: #f0f9ff !important;
+  border-color: rgba(186, 230, 253, 0.65) !important;
+  box-shadow: 0 6px 18px rgba(2, 132, 199, 0.42) !important;
+}
+
+/* Progress Bar di Tema Biru: gradasi Sky Blue -> Cyan */
+html[data-theme="ocean"] .ocean-progress-fill {
+  background-image: linear-gradient(90deg, #38bdf8 0%, #0284c7 100%) !important;
+}
+
+/* Slider Kawaii di Tema Biru: gradasi Sky Blue -> Cyan */
+html[data-theme="ocean"] input[type="range"].kawaii-slider::-webkit-slider-thumb {
+  background: linear-gradient(135deg, #bae6fd 0%, #38bdf8 55%, #0284c7 100%);
+  box-shadow: 0 2px 10px rgba(56, 189, 248, 0.7);
+}
+
+html[data-theme="ocean"] input[type="range"].kawaii-slider::-moz-range-thumb {
+  background: linear-gradient(135deg, #bae6fd 0%, #38bdf8 55%, #0284c7 100%);
+  box-shadow: 0 2px 10px rgba(56, 189, 248, 0.7);
+}
+
+html[data-theme="ocean"] ::-webkit-scrollbar-thumb {
+  background: rgba(125, 211, 252, 0.48);
+}
+
+html[data-theme="ocean"] ::-webkit-scrollbar-thumb:hover {
+  background: rgba(56, 189, 248, 0.78);
 }
 
 /* Gaya dasar halaman dengan font lembut Quicksand */

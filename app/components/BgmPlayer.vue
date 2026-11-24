@@ -1562,7 +1562,7 @@ onUnmounted(() => {
           </span>
         </div>
 
-        <!-- Layer 2: Brown Noise -->
+        <!-- Layer 2: Ombak (tetap memakai key penyimpanan 'brown' agar volume tersimpan tidak ter-reset) -->
         <div class="flex items-center gap-2.5">
           <button
             type="button"
@@ -1574,7 +1574,7 @@ onUnmounted(() => {
             "
             @click="toggleAmbientChannel('brown')"
           >
-            🌊 Brown {{ isBrownEnabled ? 'ON' : 'OFF' }}
+            🌊 Ombak {{ isBrownEnabled ? 'ON' : 'OFF' }}
           </button>
 
           <input
@@ -1582,7 +1582,7 @@ onUnmounted(() => {
             type="range"
             min="0"
             max="100"
-            aria-label="Volume Brown Noise"
+            aria-label="Volume Ombak"
             class="kawaii-slider flex-1"
             :class="{ 'opacity-45': !isBrownEnabled }"
           >

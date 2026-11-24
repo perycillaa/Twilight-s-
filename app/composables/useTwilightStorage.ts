@@ -72,13 +72,13 @@ export const THEME_OPTIONS: ThemeOption[] = [
   },
   {
     id: 'sakura',
-    name: 'Sakura Dusk',
-    dotClass: 'bg-gradient-to-br from-[#c026d3] via-[#f472b6] to-[#fda4af]',
+    name: 'Pastel Berry Sunset',
+    dotClass: 'bg-gradient-to-br from-[#f472b6] via-[#fb7185] to-[#fdba74]',
     ringClass: 'ring-[#fda4af]',
   },
   {
     id: 'ocean',
-    name: 'Deep Ocean',
+    name: 'Ocean Night',
     dotClass: 'bg-gradient-to-br from-[#1d4ed8] via-[#0284c7] to-[#7dd3fc]',
     ringClass: 'ring-[#7dd3fc]',
   },
@@ -639,6 +639,7 @@ function sanitizeTimerDurations(raw: unknown): CustomTimerDurations {
 // Kunci penyimpanan di localStorage browser
 const STORAGE_KEYS = {
   THEME: 'twilights_theme_v1',
+  DARK_THEME: 'twilights_dark_theme_v1',
   HABITS: 'twilights_habits',
   TIMER_DURATIONS: 'twilights_timer_durations_v1',
   AMBIENT_MIXER: 'twilights_ambient_mixer_v1',
@@ -787,6 +788,7 @@ export function useTwilightStorage() {
 
   // --- Data tersimpan di localStorage ---
   const theme = useState<ThemeName>('twilights-theme', () => 'twilight')
+  const isDarkTheme = useState<boolean>('twilights-is-dark-theme', () => false)
   // Mulai kosong agar daftar default tidak muncul sekilas/mengisi ulang sebelum localStorage dicek di onMounted
   const habits = useState<HabitItem[]>('twilight-habits', () => [])
   const hadLocalHabits = useState<boolean>('twilights-had-local-habits', () => false)
@@ -934,10 +936,12 @@ export function useTwilightStorage() {
     return 'idle'
   })
 
-  /** Terapkan atribut data-theme ke elemen <html> agar variabel CSS aktif */
-  function applyThemeToDocument(themeId: ThemeName) {
+  /** Terapkan atribut data-theme & data-theme-mode (normal/dark) ke elemen <html> */
+  function applyThemeToDocument(themeId: ThemeName, darkMode = isDarkTheme.value) {
     if (!import.meta.client) return
     document.documentElement.setAttribute('data-theme', themeId)
+    document.documentElement.setAttribute('data-theme-mode', darkMode ? 'dark' : 'normal')
+    document.documentElement.classList.toggle('theme-dark', darkMode)
   }
 
   /** Terapkan atribut data-cozy-theme ke elemen <html> (termasuk aksen glow kristal emas Astral Palace) */
@@ -1005,6 +1009,7 @@ export function useTwilightStorage() {
     try {
       const todayStr = getTodayDateString()
       localStorage.setItem(STORAGE_KEYS.THEME, theme.value)
+      localStorage.setItem(STORAGE_KEYS.DARK_THEME, String(isDarkTheme.value))
       localStorage.setItem(STORAGE_KEYS.HABITS, JSON.stringify(habits.value))
       localStorage.setItem(
         STORAGE_KEYS.TIMER_DURATIONS,
@@ -1099,6 +1104,7 @@ export function useTwilightStorage() {
     return {
       userName: userName.value,
       theme: theme.value,
+      isDarkTheme: isDarkTheme.value,
       habits: habits.value,
       weeklyProgress: weeklyProgress.value,
       todayFocusSessions: todayFocusSessions.value,
@@ -1225,9 +1231,12 @@ export function useTwilightStorage() {
     if (typeof d.userName === 'string' && d.userName.trim()) {
       userName.value = d.userName.trim()
     }
+    if (typeof d.isDarkTheme === 'boolean') {
+      isDarkTheme.value = d.isDarkTheme
+    }
     if (d.theme === 'twilight' || d.theme === 'sakura' || d.theme === 'ocean') {
       theme.value = d.theme
-      applyThemeToDocument(d.theme)
+      applyThemeToDocument(d.theme, isDarkTheme.value)
     }
     if (Array.isArray(d.habits)) {
       habits.value = d.habits
@@ -1705,15 +1714,33 @@ export function useTwilightStorage() {
       activeCozyTheme.value = 'classic'
       applyCozyThemeToDocument('classic')
     }
-    applyThemeToDocument(newTheme)
+    applyThemeToDocument(newTheme, isDarkTheme.value)
     persistAll()
 
     const themeGreeting: Record<ThemeName, string> = {
       twilight: 'Suasana Twilight Purple yang syahdu~ 💜',
-      sakura: 'Nuansa Sakura Dusk yang hangat! 🌸',
-      ocean: 'Tenangnya Deep Ocean malam ini~ 🌊',
+      sakura: 'Nuansa Pastel Berry Cotton Candy yang hangat manis! 🍓☁️',
+      ocean: 'Tenangnya Ocean Night malam ini~ 🌊✨',
     }
     triggerMascotReaction('happy', themeGreeting[newTheme], 2800)
+  }
+
+  /** Sakelar Mode Gelap (🌙) / Mode Normal (☀️) untuk seluruh tema warna & simpan otomatis */
+  function toggleDarkTheme() {
+    isDarkTheme.value = !isDarkTheme.value
+    if (activeCozyTheme.value !== 'classic') {
+      activeCozyTheme.value = 'classic'
+      applyCozyThemeToDocument('classic')
+    }
+    applyThemeToDocument(theme.value, isDarkTheme.value)
+    persistAll()
+
+    const darkLabel: Record<ThemeName, string> = {
+      twilight: isDarkTheme.value ? 'Deep Plum (Gelap)' : 'Twilight Normal',
+      sakura: isDarkTheme.value ? 'Dark Velvet Berry (Gelap)' : 'Pastel Berry Normal',
+      ocean: isDarkTheme.value ? 'Midnight Abyss (Gelap)' : 'Ocean Night Normal',
+    }
+    showMiniToast(`${isDarkTheme.value ? '🌙' : '☀️'} ${darkLabel[theme.value]}`)
   }
 
   /** Perbarui isi catatan cepat & simpan otomatis */
@@ -1823,6 +1850,7 @@ export function useTwilightStorage() {
       data: {
         userName: userName.value,
         theme: theme.value,
+        isDarkTheme: isDarkTheme.value,
         habits: habits.value,
         twilights_timer_durations: customTimerDurations.value,
         twilights_ambient_mixer: ambientMixerSettings.value,
@@ -1895,9 +1923,12 @@ export function useTwilightStorage() {
       if (typeof d.userName === 'string' && d.userName.trim()) {
         userName.value = d.userName.trim()
       }
+      if (typeof d.isDarkTheme === 'boolean') {
+        isDarkTheme.value = d.isDarkTheme
+      }
       if (d.theme === 'twilight' || d.theme === 'sakura' || d.theme === 'ocean') {
         theme.value = d.theme
-        applyThemeToDocument(d.theme)
+        applyThemeToDocument(d.theme, isDarkTheme.value)
       }
       if (Array.isArray(d.habits)) {
         habits.value = d.habits
@@ -2372,12 +2403,16 @@ export function useTwilightStorage() {
     const yesterdayStr = getLocalTodayDate(-1)
 
     try {
-      // 1. Muat tema warna
+      // 1. Muat tema warna & status Mode Gelap (Normal / Midnight)
       const savedTheme = localStorage.getItem(STORAGE_KEYS.THEME) as ThemeName | null
       if (savedTheme === 'twilight' || savedTheme === 'sakura' || savedTheme === 'ocean') {
         theme.value = savedTheme
       }
-      applyThemeToDocument(theme.value)
+      const savedDark = localStorage.getItem(STORAGE_KEYS.DARK_THEME)
+      if (savedDark === 'true' || savedDark === 'false') {
+        isDarkTheme.value = savedDark === 'true'
+      }
+      applyThemeToDocument(theme.value, isDarkTheme.value)
 
       // 2. Muat tanggal terakhir & daftar habit (cek === null vs array kosong [])
       const rawCurrentDate = localStorage.getItem(STORAGE_KEYS.LAST_ACTIVE_DATE)
@@ -3238,9 +3273,9 @@ export function useTwilightStorage() {
     showMiniToast(`Pengingat "${current.habitTitle}" ditunda ${minutes} menit 💤`)
   }
 
-  // Sinkronkan tema ketika berubah
-  watch(theme, (val) => {
-    applyThemeToDocument(val)
+  // Sinkronkan tema & mode gelap ketika berubah
+  watch([theme, isDarkTheme], ([val, dark]) => {
+    applyThemeToDocument(val, dark)
   })
   watch(activeCozyTheme, (val) => {
     applyCozyThemeToDocument(val)
@@ -3255,6 +3290,7 @@ export function useTwilightStorage() {
   return {
     // State utama
     theme,
+    isDarkTheme,
     habits,
     customTimerDurations,
     timerDurationsVersion,
@@ -3338,6 +3374,7 @@ export function useTwilightStorage() {
 
     // Aksi
     setTheme,
+    toggleDarkTheme,
     updateQuickNotes,
     setUserName,
     toggleStarCursor,

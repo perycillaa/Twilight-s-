@@ -6,9 +6,10 @@ import {
   useTwilightStorage,
 } from '~/composables/useTwilightStorage'
 
-// Ambil tema header, Tema Latar Belakang Beranimasi, status Hujan Lembut, & Kualitas Grafik (Ringan / Sedang / Tinggi)
+// Ambil tema header, Mode Gelap, Tema Latar Belakang Beranimasi, status Hujan Lembut, & Kualitas Grafik
 const {
   theme,
+  isDarkTheme,
   activeCozyTheme,
   isRainAmbientOn,
   graphicsQuality,
@@ -47,25 +48,61 @@ const themeBgConfig: Record<ThemeName, BgPalette> = {
     cloudFill: '#e9d5ff',
     tailGradient: 'from-white via-pink-200 to-transparent',
   },
+  // Tema Pink Default: Pastel Berry / Cotton Candy Sunset (gradasi pink pastel lembut ke peach-rose, tanpa sakura)
   sakura: {
-    gradient: 'from-[#3b153e] via-[#6b2458] to-[#8f3858]',
-    orb1: 'bg-rose-300/25',
-    orb2: 'bg-pink-400/20',
-    orb3: 'bg-amber-200/15',
+    gradient: 'from-[#5a2248] via-[#8f3d67] to-[#c26d75]',
+    orb1: 'bg-pink-300/25',
+    orb2: 'bg-orange-200/20',
+    orb3: 'bg-rose-300/20',
+    moon: '#fef3c7',
+    charmAccent: '#fda4af',
+    cloudFill: '#ffe4e6',
+    tailGradient: 'from-white via-orange-100 to-transparent',
+  },
+  // Tema Biru Default: Ocean Night (#13243A -> #1E3A5F)
+  ocean: {
+    gradient: 'from-[#13243a] via-[#182f4d] to-[#1e3a5f]',
+    orb1: 'bg-sky-400/20',
+    orb2: 'bg-cyan-400/18',
+    orb3: 'bg-blue-400/15',
+    moon: '#e0f2fe',
+    charmAccent: '#7dd3fc',
+    cloudFill: '#bae6fd',
+    tailGradient: 'from-[#f0f9ff] via-sky-300 to-transparent',
+  },
+}
+
+// Varian Mode Gelap (🌙 Midnight / Dark Variant) untuk ketiga tema warna utama
+const themeDarkBgConfig: Record<ThemeName, BgPalette> = {
+  twilight: {
+    gradient: 'from-[#120b1e] via-[#170e27] to-[#1d1230]',
+    orb1: 'bg-purple-500/15',
+    orb2: 'bg-fuchsia-500/12',
+    orb3: 'bg-indigo-500/12',
+    moon: '#fef08a',
+    charmAccent: '#f9a8d4',
+    cloudFill: '#c4b5fd',
+    tailGradient: 'from-white via-purple-200 to-transparent',
+  },
+  sakura: {
+    gradient: 'from-[#1a0d16] via-[#22101c] to-[#2b1422]',
+    orb1: 'bg-rose-400/15',
+    orb2: 'bg-orange-300/12',
+    orb3: 'bg-pink-400/12',
     moon: '#fde68a',
     charmAccent: '#fda4af',
     cloudFill: '#fecdd3',
     tailGradient: 'from-white via-rose-200 to-transparent',
   },
   ocean: {
-    gradient: 'from-[#091630] via-[#0e2a4a] to-[#133b5c]',
-    orb1: 'bg-sky-400/20',
-    orb2: 'bg-cyan-400/20',
-    orb3: 'bg-indigo-400/15',
+    gradient: 'from-[#09111e] via-[#0d1729] to-[#101e33]',
+    orb1: 'bg-sky-500/14',
+    orb2: 'bg-cyan-500/12',
+    orb3: 'bg-blue-500/12',
     moon: '#e0f2fe',
     charmAccent: '#7dd3fc',
-    cloudFill: '#bae6fd',
-    tailGradient: 'from-white via-sky-200 to-transparent',
+    cloudFill: '#7dd3fc',
+    tailGradient: 'from-[#f0f9ff] via-sky-300 to-transparent',
   },
 }
 
@@ -116,8 +153,23 @@ const activeBg = computed<BgPalette>(() => {
   if (activeCozyTheme.value !== 'classic') {
     return cozyBgConfig[activeCozyTheme.value]
   }
-  return themeBgConfig[theme.value] ?? themeBgConfig.twilight
+  const map = isDarkTheme.value ? themeDarkBgConfig : themeBgConfig
+  return map[theme.value] ?? map.twilight
 })
+
+// Cahaya bokeh lembut khusus tema Pastel Berry / Cotton Candy Sunset (tanpa kelopak sakura)
+const pastelBerryBokeh = [
+  { top: '14%', left: '12%', size: 46, color: 'bg-pink-200/25', opacity: 0.3, duration: '7.4s', delay: '0s', dx: '8px' },
+  { top: '26%', left: '78%', size: 58, color: 'bg-orange-200/25', opacity: 0.28, duration: '8.2s', delay: '1.1s', dx: '-10px' },
+  { top: '52%', left: '8%', size: 40, color: 'bg-rose-200/25', opacity: 0.28, duration: '6.8s', delay: '0.6s', dx: '7px' },
+  { top: '66%', left: '86%', size: 52, color: 'bg-amber-100/25', opacity: 0.26, duration: '7.9s', delay: '1.8s', dx: '-8px' },
+  { top: '80%', left: '24%', size: 64, color: 'bg-pink-300/20', opacity: 0.25, duration: '8.6s', delay: '0.4s', dx: '10px' },
+  { top: '74%', left: '62%', size: 36, color: 'bg-orange-100/30', opacity: 0.28, duration: '6.5s', delay: '2.1s', dx: '-6px' },
+  { top: '38%', left: '48%', size: 44, color: 'bg-rose-100/20', opacity: 0.24, duration: '7.2s', delay: '1.4s', dx: '9px' },
+  { top: '18%', left: '54%', size: 32, color: 'bg-amber-200/25', opacity: 0.26, duration: '6.9s', delay: '2.4s', dx: '-7px' },
+]
+
+const displayedPastelBerryBokeh = computed(() => scaleParticles(pastelBerryBokeh))
 
 // Tampilkan hujan apabila tema Midnight Rainy Window aktif ATAU sakelar Hujan Lembut di BGM Player menyala (nonaktif di Grafik Ringan)
 const showRainLayer = computed<boolean>(() => {
@@ -344,6 +396,29 @@ onUnmounted(() => {
       class="absolute bottom-0 left-1/3 h-80 w-80 rounded-full blur-3xl transition-colors duration-700"
       :class="activeBg.orb3"
     />
+
+    <!-- === CAHAYA BOKEH LEMBUT TEMA PINK DEFAULT: PASTEL BERRY / COTTON CANDY SUNSET (tanpa kelopak sakura) === -->
+    <div
+      v-if="activeCozyTheme === 'classic' && theme === 'sakura' && !isLowGraphics"
+      class="pointer-events-none absolute inset-0 overflow-hidden"
+    >
+      <span
+        v-for="(bokeh, idx) in displayedPastelBerryBokeh"
+        :key="`berry-bokeh-${idx}`"
+        class="animate-bokeh-float absolute rounded-full blur-lg"
+        :class="bokeh.color"
+        :style="{
+          top: bokeh.top,
+          left: bokeh.left,
+          width: `${bokeh.size}px`,
+          height: `${bokeh.size}px`,
+          '--bokeh-opacity': bokeh.opacity,
+          '--bokeh-duration': bokeh.duration,
+          '--bokeh-delay': bokeh.delay,
+          '--bokeh-dx': bokeh.dx,
+        }"
+      />
+    </div>
 
     <!-- === EFEK KHUSUS TEMA 5: 👑 ASTRAL CRYSTAL PALACE (Aurora Borealis + Bulan Sabit Perak Besar) === -->
     <Transition

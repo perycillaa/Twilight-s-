@@ -12,6 +12,7 @@ import {
 
 const {
   theme,
+  isDarkTheme,
   activeCozyTheme,
   userName,
   habits,
@@ -62,9 +63,13 @@ const activeThemeName = computed<string>(() => {
     const found = COZY_THEMES.find(t => t.id === activeCozyTheme.value)
     return found ? `${found.icon} ${found.name}` : 'Twilight Klasik'
   }
-  if (theme.value === 'sakura') return '🌸 Sakura Dusk'
-  if (theme.value === 'ocean') return '🌊 Deep Ocean'
-  return '💜 Twilight Klasik'
+  if (theme.value === 'sakura') {
+    return isDarkTheme.value ? '🌙 Dark Velvet Berry' : '🍓 Pastel Berry'
+  }
+  if (theme.value === 'ocean') {
+    return isDarkTheme.value ? '🌙 Midnight Abyss' : '🌊 Ocean Night'
+  }
+  return isDarkTheme.value ? '🌙 Deep Plum Twilight' : '💜 Twilight Klasik'
 })
 
 interface CardThemePalette {
@@ -124,10 +129,12 @@ function getCardPalette(cozy: CozyThemeId, base: ThemeName): CardThemePalette {
   }
   if (base === 'sakura') {
     return {
-      bgStops: ['#3b153e', '#6b2458', '#8f3858'],
+      bgStops: isDarkTheme.value
+        ? ['#1a0d16', '#22101c', '#2b1422']
+        : ['#5a2248', '#8f3d67', '#c26d75'],
       accent: '#fda4af',
-      accentSoft: '#fde68a',
-      cardFill: 'rgba(255, 255, 255, 0.11)',
+      accentSoft: '#fed7aa',
+      cardFill: isDarkTheme.value ? 'rgba(36, 18, 29, 0.85)' : 'rgba(255, 255, 255, 0.11)',
       cardStroke: 'rgba(253, 164, 175, 0.4)',
       titleColor: '#ffe4e6',
       subColor: '#fecdd3',
@@ -135,20 +142,24 @@ function getCardPalette(cozy: CozyThemeId, base: ThemeName): CardThemePalette {
   }
   if (base === 'ocean') {
     return {
-      bgStops: ['#091630', '#0e2a4a', '#133b5c'],
+      bgStops: isDarkTheme.value
+        ? ['#09111e', '#0d1729', '#101e33']
+        : ['#13243a', '#182f4d', '#1e3a5f'],
       accent: '#7dd3fc',
-      accentSoft: '#a5f3fc',
-      cardFill: 'rgba(255, 255, 255, 0.1)',
-      cardStroke: 'rgba(125, 211, 252, 0.4)',
-      titleColor: '#e0f2fe',
+      accentSoft: '#38bdf8',
+      cardFill: isDarkTheme.value ? 'rgba(15, 28, 48, 0.88)' : 'rgba(255, 255, 255, 0.1)',
+      cardStroke: 'rgba(125, 211, 252, 0.35)',
+      titleColor: '#7dd3fc',
       subColor: '#bae6fd',
     }
   }
   return {
-    bgStops: ['#1e1b4b', '#261647', '#311042'],
+    bgStops: isDarkTheme.value
+      ? ['#120b1e', '#170e27', '#1d1230']
+      : ['#1e1b4b', '#261647', '#311042'],
     accent: '#f9a8d4',
     accentSoft: '#c4b5fd',
-    cardFill: 'rgba(255, 255, 255, 0.1)',
+    cardFill: isDarkTheme.value ? 'rgba(26, 17, 43, 0.85)' : 'rgba(255, 255, 255, 0.1)',
     cardStroke: 'rgba(249, 168, 212, 0.36)',
     titleColor: '#fbcfe8',
     subColor: '#e9d5ff',

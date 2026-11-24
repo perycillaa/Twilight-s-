@@ -517,7 +517,7 @@ onUnmounted(() => {
         class="cursor-pointer rounded-xl px-2 py-2 text-xs font-semibold transition-all duration-200"
         :class="
           currentMode === mode.key
-            ? 'bg-gradient-to-r from-[#f9a8d4]/95 to-[#c4b5fd]/95 text-[#1e1b4b] shadow-md'
+            ? 'ocean-active-btn bg-gradient-to-r from-[#f9a8d4]/95 to-[#c4b5fd]/95 text-[#1e1b4b] shadow-md'
             : 'text-purple-100/80 hover:bg-white/10 hover:text-white'
         "
         @click="selectMode(mode.key)"
@@ -707,7 +707,7 @@ onUnmounted(() => {
       <!-- Progress Bar Mini -->
       <div class="mt-3 h-2 w-full max-w-xs overflow-hidden rounded-full bg-white/15">
         <div
-          class="h-full rounded-full bg-gradient-to-r from-[#f9a8d4] via-[#d8b4fe] to-[#a78bfa] transition-all duration-500"
+          class="ocean-progress-fill h-full rounded-full bg-gradient-to-r from-[#f9a8d4] via-[#d8b4fe] to-[#a78bfa] transition-all duration-500"
           :style="{ width: `${progressPercent}%` }"
         />
       </div>
@@ -720,8 +720,8 @@ onUnmounted(() => {
         class="btn-bouncy font-display inline-flex items-center justify-center gap-1.5 rounded-full px-4 py-2.5 text-sm font-semibold tracking-wide transition-all duration-200 focus:outline-none"
         :class="
           isRunning
-            ? 'cursor-default bg-gradient-to-r from-[#f9a8d4] to-[#f472b6] text-[#311042] ring-2 ring-pink-200/90 shadow-lg shadow-pink-500/45'
-            : 'cursor-pointer border border-pink-200/45 bg-pink-300/20 text-pink-100 hover:bg-[#f9a8d4] hover:text-[#311042] hover:shadow-md hover:shadow-pink-500/25'
+            ? 'ocean-active-btn cursor-default bg-gradient-to-r from-[#f9a8d4] to-[#f472b6] text-[#311042] ring-2 ring-pink-200/90 shadow-lg shadow-pink-500/45'
+            : 'ocean-active-btn cursor-pointer border border-pink-200/45 bg-pink-300/20 text-pink-100 hover:bg-[#f9a8d4] hover:text-[#311042] hover:shadow-md hover:shadow-pink-500/25'
         "
         :disabled="isRunning"
         @click="startTimer"

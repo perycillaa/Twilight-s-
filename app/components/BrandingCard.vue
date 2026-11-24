@@ -194,14 +194,14 @@ onUnmounted(() => {
           </span>
         </div>
 
-        <!-- Bilah Progres Pink-Ungu Lembut (berkilau saat MAX Lv. 10) -->
+        <!-- Bilah Progres Pink-Ungu Lembut (otomatis Sky Blue-Cyan di tema Biru, berkilau saat MAX Lv. 10) -->
         <div class="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-black/25 p-[1px]">
           <div
             class="h-full rounded-full transition-all duration-500"
             :class="
               isMaxAffinity
                 ? 'animate-pulse bg-gradient-to-r from-[#fde68a] via-[#f9a8d4] to-[#c084fc] shadow-[0_0_12px_rgba(249,168,212,0.85)]'
-                : 'bg-gradient-to-r from-[#f9a8d4] via-[#e879f9] to-[#c084fc]'
+                : 'ocean-progress-fill bg-gradient-to-r from-[#f9a8d4] via-[#e879f9] to-[#c084fc]'
             "
             :style="{ width: `${affinityProgressPercent}%` }"
           />
@@ -290,7 +290,7 @@ onUnmounted(() => {
             class="cursor-pointer rounded-lg px-2 py-1.5 font-semibold transition"
             :class="
               activeLeftTab === 'notes'
-                ? 'bg-[#f9a8d4] text-[#311042] shadow'
+                ? 'ocean-active-btn bg-[#f9a8d4] text-[#311042] shadow'
                 : 'text-purple-100/80 hover:bg-white/10 hover:text-white'
             "
             @click="activeLeftTab = 'notes'"
@@ -303,7 +303,7 @@ onUnmounted(() => {
             class="cursor-pointer rounded-lg px-2 py-1.5 font-semibold transition"
             :class="
               activeLeftTab === 'accessories'
-                ? 'bg-[#c4b5fd] text-[#1e1b4b] shadow'
+                ? 'ocean-active-btn bg-[#c4b5fd] text-[#1e1b4b] shadow'
                 : 'text-purple-100/80 hover:bg-white/10 hover:text-white'
             "
             @click="activeLeftTab = 'accessories'"

@@ -6,6 +6,7 @@ import { THEME_OPTIONS, useTwilightStorage } from '~/composables/useTwilightStor
 // Ambil seluruh kontrol global dari composable penyimpanan bersama
 const {
   theme,
+  isDarkTheme,
   userName,
   habits,
   alarms,
@@ -27,6 +28,7 @@ const {
   activeAlarmBadge,
   cloudSyncStatus,
   setTheme,
+  toggleDarkTheme,
   setUserName,
   toggleStarCursor,
   cycleGraphicsQuality,
@@ -696,8 +698,8 @@ onUnmounted(() => {
               ⌨️
             </button>
 
-            <!-- Theme Switcher: 3 Tombol Bulatan Warna Kecil -->
-            <div class="flex items-center gap-2">
+            <!-- Theme Switcher: 3 Tombol Bulatan Warna + Sakelar Mode Gelap (🌙 / ☀️) -->
+            <div class="flex items-center gap-1.5">
               <span class="hidden text-[11px] font-semibold text-purple-200/80 md:inline">
                 Tema:
               </span>
@@ -718,6 +720,26 @@ onUnmounted(() => {
                   @click="setTheme(option.id)"
                 />
               </div>
+
+              <!-- Tombol Sakelar Mode Gelap (🌙) / Mode Normal (☀️) untuk Ketiga Tema Warna -->
+              <button
+                type="button"
+                :title="
+                  isDarkTheme
+                    ? 'Beralih ke Mode Normal (☀️)'
+                    : 'Beralih ke Mode Gelap / Midnight (🌙)'
+                "
+                :aria-label="isDarkTheme ? 'Aktifkan mode normal' : 'Aktifkan mode gelap'"
+                class="btn-bouncy inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border text-sm shadow-sm transition"
+                :class="
+                  isDarkTheme
+                    ? 'border-amber-200/50 bg-indigo-950/80 text-amber-200 hover:bg-indigo-900/90'
+                    : 'border-white/20 bg-white/10 text-pink-100 hover:bg-white/20'
+                "
+                @click="toggleDarkTheme"
+              >
+                {{ isDarkTheme ? '☀️' : '🌙' }}
+              </button>
             </div>
           </div>
         </div>
