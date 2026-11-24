@@ -2580,6 +2580,14 @@ export function useTwilightStorage() {
       isBatterySaverMode.value = graphicsQuality.value === 'low'
       applyGraphicsQualityToDocument(graphicsQuality.value)
 
+      // 11b. Muat preferensi Getaran HP (Web Vibration API, default ON)
+      const savedVibration = localStorage.getItem(STORAGE_KEYS.VIBRATION_ENABLED)
+      if (savedVibration === 'true' || savedVibration === 'false') {
+        isVibrationEnabled.value = savedVibration === 'true'
+      } else {
+        isVibrationEnabled.value = true
+      }
+
       // 12. Muat tanggal klaim terakhir bonus harian +5 Ikan Kering (anti-spam 1x/hari)
       const savedRewardDate = localStorage.getItem(STORAGE_KEYS.DAILY_REWARD_DATE)
       if (savedRewardDate) {
@@ -2694,8 +2702,9 @@ export function useTwilightStorage() {
     pendingOnceRemovalTimers.set(id, timer)
   }
 
-  /** Hentikan bunyi alarm pengingat habit yang sedang berdering */
+  /** Hentikan bunyi alarm pengingat habit & getaran HP yang sedang berjalan */
   function stopHabitAlarmSound() {
+    stopVibration()
     if (habitAlarmRepeatInterval) {
       clearInterval(habitAlarmRepeatInterval)
       habitAlarmRepeatInterval = null
@@ -3154,7 +3163,8 @@ export function useTwilightStorage() {
     // 2. Kedipkan judul tab browser tiap 1 detik selama alarm belum dimatikan/ditandai selesai
     startTabTitleBlink(reminder.habitTitle)
 
-    // 3. Bunyikan suara Web Audio API (1x atau berulang tiap ~3 detik, aman berhenti otomatis 2 menit)
+    // 3. Bunyikan suara Web Audio API + Getaran HP [200, 100, 200] (1x atau berulang tiap ~3 detik, aman berhenti otomatis 2 menit)
+    triggerVibration(VIBRATION_PATTERNS.habitReminder)
     if (reminder.alarmMode === 'repeat') {
       playAlarmMelody(selectedAlarmSound.value)
       habitAlarmRepeatInterval = setInterval(() => {
@@ -3163,6 +3173,7 @@ export function useTwilightStorage() {
           return
         }
         playAlarmMelody(selectedAlarmSound.value)
+        triggerVibration(VIBRATION_PATTERNS.habitReminder)
       }, 3000)
 
       habitAlarmSafetyTimeout = setTimeout(() => {
@@ -3260,6 +3271,7 @@ export function useTwilightStorage() {
     graphicsQuality,
     graphicsConfig,
     isBatterySaverMode,
+    isVibrationEnabled,
     isZenMode,
     treatCoins,
     ownedAccessories,
@@ -3332,6 +3344,9 @@ export function useTwilightStorage() {
     setGraphicsQuality,
     cycleGraphicsQuality,
     toggleBatterySaverMode,
+    toggleVibrationEnabled,
+    triggerVibration,
+    stopVibration,
     toggleZenMode,
     exitZenMode,
     setDailyMood,
