@@ -6,6 +6,7 @@ import { MAX_GAME_DAILY_REWARDS, useTwilightStorage } from '~/composables/useTwi
 const {
   isMiniGameOpen,
   isZenMode,
+  graphicsConfig,
   gameHighScore,
   gameDailyClaimCount,
   recordMiniGameResult,
@@ -67,12 +68,26 @@ const roundSummary = ref<{
   maxClaims: number
 } | null>(null)
 
-// Variabel internal game loop (non-reaktif agar 60fps super mulus & hemat baterai)
+// Variabel internal game loop (mengikuti target FPS & devicePixelRatio dari Pengaturan Kualitas Grafik)
 let rafId: number | null = null
 let lastFrameTime = 0
+let lastRenderedFrameTime = 0
 let roundStartTime = 0
 let spawnAccumulator = 0
 let objectIdCounter = 0
+
+/** Sesuaikan resolusi fisik kanvas terhadap batas DPR kualitas grafik (Ringan 1x, Sedang 1.35x, Tinggi penuh) */
+function syncMiniGameCanvasDpr(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D) {
+  const rawDpr = window.devicePixelRatio || 1
+  const cappedDpr = Math.max(1, Math.min(rawDpr, graphicsConfig.value.maxDpr))
+  const targetW = Math.round(CANVAS_W * cappedDpr)
+  const targetH = Math.round(CANVAS_H * cappedDpr)
+  if (canvas.width !== targetW || canvas.height !== targetH) {
+    canvas.width = targetW
+    canvas.height = targetH
+  }
+  ctx.setTransform(cappedDpr, 0, 0, cappedDpr, 0, 0)
+}
 
 // Posisi & status kucing penangkap di bagian bawah kanvas
 let catX = CANVAS_W / 2
@@ -122,6 +137,7 @@ function startNewRound() {
 
   const now = performance.now()
   lastFrameTime = now
+  lastRenderedFrameTime = 0
   roundStartTime = now
   rafId = requestAnimationFrame(gameLoop)
 }
@@ -159,10 +175,14 @@ function spawnFallingObject() {
   })
 }
 
-/** Buat efek percikan kilau saat menangkap bintang atau ikan emas */
+/** Buat efek percikan kilau saat menangkap bintang atau ikan emas (skala mengikuti kualitas grafik) */
 function spawnCatchSparks(x: number, y: number, color: string, count = 10) {
-  for (let i = 0; i < count; i++) {
-    const angle = (Math.PI * 2 * i) / count + Math.random() * 0.3
+  const scaledCount =
+    graphicsConfig.value.particleScale <= 0
+      ? 2
+      : Math.max(3, Math.round(count * graphicsConfig.value.particleScale))
+  for (let i = 0; i < scaledCount; i++) {
+    const angle = (Math.PI * 2 * i) / scaledCount + Math.random() * 0.3
     const speed = 55 + Math.random() * 95
     catchSparks.push({
       x,
@@ -185,7 +205,15 @@ function gameLoop(now: number) {
     return
   }
 
-  const dt = Math.min(0.05, (now - lastFrameTime) / 1000)
+  // Batasi frame rate sesuai kualitas grafik (Ringan ~28 FPS, Sedang ~40 FPS, Tinggi 60 FPS)
+  const minFrameMs = 1000 / Math.max(24, graphicsConfig.value.targetFps)
+  if (lastRenderedFrameTime > 0 && now - lastRenderedFrameTime < minFrameMs * 0.9) {
+    rafId = requestAnimationFrame(gameLoop)
+    return
+  }
+  lastRenderedFrameTime = now
+
+  const dt = Math.min(0.06, (now - lastFrameTime) / 1000)
   lastFrameTime = now
 
   // 1. Hitung sisa waktu ronde (30 detik)
@@ -281,6 +309,8 @@ function drawScene(now: number) {
   if (!canvas) return
   const ctx = canvas.getContext('2d')
   if (!ctx) return
+
+  syncMiniGameCanvasDpr(canvas, ctx)
 
   // Latar langit malam gradasi Twilight's
   const grad = ctx.createLinearGradient(0, 0, 0, CANVAS_H)

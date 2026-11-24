@@ -5,6 +5,57 @@ import { type AlarmSoundId, useSoundEffects } from '~/composables/useSoundEffect
 // Tipe tema warna website (disimpan di localStorage)
 export type ThemeName = 'twilight' | 'sakura' | 'ocean'
 
+// Tipe Pengaturan Kualitas Grafik bergaya game: Ringan (Low), Sedang (Medium), Tinggi (High)
+export type GraphicsQuality = 'low' | 'medium' | 'high'
+
+export interface GraphicsQualityMeta {
+  id: GraphicsQuality
+  label: string
+  icon: string
+  maxDpr: number
+  targetFps: number
+  particleScale: number
+  enableCursorDust: boolean
+  toastText: string
+}
+
+export const GRAPHICS_QUALITY_OPTIONS: Record<GraphicsQuality, GraphicsQualityMeta> = {
+  low: {
+    id: 'low',
+    label: 'Ringan',
+    icon: '🍃',
+    maxDpr: 1,
+    targetFps: 28,
+    particleScale: 0,
+    enableCursorDust: false,
+    toastText: '⚙️ Grafik: 🍃 Ringan — Paling hemat baterai & anti-lag (28 FPS, tanpa blur)',
+  },
+  medium: {
+    id: 'medium',
+    label: 'Sedang',
+    icon: '⚖️',
+    maxDpr: 1.35,
+    targetFps: 40,
+    particleScale: 0.5,
+    enableCursorDust: false,
+    toastText: '⚙️ Grafik: ⚖️ Sedang — Seimbang untuk HP (40 FPS, 50% partikel, blur ringan)',
+  },
+  high: {
+    id: 'high',
+    label: 'Tinggi',
+    icon: '✨',
+    maxDpr: 4,
+    targetFps: 60,
+    particleScale: 1,
+    enableCursorDust: true,
+    toastText: '⚙️ Grafik: ✨ Tinggi — Visual maksimal penuh (60 FPS, 100% efek & kilau)',
+  },
+}
+
+function isValidGraphicsQuality(val: unknown): val is GraphicsQuality {
+  return val === 'low' || val === 'medium' || val === 'high'
+}
+
 export interface ThemeOption {
   id: ThemeName
   name: string
@@ -88,6 +139,13 @@ export interface CozyThemeOption {
 
 export const ASTRAL_PALACE_STREAK_GOAL = 7
 export const ASTRAL_PALACE_STREAK_FISH_REWARD = 15
+
+// Pola getaran lembut Web Vibration API (hanya aktif di perangkat yang mendukung `navigator.vibrate`)
+export const VIBRATION_PATTERNS = {
+  pomodoroDone: [250, 120, 250, 120, 450] as number[],
+  habitReminder: [200, 100, 200] as number[],
+  microHaptic: 25,
+} as const
 
 export const COZY_THEMES: CozyThemeOption[] = [
   {
@@ -598,6 +656,8 @@ const STORAGE_KEYS = {
   DAILY_MOOD: 'twilights_daily_mood_v1',
   USER_NAME: 'twilights_user_name_v1',
   BATTERY_SAVER: 'twilights_battery_saver_v1',
+  GRAPHICS_QUALITY: 'twilights_graphics_quality_v1',
+  VIBRATION_ENABLED: 'twilights_vibration_enabled_v1',
   DAILY_REWARD_DATE: 'twilights_daily_reward_date',
   NOTEBOOKS: 'twilights_notebooks',
   ALARMS: 'twilights_alarms',
@@ -750,7 +810,13 @@ export function useTwilightStorage() {
   const quickNotes = useState<string>('twilights-quick-notes', () => '')
   const userName = useState<string>('twilights-user-name', () => 'Teman Twilight')
   const isStarCursorEnabled = useState<boolean>('twilights-star-cursor', () => true)
+  const graphicsQuality = useState<GraphicsQuality>('twilights-graphics-quality', () => 'high')
   const isBatterySaverMode = useState<boolean>('twilights-battery-saver', () => false)
+  // Preferensi getaran HP (Web Vibration API) — default ON & tersimpan di localStorage
+  const isVibrationEnabled = useState<boolean>('twilights-vibration-enabled', () => true)
+  const graphicsConfig = computed<GraphicsQualityMeta>(
+    () => GRAPHICS_QUALITY_OPTIONS[graphicsQuality.value] ?? GRAPHICS_QUALITY_OPTIONS.high,
+  )
   const isZenMode = useState<boolean>('twilights-zen-mode', () => false)
   // Hadiah selamat datang 5 🐟 untuk pengguna baru (data pengguna lama di localStorage tetap dipertahankan)
   const treatCoins = useState<number>('twilights-treat-coins', () => 5)
@@ -880,10 +946,56 @@ export function useTwilightStorage() {
     document.documentElement.setAttribute('data-cozy-theme', cozyId)
   }
 
-  /** Terapkan class mode hemat baterai (reduce motion) pada <html> */
-  function applyBatterySaverClass(enabled: boolean) {
+  /** Terapkan atribut data-graphics-quality & class mode ringan pada <html> */
+  function applyGraphicsQualityToDocument(quality: GraphicsQuality) {
     if (!import.meta.client) return
-    document.documentElement.classList.toggle('battery-saver-mode', enabled)
+    document.documentElement.setAttribute('data-graphics-quality', quality)
+    document.documentElement.classList.toggle('battery-saver-mode', quality === 'low')
+  }
+
+  /** Terapkan class mode hemat baterai (tetap kompatibel dengan kode lama) */
+  function applyBatterySaverClass(enabled: boolean) {
+    applyGraphicsQualityToDocument(enabled ? 'low' : graphicsQuality.value)
+  }
+
+  /**
+   * Fungsi Getaran Aman (Web Vibration API):
+   * Memeriksa `'vibrate' in navigator` agar aman 100% tanpa error di PC & iOS/Safari.
+   */
+  function triggerVibration(pattern: number | number[]) {
+    if (!import.meta.client || !isVibrationEnabled.value) return
+    if (typeof navigator === 'undefined' || !('vibrate' in navigator)) return
+    if (typeof navigator.vibrate !== 'function') return
+    try {
+      navigator.vibrate(pattern)
+    } catch {
+      // Abaikan secara aman jika browser memblokir getaran tanpa gestur
+    }
+  }
+
+  /** Hentikan segera segala getaran HP yang sedang berjalan via navigator.vibrate(0) */
+  function stopVibration() {
+    if (!import.meta.client) return
+    if (typeof navigator === 'undefined' || !('vibrate' in navigator)) return
+    if (typeof navigator.vibrate !== 'function') return
+    try {
+      navigator.vibrate(0)
+    } catch {
+      // Abaikan
+    }
+  }
+
+  /** Sakelar ON/OFF Getar HP & simpan ke localStorage */
+  function toggleVibrationEnabled() {
+    isVibrationEnabled.value = !isVibrationEnabled.value
+    persistAll()
+    if (isVibrationEnabled.value) {
+      triggerVibration(VIBRATION_PATTERNS.microHaptic)
+      showMiniToast('📳 Getar HP: ON')
+    } else {
+      stopVibration()
+      showMiniToast('📳 Getar HP: OFF')
+    }
   }
 
   /** Simpan seluruh data penting ke localStorage secara aman */
@@ -909,6 +1021,8 @@ export function useTwilightStorage() {
       localStorage.setItem(STORAGE_KEYS.QUICK_NOTES, quickNotes.value)
       localStorage.setItem(STORAGE_KEYS.USER_NAME, userName.value)
       localStorage.setItem(STORAGE_KEYS.STAR_CURSOR, String(isStarCursorEnabled.value))
+      localStorage.setItem(STORAGE_KEYS.GRAPHICS_QUALITY, graphicsQuality.value)
+      localStorage.setItem(STORAGE_KEYS.VIBRATION_ENABLED, String(isVibrationEnabled.value))
       localStorage.setItem(STORAGE_KEYS.BATTERY_SAVER, String(isBatterySaverMode.value))
 
       const treatData: TreatRecord = {
@@ -1009,6 +1123,7 @@ export function useTwilightStorage() {
       twilights_alarms: alarms.value,
       selectedAlarmSound: selectedAlarmSound.value,
       isStarCursorEnabled: isStarCursorEnabled.value,
+      graphicsQuality: graphicsQuality.value,
       isBatterySaverMode: isBatterySaverMode.value,
       lastActiveDate: getTodayDateString(),
     }
@@ -1200,9 +1315,14 @@ export function useTwilightStorage() {
       selectedAlarmSound.value = d.selectedAlarmSound
     }
     if (typeof d.isStarCursorEnabled === 'boolean') isStarCursorEnabled.value = d.isStarCursorEnabled
-    if (typeof d.isBatterySaverMode === 'boolean') {
+    if (isValidGraphicsQuality(d.graphicsQuality)) {
+      graphicsQuality.value = d.graphicsQuality
+      isBatterySaverMode.value = d.graphicsQuality === 'low'
+      applyGraphicsQualityToDocument(d.graphicsQuality)
+    } else if (typeof d.isBatterySaverMode === 'boolean') {
       isBatterySaverMode.value = d.isBatterySaverMode
-      applyBatterySaverClass(d.isBatterySaverMode)
+      graphicsQuality.value = d.isBatterySaverMode ? 'low' : 'high'
+      applyGraphicsQualityToDocument(graphicsQuality.value)
     }
 
     try {
@@ -1608,16 +1728,28 @@ export function useTwilightStorage() {
     persistAll()
   }
 
-  /** Nyalakan atau matikan Mode Hemat Baterai (menjeda animasi partikel latar belakang) */
-  function toggleBatterySaverMode() {
-    isBatterySaverMode.value = !isBatterySaverMode.value
-    applyBatterySaverClass(isBatterySaverMode.value)
+  /** Atur Kualitas Grafik (Ringan / Sedang / Tinggi), terapkan ke DOM & simpan ke localStorage */
+  function setGraphicsQuality(quality: GraphicsQuality, showToast = true) {
+    graphicsQuality.value = quality
+    isBatterySaverMode.value = quality === 'low'
+    applyGraphicsQualityToDocument(quality)
     persistAll()
-    showMiniToast(
-      isBatterySaverMode.value
-        ? 'Mode Hemat Baterai aktif 🍃 Animasi latar dijeda'
-        : 'Mode Hemat Baterai mati ✨ Animasi langit kembali menyala',
-    )
+    if (showToast) {
+      showMiniToast(GRAPHICS_QUALITY_OPTIONS[quality].toastText)
+    }
+  }
+
+  /** Berpindah berurutan antar 3 tingkatan kualitas grafik: Ringan -> Sedang -> Tinggi -> Ringan */
+  function cycleGraphicsQuality() {
+    const order: GraphicsQuality[] = ['low', 'medium', 'high']
+    const idx = order.indexOf(graphicsQuality.value)
+    const next = order[(idx + 1) % order.length] ?? 'medium'
+    setGraphicsQuality(next, true)
+  }
+
+  /** Alias kompatibilitas sakelar Mode Hemat Baterai (toggle antara Ringan & Tinggi) */
+  function toggleBatterySaverMode() {
+    setGraphicsQuality(graphicsQuality.value === 'low' ? 'high' : 'low', true)
   }
 
   /** Simpan nama panggilan kustom pengguna ke localStorage */
@@ -1725,6 +1857,8 @@ export function useTwilightStorage() {
         selectedAlarmSound: selectedAlarmSound.value,
         twilights_game_highscore: gameHighScore.value,
         isStarCursorEnabled: isStarCursorEnabled.value,
+        twilights_graphics_quality: graphicsQuality.value,
+        twilights_vibration_enabled: isVibrationEnabled.value,
         isBatterySaverMode: isBatterySaverMode.value,
         lastActiveDate: getTodayDateString(),
       },
@@ -1946,12 +2080,21 @@ export function useTwilightStorage() {
         isRainAmbientOn.value = ambientMixerSettings.value.rain.enabled
         ambientMixerVersion.value += 1
       }
+      if (typeof d.twilights_vibration_enabled === 'boolean') {
+        isVibrationEnabled.value = d.twilights_vibration_enabled
+      }
       if (typeof d.isStarCursorEnabled === 'boolean') {
         isStarCursorEnabled.value = d.isStarCursorEnabled
       }
-      if (typeof d.isBatterySaverMode === 'boolean') {
+      const importedGraphics = d.twilights_graphics_quality ?? d.graphicsQuality
+      if (isValidGraphicsQuality(importedGraphics)) {
+        graphicsQuality.value = importedGraphics
+        isBatterySaverMode.value = importedGraphics === 'low'
+        applyGraphicsQualityToDocument(importedGraphics)
+      } else if (typeof d.isBatterySaverMode === 'boolean') {
         isBatterySaverMode.value = d.isBatterySaverMode
-        applyBatterySaverClass(d.isBatterySaverMode)
+        graphicsQuality.value = d.isBatterySaverMode ? 'low' : 'high'
+        applyGraphicsQualityToDocument(graphicsQuality.value)
       }
 
       habitResetVersion.value += 1
@@ -2122,6 +2265,8 @@ export function useTwilightStorage() {
     }
 
     treatCoins.value -= SECRET_CARD_GACHA_COST
+    // Sentuhan mikro (haptic feedback ringan 25ms) saat membuka kartu gacha di HP
+    triggerVibration(VIBRATION_PATTERNS.microHaptic)
 
     const uncollected = SECRET_CAT_CARDS.filter(
       card => !collectedSecretCards.value.includes(card.id),
@@ -2418,12 +2563,22 @@ export function useTwilightStorage() {
         userName.value = savedUserName.trim()
       }
 
-      // 11. Muat preferensi Mode Hemat Baterai (Reduce Motion)
+      // 11. Muat Pengaturan Kualitas Grafik (atau auto-detect: Sedang di HP/layar sentuh, Tinggi di PC/Laptop)
+      const savedGraphics = localStorage.getItem(STORAGE_KEYS.GRAPHICS_QUALITY)
       const savedBattery = localStorage.getItem(STORAGE_KEYS.BATTERY_SAVER)
-      if (savedBattery === 'true' || savedBattery === 'false') {
-        isBatterySaverMode.value = savedBattery === 'true'
+      if (isValidGraphicsQuality(savedGraphics)) {
+        graphicsQuality.value = savedGraphics
+      } else if (savedBattery === 'true') {
+        graphicsQuality.value = 'low'
+      } else {
+        const isMobileAuto =
+          (window.matchMedia?.('(pointer: coarse)').matches ?? false) ||
+          window.innerWidth < 768 ||
+          /Android|iPhone|iPad|iPod|Mobile|Tablet/i.test(navigator.userAgent)
+        graphicsQuality.value = isMobileAuto ? 'medium' : 'high'
       }
-      applyBatterySaverClass(isBatterySaverMode.value)
+      isBatterySaverMode.value = graphicsQuality.value === 'low'
+      applyGraphicsQualityToDocument(graphicsQuality.value)
 
       // 12. Muat tanggal klaim terakhir bonus harian +5 Ikan Kering (anti-spam 1x/hari)
       const savedRewardDate = localStorage.getItem(STORAGE_KEYS.DAILY_REWARD_DATE)
@@ -3102,6 +3257,8 @@ export function useTwilightStorage() {
     quickNotes,
     userName,
     isStarCursorEnabled,
+    graphicsQuality,
+    graphicsConfig,
     isBatterySaverMode,
     isZenMode,
     treatCoins,
@@ -3172,6 +3329,8 @@ export function useTwilightStorage() {
     updateQuickNotes,
     setUserName,
     toggleStarCursor,
+    setGraphicsQuality,
+    cycleGraphicsQuality,
     toggleBatterySaverMode,
     toggleZenMode,
     exitZenMode,

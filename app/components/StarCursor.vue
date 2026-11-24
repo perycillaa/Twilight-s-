@@ -2,7 +2,7 @@
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { type ThemeName, useTwilightStorage } from '~/composables/useTwilightStorage'
 
-const { theme, isStarCursorEnabled, isBatterySaverMode } = useTwilightStorage()
+const { theme, isStarCursorEnabled, graphicsConfig } = useTwilightStorage()
 
 // Deteksi layar sentuh / HP agar kursor kustom otomatis nonaktif dan tidak mengganggu
 const isTouchDevice = ref<boolean>(false)
@@ -98,8 +98,8 @@ function handleMouseMove(event: MouseEvent) {
     ),
   )
 
-  // Batasi pembuatan partikel (throttle tiap ~35ms & jarak > 12px) — jeda jika Mode Hemat Baterai aktif
-  if (isBatterySaverMode.value) return
+  // Jejak debu bintang kursor hanya aktif di kualitas Grafik Tinggi (mati di Ringan & Sedang)
+  if (!graphicsConfig.value.enableCursorDust) return
   const now = performance.now()
   const dist = Math.hypot(event.clientX - lastTrailX, event.clientY - lastTrailY)
 

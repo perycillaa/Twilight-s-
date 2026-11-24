@@ -6,8 +6,24 @@ import {
   useTwilightStorage,
 } from '~/composables/useTwilightStorage'
 
-// Ambil tema header, Tema Latar Belakang Beranimasi (Cozy Theme), status Hujan Lembut, & Mode Hemat Baterai
-const { theme, activeCozyTheme, isRainAmbientOn, isBatterySaverMode } = useTwilightStorage()
+// Ambil tema header, Tema Latar Belakang Beranimasi, status Hujan Lembut, & Kualitas Grafik (Ringan / Sedang / Tinggi)
+const {
+  theme,
+  activeCozyTheme,
+  isRainAmbientOn,
+  graphicsQuality,
+  graphicsConfig,
+} = useTwilightStorage()
+
+const isLowGraphics = computed<boolean>(() => graphicsQuality.value === 'low')
+
+/** Helper memangkas jumlah partikel sesuai kualitas grafik: Ringan=0%, Sedang=50%, Tinggi=100% */
+function scaleParticles<T>(items: T[]): T[] {
+  const scale = graphicsConfig.value.particleScale
+  if (scale <= 0) return []
+  if (scale >= 1) return items
+  return items.slice(0, Math.max(1, Math.ceil(items.length * scale)))
+}
 
 interface BgPalette {
   gradient: string
@@ -103,9 +119,9 @@ const activeBg = computed<BgPalette>(() => {
   return themeBgConfig[theme.value] ?? themeBgConfig.twilight
 })
 
-// Tampilkan hujan apabila tema Midnight Rainy Window aktif ATAU sakelar Hujan Lembut di BGM Player menyala
+// Tampilkan hujan apabila tema Midnight Rainy Window aktif ATAU sakelar Hujan Lembut di BGM Player menyala (nonaktif di Grafik Ringan)
 const showRainLayer = computed<boolean>(() => {
-  if (isBatterySaverMode.value) return false
+  if (isLowGraphics.value) return false
   return activeCozyTheme.value === 'midnight-rain' || isRainAmbientOn.value
 })
 
@@ -160,11 +176,23 @@ const astralExtraShootingStars = [
   { top: '34%', left: '82%', width: '165px', duration: '6.0s', delay: '3.9s' },
 ]
 
-const displayedShootingStars = computed(() =>
-  activeCozyTheme.value === 'astral-palace'
-    ? [...baseShootingStars, ...astralExtraShootingStars]
-    : baseShootingStars,
+const displayedShootingStars = computed(() => {
+  const pool =
+    activeCozyTheme.value === 'astral-palace'
+      ? [...baseShootingStars, ...astralExtraShootingStars]
+      : baseShootingStars
+  return scaleParticles(pool)
+})
+
+const displayedTinyStars = computed(() =>
+  isLowGraphics.value ? tinyStars.slice(0, 10) : scaleParticles(tinyStars),
 )
+const displayedRainDrops = computed(() => scaleParticles(rainDrops))
+const displayedCityBokeh = computed(() => scaleParticles(cityBokehLights))
+const displayedAutumnLeaves = computed(() => scaleParticles(autumnLeaves))
+const displayedCafeMotes = computed(() => scaleParticles(cafeWarmMotes))
+const displayedSakuraPetals = computed(() => scaleParticles(sakuraPetals))
+const displayedSkyLanterns = computed(() => scaleParticles(skyLanterns))
 
 // 44 Rintik Hujan Miring Halus (untuk Midnight Rainy Window & sakelar Hujan BGM)
 const rainDrops = Array.from({ length: 44 }, (_, idx) => ({
@@ -254,7 +282,8 @@ let dustCounter = 0
 let lastDustSpawnAt = 0
 
 function handleAstralMouseMove(event: MouseEvent) {
-  if (activeCozyTheme.value !== 'astral-palace' || isBatterySaverMode.value) return
+  // Partikel debu emas kursor hanya aktif pada kualitas Grafik Tinggi (High)
+  if (activeCozyTheme.value !== 'astral-palace' || !graphicsConfig.value.enableCursorDust) return
   const now = performance.now()
   if (now - lastDustSpawnAt < 42) return
   lastDustSpawnAt = now
@@ -329,19 +358,23 @@ onUnmounted(() => {
         v-if="activeCozyTheme === 'astral-palace'"
         class="pointer-events-none absolute inset-0 overflow-hidden"
       >
-        <!-- Pita Aurora Borealis Hijau Zamrud, Biru Cyan, & Ungu Kristal -->
-        <div
-          class="animate-aurora-wave absolute -left-[15%] -top-10 h-[44vh] w-[130%] rounded-full bg-gradient-to-r from-emerald-400/25 via-cyan-300/25 to-purple-500/25 blur-3xl"
-          style="--aurora-duration: 14s; --aurora-delay: 0s"
-        />
-        <div
-          class="animate-aurora-wave absolute -left-[10%] top-[10%] h-[36vh] w-[120%] rounded-full bg-gradient-to-r from-purple-500/20 via-emerald-300/25 to-cyan-400/25 blur-3xl"
-          style="--aurora-duration: 18s; --aurora-delay: 3.5s"
-        />
-        <div
-          class="animate-aurora-wave absolute left-[5%] top-[2%] h-[28vh] w-[90%] rounded-full bg-gradient-to-r from-cyan-300/20 via-fuchsia-400/18 to-amber-200/15 blur-2xl"
-          style="--aurora-duration: 12s; --aurora-delay: 1.8s"
-        />
+        <!-- Pita Aurora Borealis Hijau Zamrud, Biru Cyan, & Ungu Kristal (disembunyikan di Grafik Ringan agar ringan di GPU) -->
+        <template v-if="!isLowGraphics">
+          <div
+            class="animate-aurora-wave absolute -left-[15%] -top-10 h-[44vh] w-[130%] rounded-full bg-gradient-to-r from-emerald-400/25 via-cyan-300/25 to-purple-500/25 blur-3xl"
+            style="--aurora-duration: 14s; --aurora-delay: 0s"
+          />
+          <div
+            v-if="graphicsQuality === 'high'"
+            class="animate-aurora-wave absolute -left-[10%] top-[10%] h-[36vh] w-[120%] rounded-full bg-gradient-to-r from-purple-500/20 via-emerald-300/25 to-cyan-400/25 blur-3xl"
+            style="--aurora-duration: 18s; --aurora-delay: 3.5s"
+          />
+          <div
+            v-if="graphicsQuality === 'high'"
+            class="animate-aurora-wave absolute left-[5%] top-[2%] h-[28vh] w-[90%] rounded-full bg-gradient-to-r from-cyan-300/20 via-fuchsia-400/18 to-amber-200/15 blur-2xl"
+            style="--aurora-duration: 12s; --aurora-delay: 1.8s"
+          />
+        </template>
 
         <!-- Bulan Sabit Perak Bercahaya Megah di Sudut Langit Atas -->
         <div class="absolute right-[8%] top-[7%] sm:right-[11%] sm:top-[6%]">
@@ -389,9 +422,9 @@ onUnmounted(() => {
       >
         <!-- Kilau tipis kaca jendela malam di tepi atas -->
         <div class="absolute inset-0 bg-gradient-to-b from-sky-200/[0.04] via-transparent to-amber-300/[0.06]" />
-        <!-- Lampu kota blur (bokeh emas & biru lembut) di kejauhan -->
+        <!-- Lampu kota blur (bokeh emas & biru lembut) di kejauhan (0% di Ringan, 50% di Sedang, 100% di Tinggi) -->
         <span
-          v-for="(bokeh, idx) in cityBokehLights"
+          v-for="(bokeh, idx) in displayedCityBokeh"
           :key="`bokeh-${idx}`"
           class="animate-bokeh-float absolute rounded-full blur-md"
           :class="bokeh.color"
@@ -427,9 +460,9 @@ onUnmounted(() => {
           class="absolute -left-24 -top-24 h-[520px] w-[520px] rounded-full bg-gradient-to-br from-amber-300/20 via-orange-400/10 to-transparent blur-3xl"
         />
 
-        <!-- Partikel cahaya kafe sore lembut -->
+        <!-- Partikel cahaya kafe sore lembut (0% Ringan, 50% Sedang, 100% Tinggi) -->
         <span
-          v-for="(mote, idx) in cafeWarmMotes"
+          v-for="(mote, idx) in displayedCafeMotes"
           :key="`mote-${idx}`"
           class="animate-warm-mote absolute rounded-full bg-amber-200/80 shadow-[0_0_10px_rgba(251,191,36,0.75)] blur-[0.5px]"
           :style="{
@@ -443,9 +476,9 @@ onUnmounted(() => {
         />
 
         <!-- Daun musim gugur melayang berputar perlahan -->
-        <template v-if="!isBatterySaverMode">
+        <template v-if="!isLowGraphics">
           <svg
-            v-for="(leaf, idx) in autumnLeaves"
+            v-for="(leaf, idx) in displayedAutumnLeaves"
             :key="`leaf-${idx}`"
             class="animate-leaf-fall absolute top-0 opacity-0 drop-shadow-[0_2px_6px_rgba(0,0,0,0.28)]"
             :style="{
@@ -483,10 +516,10 @@ onUnmounted(() => {
         v-if="activeCozyTheme === 'sakura-lantern'"
         class="pointer-events-none absolute inset-0 overflow-hidden"
       >
-        <template v-if="!isBatterySaverMode">
+        <template v-if="!isLowGraphics">
           <!-- Lentera kertas emas bercahaya terbang perlahan ke atas -->
           <div
-            v-for="(lantern, idx) in skyLanterns"
+            v-for="(lantern, idx) in displayedSkyLanterns"
             :key="`lantern-${idx}`"
             class="animate-lantern-rise absolute bottom-0 opacity-0"
             :style="{
@@ -526,7 +559,7 @@ onUnmounted(() => {
 
           <!-- Kelopak bunga sakura pink melayang berputar -->
           <svg
-            v-for="(petal, idx) in sakuraPetals"
+            v-for="(petal, idx) in displayedSakuraPetals"
             :key="`petal-${idx}`"
             class="animate-petal-fall absolute top-0 opacity-0 drop-shadow-[0_0_6px_rgba(249,168,212,0.55)]"
             :style="{
@@ -601,7 +634,7 @@ onUnmounted(() => {
     >
       <div v-if="showRainLayer" class="pointer-events-none absolute inset-0 overflow-hidden">
         <span
-          v-for="(drop, idx) in rainDrops"
+          v-for="(drop, idx) in displayedRainDrops"
           :key="`rain-${idx}`"
           class="animate-rain-drop absolute top-0 w-[1.5px] rounded-full bg-gradient-to-b"
           :class="
@@ -621,7 +654,7 @@ onUnmounted(() => {
 
     <!-- Titik-titik bintang kecil berkelip halus -->
     <span
-      v-for="(star, index) in tinyStars"
+      v-for="(star, index) in displayedTinyStars"
       :key="`dot-${index}`"
       class="animate-twinkle absolute rounded-full bg-white/95 shadow-[0_0_6px_rgba(255,255,255,0.85)]"
       :class="activeCozyTheme === 'autumn-cafe' ? 'opacity-45' : 'opacity-100'"
@@ -767,8 +800,8 @@ onUnmounted(() => {
       </div>
     </div>
 
-    <!-- 3. EFEK BINTANG JATUH (dijeda saat Mode Hemat Baterai aktif) -->
-    <template v-if="!isBatterySaverMode">
+    <!-- 3. EFEK BINTANG JATUH (0% di Ringan, 50% di Sedang, 100% di Tinggi) -->
+    <template v-if="!isLowGraphics">
       <div
         v-for="(meteor, idx) in displayedShootingStars"
         :key="`meteor-${idx}`"
@@ -798,8 +831,8 @@ onUnmounted(() => {
       </div>
     </template>
 
-    <!-- 4. PARTIKEL DEBU BINTANG EMAS (Golden Stardust) mengikuti kursor di tema 👑 Astral Crystal Palace -->
-    <template v-if="activeCozyTheme === 'astral-palace' && !isBatterySaverMode">
+    <!-- 4. PARTIKEL DEBU BINTANG EMAS (Golden Stardust) mengikuti kursor (hanya di Grafik Tinggi) -->
+    <template v-if="activeCozyTheme === 'astral-palace' && graphicsConfig.enableCursorDust">
       <div
         v-for="dust in goldenDustTrail"
         :key="dust.id"

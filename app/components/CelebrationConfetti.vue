@@ -2,8 +2,8 @@
 import { onUnmounted, ref, watch } from 'vue'
 import { useTwilightStorage } from '~/composables/useTwilightStorage'
 
-// Pantau pemicu selebrasi 100% dari composable bersama
-const { celebrationCount } = useTwilightStorage()
+// Pantau pemicu selebrasi 100% & pengaturan kualitas grafik (DPR, FPS & jumlah partikel)
+const { celebrationCount, graphicsConfig } = useTwilightStorage()
 
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 const isAnimating = ref(false)
@@ -60,15 +60,25 @@ function launchConfetti() {
   const ctx = canvas.getContext('2d')
   if (!ctx) return
 
-  canvas.width = window.innerWidth
-  canvas.height = window.innerHeight
+  const rawDpr = window.devicePixelRatio || 1
+  const cappedDpr = Math.max(1, Math.min(rawDpr, graphicsConfig.value.maxDpr))
+  const logicalW = window.innerWidth
+  const logicalH = window.innerHeight
+  canvas.width = Math.round(logicalW * cappedDpr)
+  canvas.height = Math.round(logicalH * cappedDpr)
+  ctx.setTransform(cappedDpr, 0, 0, cappedDpr, 0, 0)
   isAnimating.value = true
 
   if (rafId) cancelAnimationFrame(rafId)
 
-  // Buat 90 partikel bintang & hati pastel dari bagian atas layar
-  const pieces: ConfettiPiece[] = Array.from({ length: 90 }, () => ({
-    x: Math.random() * canvas.width,
+  // Jumlah partikel mengikuti kualitas grafik (Ringan: 28, Sedang: 45, Tinggi: 90)
+  const pieceCount =
+    graphicsConfig.value.particleScale <= 0
+      ? 28
+      : Math.max(30, Math.round(90 * graphicsConfig.value.particleScale))
+
+  const pieces: ConfettiPiece[] = Array.from({ length: pieceCount }, () => ({
+    x: Math.random() * logicalW,
     y: -20 - Math.random() * 240,
     vx: (Math.random() - 0.5) * 3.2,
     vy: 2.2 + Math.random() * 3.4,
@@ -81,25 +91,34 @@ function launchConfetti() {
   }))
 
   const startTime = performance.now()
+  let lastRenderAt = 0
   const durationMs = 4600
+  const minFrameMs = 1000 / Math.max(24, graphicsConfig.value.targetFps)
 
   const renderFrame = (now: number) => {
     const elapsed = now - startTime
-    ctx.clearRect(0, 0, canvas.width, canvas.height)
+    if (lastRenderAt > 0 && now - lastRenderAt < minFrameMs * 0.9 && elapsed < durationMs) {
+      rafId = requestAnimationFrame(renderFrame)
+      return
+    }
+    const stepScale = lastRenderAt > 0 ? Math.min(2.4, (now - lastRenderAt) / 16.67) : 1
+    lastRenderAt = now
+
+    ctx.clearRect(0, 0, logicalW, logicalH)
 
     let activeCount = 0
 
     for (const p of pieces) {
-      p.x += p.vx + Math.sin(elapsed * 0.004 + p.rotation) * 0.6
-      p.y += p.vy
-      p.vy += 0.035 // Gravitasi halus
-      p.rotation += p.vRot
+      p.x += (p.vx + Math.sin(elapsed * 0.004 + p.rotation) * 0.6) * stepScale
+      p.y += p.vy * stepScale
+      p.vy += 0.035 * stepScale // Gravitasi halus
+      p.rotation += p.vRot * stepScale
 
       if (elapsed > durationMs * 0.65) {
         p.opacity = Math.max(0, 1 - (elapsed - durationMs * 0.65) / (durationMs * 0.35))
       }
 
-      if (p.y < canvas.height + 30 && p.opacity > 0.02) {
+      if (p.y < logicalH + 30 && p.opacity > 0.02) {
         activeCount += 1
         ctx.save()
         ctx.globalAlpha = p.opacity

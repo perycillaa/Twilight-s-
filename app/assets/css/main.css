@@ -386,7 +386,38 @@ input[type="time"]::-webkit-calendar-picker-indicator {
   }
 }
 
-/* Mode Hemat Baterai (Reduce Motion): jeda seluruh animasi partikel latar belakang */
+/* Kontrol khusus HP / Mobile (misal sakelar 📳 Getar HP): otomatis tersembunyi di PC/Laptop */
+@media (pointer: fine) and (min-width: 768px) {
+  .mobile-only-control {
+    display: none !important;
+  }
+}
+
+/* --- PENGATURAN KUALITAS GRAFIK (RINGAN / SEDANG / TINGGI) --- */
+
+/* 1. Mode Ringan (Low): matikan backdrop-blur (ganti semi-transparan solid estetik) & jeda seluruh animasi berat */
+html[data-graphics-quality="low"] .glass-card,
+html[data-graphics-quality="low"] header {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  background-color: rgba(34, 21, 64, 0.86) !important;
+}
+
+html[data-graphics-quality="low"] .backdrop-blur-md,
+html[data-graphics-quality="low"] .backdrop-blur-sm {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* 2. Mode Sedang (Medium): gunakan efek kaca blur ringan (4px) agar GPU HP tetap seimbang */
+html[data-graphics-quality="medium"] .glass-card,
+html[data-graphics-quality="medium"] header,
+html[data-graphics-quality="medium"] .backdrop-blur-md {
+  backdrop-filter: blur(4px) !important;
+  -webkit-backdrop-filter: blur(4px) !important;
+}
+
+/* Mode Ringan / Hemat Baterai (Reduce Motion): jeda seluruh animasi partikel latar belakang */
 html.battery-saver-mode .animate-twinkle,
 html.battery-saver-mode .animate-shooting-star,
 html.battery-saver-mode .animate-rain-drop,
@@ -398,7 +429,19 @@ html.battery-saver-mode .animate-warm-mote,
 html.battery-saver-mode .animate-petal-fall,
 html.battery-saver-mode .animate-lantern-rise,
 html.battery-saver-mode .animate-aurora-wave,
-html.battery-saver-mode .animate-gold-dust {
+html.battery-saver-mode .animate-gold-dust,
+html[data-graphics-quality="low"] .animate-twinkle,
+html[data-graphics-quality="low"] .animate-shooting-star,
+html[data-graphics-quality="low"] .animate-rain-drop,
+html[data-graphics-quality="low"] .animate-cloud-drift,
+html[data-graphics-quality="low"] .animate-gentle-sway,
+html[data-graphics-quality="low"] .animate-bokeh-float,
+html[data-graphics-quality="low"] .animate-leaf-fall,
+html[data-graphics-quality="low"] .animate-warm-mote,
+html[data-graphics-quality="low"] .animate-petal-fall,
+html[data-graphics-quality="low"] .animate-lantern-rise,
+html[data-graphics-quality="low"] .animate-aurora-wave,
+html[data-graphics-quality="low"] .animate-gold-dust {
   animation-play-state: paused !important;
 }
 
