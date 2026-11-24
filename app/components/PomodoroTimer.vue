@@ -35,6 +35,7 @@ const {
   activeTimerRemainingSeconds,
   isZenMode,
   isImmersiveZenOpen,
+  twilightFocusIcon,
   pomodoroToggleSignal,
   pomodoroResetSignal,
   pomodoroModeSignal,
@@ -429,7 +430,7 @@ onUnmounted(() => {
           class="btn-bouncy inline-flex min-h-[38px] shrink-0 cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-full border border-purple-200/45 bg-gradient-to-r from-purple-400/25 via-indigo-400/25 to-pink-400/25 px-3 py-2 text-xs font-semibold text-pink-50 shadow-sm hover:from-purple-400/40 hover:to-pink-400/40 sm:min-h-0 sm:px-2.5 sm:py-1.5 sm:text-[11px]"
           @click="isImmersiveZenOpen = true"
         >
-          <span>🖥️ Twilight Focus</span>
+          <span>{{ twilightFocusIcon }} Twilight Focus</span>
           <span
             class="hidden rounded bg-black/25 px-1.5 py-0.5 text-[9px] font-bold tracking-wider text-pink-100/85 md:inline"
           >

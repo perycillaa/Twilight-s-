@@ -16,6 +16,8 @@ const {
   isImmersiveZenOpen,
   isStudyCardModalOpen,
   isShortcutsModalOpen,
+  isMobileDevice,
+  twilightFocusIcon,
   isNotebookOpen,
   isAlarmOpen,
   isMiniGameOpen,
@@ -357,9 +359,25 @@ function handleBackgroundResumeGesture() {
   resumeKeepAliveIfNeeded()
 }
 
+let coarsePointerMql: MediaQueryList | null = null
+
+function updateDeviceDetection() {
+  if (!import.meta.client) return
+  const isCoarsePointer = window.matchMedia?.('(pointer: coarse)').matches ?? false
+  const isSmallViewport = window.innerWidth < 768
+  const isMobileUa = /Android|iPhone|iPad|iPod|Mobile|Tablet/i.test(navigator.userAgent)
+  isMobileDevice.value = isCoarsePointer || isSmallViewport || isMobileUa
+}
+
 onMounted(() => {
   updateHeaderClock()
+  updateDeviceDetection()
   clockTimer = setInterval(updateHeaderClock, 15000)
+  window.addEventListener('resize', updateDeviceDetection, { passive: true })
+  if (window.matchMedia) {
+    coarsePointerMql = window.matchMedia('(pointer: coarse)')
+    coarsePointerMql.addEventListener?.('change', updateDeviceDetection)
+  }
   window.addEventListener('keydown', handleGlobalShortcut)
   window.addEventListener('pointerdown', handleBackgroundResumeGesture, { passive: true })
   document.addEventListener('visibilitychange', handleBackgroundResumeGesture)
@@ -370,6 +388,8 @@ onMounted(() => {
 onUnmounted(() => {
   if (clockTimer) clearInterval(clockTimer)
   if (import.meta.client) {
+    window.removeEventListener('resize', updateDeviceDetection)
+    coarsePointerMql?.removeEventListener?.('change', updateDeviceDetection)
     window.removeEventListener('keydown', handleGlobalShortcut)
     window.removeEventListener('pointerdown', handleBackgroundResumeGesture)
     document.removeEventListener('visibilitychange', handleBackgroundResumeGesture)
@@ -541,14 +561,14 @@ onUnmounted(() => {
             class="flex flex-wrap items-center gap-2 transition-opacity duration-500 sm:gap-2.5"
             :class="isZenMode ? 'opacity-40 hover:opacity-100' : 'opacity-100'"
           >
-            <!-- Tombol Akses Twilight Focus (Mode Layar Penuh / Meja Belajar) -->
+            <!-- Tombol Akses Twilight Focus (ikon adaptif: 🖥️ di PC/Laptop, 📱 di HP/Mobile) -->
             <button
               type="button"
               title="Masuk ke Twilight Focus (tampilan layar penuh meja belajar) — Pintasan [T]"
               class="btn-bouncy inline-flex cursor-pointer items-center gap-1 rounded-full border border-indigo-200/45 bg-gradient-to-r from-indigo-400/25 via-purple-400/25 to-pink-400/25 px-2.5 py-1 text-[11px] font-bold text-pink-50 hover:from-indigo-400/40 hover:to-pink-400/40"
               @click="isImmersiveZenOpen = true"
             >
-              <span>🖥️</span>
+              <span>{{ twilightFocusIcon }}</span>
               <span>Twilight Focus</span>
             </button>
 
@@ -646,7 +666,7 @@ onUnmounted(() => {
               <span>{{ isBatterySaverMode ? 'Hemat ON' : 'Hemat Daya' }}</span>
             </button>
 
-            <!-- Tombol Toggle Kursor Bintang Kustom (khusus desktop / layar lebar) -->
+            <!-- Tombol Toggle Kursor Bintang Kustom (khusus PC/Laptop — otomatis tersembunyi di HP/Mobile) -->
             <button
               type="button"
               :title="
@@ -654,7 +674,7 @@ onUnmounted(() => {
                   ? 'Matikan kursor bintang kustom'
                   : 'Nyalakan kursor bintang kustom'
               "
-              class="btn-bouncy hidden cursor-pointer items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-semibold sm:inline-flex"
+              class="desktop-only-control btn-bouncy inline-flex cursor-pointer items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-semibold"
               :class="
                 isStarCursorEnabled
                   ? 'border-pink-200/45 bg-pink-300/20 text-pink-100 shadow-sm'
@@ -666,12 +686,12 @@ onUnmounted(() => {
               <span>Kursor</span>
             </button>
 
-            <!-- Tombol Panduan Keyboard Shortcuts (⌨️) di sebelah Tema -->
+            <!-- Tombol Panduan Keyboard Shortcuts (⌨️) khusus PC/Laptop — tersembunyi otomatis di HP/Mobile -->
             <button
               type="button"
               title="Panduan Keyboard Shortcuts (Tekan ?)"
               aria-label="Buka panduan Keyboard Shortcuts"
-              class="btn-bouncy inline-flex cursor-pointer items-center justify-center rounded-full border border-pink-200/35 bg-white/10 px-2.5 py-1 text-xs font-semibold text-pink-100 shadow-sm transition hover:border-pink-300/65 hover:bg-pink-300/25"
+              class="desktop-only-control btn-bouncy inline-flex cursor-pointer items-center justify-center rounded-full border border-pink-200/35 bg-white/10 px-2.5 py-1 text-xs font-semibold text-pink-100 shadow-sm transition hover:border-pink-300/65 hover:bg-pink-300/25"
               @click="isShortcutsModalOpen = true"
             >
               ⌨️

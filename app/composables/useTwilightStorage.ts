@@ -798,6 +798,9 @@ export function useTwilightStorage() {
   const isImmersiveZenOpen = useState<boolean>('twilights-immersive-zen-open', () => false)
   const isStudyCardModalOpen = useState<boolean>('twilights-study-card-open', () => false)
   const isShortcutsModalOpen = useState<boolean>('twilights-shortcuts-modal-open', () => false)
+  // Deteksi perangkat adaptif (HP/Mobile vs PC/Laptop) untuk ikon Twilight Focus (📱 vs 🖥️)
+  const isMobileDevice = useState<boolean>('twilights-is-mobile-device', () => false)
+  const twilightFocusIcon = computed<string>(() => (isMobileDevice.value ? '📱' : '🖥️'))
   const isBgmPlaying = useState<boolean>('twilights-bgm-playing', () => false)
   const isRainAmbientOn = useState<boolean>('twilights-rain-ambient', () => false)
   // Sinkronisasi volume & mute utama (dari BGM Player) agar suara kedua kucing ikut hening saat di-mute
@@ -3134,6 +3137,8 @@ export function useTwilightStorage() {
     isImmersiveZenOpen,
     isStudyCardModalOpen,
     isShortcutsModalOpen,
+    isMobileDevice,
+    twilightFocusIcon,
     isBgmPlaying,
     isRainAmbientOn,
     isMasterAudioMuted,

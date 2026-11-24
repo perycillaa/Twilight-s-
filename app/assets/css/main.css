@@ -373,9 +373,15 @@ input[type="time"]::-webkit-calendar-picker-indicator {
   }
 }
 
-/* Optimasi HP / Layar Sentuh: pastikan kursor bintang benar-benar tersembunyi */
+/* Optimasi HP / Layar Sentuh: pastikan kursor bintang & tombol khusus PC (⌨️, ✦ Kursor) tersembunyi */
 @media (pointer: coarse) {
   .star-cursor-layer {
+    display: none !important;
+  }
+}
+
+@media (pointer: coarse), (max-width: 767px) {
+  .desktop-only-control {
     display: none !important;
   }
 }
