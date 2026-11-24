@@ -2,7 +2,7 @@
 // 1. Offline Cache (menyimpan halaman utama, CSS, JS, dan ikon di Cache Storage agar berjalan offline)
 // 2. Notifikasi Sistem (menangani klik pop-up notifikasi di Windows Action Center & bilah atas HP)
 
-const CACHE_NAME = 'twilights-pwa-v1'
+const CACHE_NAME = 'twilights-pwa-v2'
 const PRECACHE_URLS = [
   '/',
   '/manifest.json',
