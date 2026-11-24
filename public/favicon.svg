@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="sky" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e1b4b" />
+      <stop offset="100%" stop-color="#311042" />
+    </linearGradient>
+    <linearGradient id="moon" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fef9c3" />
+      <stop offset="100%" stop-color="#fde68a" />
+    </linearGradient>
+    <linearGradient id="starPink" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fbcfe8" />
+      <stop offset="100%" stop-color="#f9a8d4" />
+    </linearGradient>
+  </defs>
+  <!-- Latar langit malam membulat -->
+  <rect width="64" height="64" rx="18" fill="url(#sky)" />
+  <!-- Bulan sabit pastel bercahaya -->
+  <path
+    d="M39 11C26.5 13 18 24 18 36C18 46 24.5 54 34 56.5C21.5 57.5 10.5 47.8 9.5 35C8.5 21.5 19 10.5 32.5 9.8C34.8 9.7 37 10.1 39 11Z"
+    fill="url(#moon)"
+  />
+  <!-- Bintang pink pastel imut di samping bulan -->
+  <path
+    d="M44 21 L47.2 29.2 L56 30 L49.2 35.6 L51.3 44.2 L44 39.4 L36.7 44.2 L38.8 35.6 L32 30 L40.8 29.2 Z"
+    fill="url(#starPink)"
+    stroke="#ffffff"
+    stroke-width="1.2"
+    stroke-linejoin="round"
+  />
+  <!-- Kilau bintang mungil -->
+  <circle cx="48" cy="14" r="2" fill="#ffffff" opacity="0.9" />
+  <circle cx="24" cy="18" r="1.4" fill="#fbcfe8" opacity="0.85" />
+</svg>

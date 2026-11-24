@@ -1,0 +1,868 @@
+@import "tailwindcss";
+
+/* Definisi font kustom agar bisa dipakai lewat class font-display dan font-sans */
+@theme {
+  --font-display: "Fredoka", ui-rounded, system-ui, sans-serif;
+  --font-sans: "Quicksand", ui-rounded, system-ui, sans-serif;
+}
+
+/* Variabel warna tema default: Twilight Purple */
+:root,
+[data-theme="twilight"] {
+  --twilight-accent: #f9a8d4;
+  --twilight-accent-soft: #fbcfe8;
+  --twilight-secondary: #c4b5fd;
+  --twilight-glow: rgba(249, 168, 212, 0.5);
+  --twilight-bg-base: #1e1b4b;
+}
+
+/* Tema 2: Sakura Dusk (gradasi ungu-pink senja yang hangat) */
+[data-theme="sakura"] {
+  --twilight-accent: #fda4af;
+  --twilight-accent-soft: #fecdd3;
+  --twilight-secondary: #f9a8d4;
+  --twilight-glow: rgba(253, 164, 175, 0.55);
+  --twilight-bg-base: #3b153e;
+}
+
+/* Tema 3: Deep Ocean (biru malam tenang dengan aksen cyan pastel) */
+[data-theme="ocean"] {
+  --twilight-accent: #7dd3fc;
+  --twilight-accent-soft: #bae6fd;
+  --twilight-secondary: #a5f3fc;
+  --twilight-glow: rgba(125, 211, 252, 0.5);
+  --twilight-bg-base: #0b1936;
+}
+
+/* Gaya dasar halaman dengan font lembut Quicksand */
+@layer base {
+  html,
+  body {
+    font-family: var(--font-sans);
+    background-color: var(--twilight-bg-base);
+    color: #fdf2f8;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Scrollbar halus bertema pastel */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 9999px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgba(249, 168, 212, 0.45);
+    border-radius: 9999px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(249, 168, 212, 0.75);
+  }
+}
+
+/* Kelas bantuan untuk efek kartu glassmorphism yang konsisten */
+.glass-card {
+  @apply bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl shadow-xl;
+  transition: border-color 0.6s ease, box-shadow 0.6s ease;
+}
+
+/* Aksen border glow kristal emas lembut pada kartu utama saat tema 👑 Astral Crystal Palace aktif */
+html[data-cozy-theme="astral-palace"] .glass-card {
+  border-color: rgba(253, 224, 71, 0.36);
+  box-shadow:
+    0 14px 36px rgba(6, 10, 34, 0.5),
+    0 0 22px rgba(250, 204, 21, 0.16),
+    inset 0 1px 0 rgba(254, 240, 138, 0.28);
+}
+
+/* Efek cahaya lembut untuk judul bubble Twilight's */
+.twilight-title-glow {
+  text-shadow:
+    0 2px 14px var(--twilight-glow),
+    0 0 30px rgba(192, 132, 252, 0.35);
+}
+
+/* Efek tombol membal (bouncy) saat hover dan klik */
+.btn-bouncy {
+  transition:
+    transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1),
+    background-color 0.2s ease,
+    box-shadow 0.2s ease,
+    filter 0.2s ease;
+}
+
+.btn-bouncy:hover:not(:disabled) {
+  transform: translateY(-2.5px) scale(1.03);
+}
+
+.btn-bouncy:active:not(:disabled) {
+  transform: translateY(0px) scale(0.94);
+}
+
+/* Animasi bintang berkedip pelan di latar malam */
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.22;
+    transform: scale(0.82);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.18);
+  }
+}
+
+.animate-twinkle {
+  animation: twinkle var(--twinkle-duration, 3.6s) ease-in-out infinite;
+  animation-delay: var(--twinkle-delay, 0s);
+}
+
+/* Animasi bintang jatuh (shooting star) melintas diagonal terang & mulus */
+@keyframes shootingStar {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) rotate(-30deg) scaleX(0.5);
+  }
+  5% {
+    opacity: 1;
+    transform: translate3d(-40px, 24px, 0) rotate(-30deg) scaleX(1);
+  }
+  30% {
+    opacity: 0.95;
+    transform: translate3d(-340px, 200px, 0) rotate(-30deg) scaleX(1.1);
+  }
+  40%,
+  100% {
+    opacity: 0;
+    transform: translate3d(-440px, 260px, 0) rotate(-30deg) scaleX(0.6);
+  }
+}
+
+.animate-shooting-star {
+  will-change: transform, opacity;
+  animation: shootingStar var(--shoot-duration, 6.5s) cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite;
+  animation-delay: var(--shoot-delay, 0s);
+}
+
+/* Animasi ayunan lembut untuk hiasan gantung bintang, bulan & awan */
+@keyframes gentleSway {
+  0%,
+  100% {
+    transform: rotate(-3.5deg);
+  }
+  50% {
+    transform: rotate(3.5deg);
+  }
+}
+
+.animate-gentle-sway {
+  transform-origin: top center;
+  animation: gentleSway var(--sway-duration, 5.2s) ease-in-out infinite;
+  animation-delay: var(--sway-delay, 0s);
+}
+
+/* Animasi awan malam melayang perlahan kiri-kanan */
+@keyframes cloudDrift {
+  0%,
+  100% {
+    transform: translateX(0px) translateY(0px);
+  }
+  50% {
+    transform: translateX(var(--drift-x, 26px)) translateY(-6px);
+  }
+}
+
+.animate-cloud-drift {
+  animation: cloudDrift var(--drift-duration, 14s) ease-in-out infinite;
+  animation-delay: var(--drift-delay, 0s);
+}
+
+/* Animasi melayang lembut untuk maskot kucing saat diam (idle) */
+@keyframes floatSlow {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+.animate-float-slow {
+  animation: floatSlow 4s ease-in-out infinite;
+}
+
+/* Animasi mengangguk fokus saat Pomodoro Timer atau BGM berjalan */
+@keyframes mascotNod {
+  0%,
+  100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  30% {
+    transform: translateY(3px) rotate(2.5deg);
+  }
+  65% {
+    transform: translateY(-2px) rotate(-2deg);
+  }
+}
+
+.animate-mascot-nod {
+  animation: mascotNod 1.8s ease-in-out infinite;
+}
+
+/* Animasi melompat gembira saat 100% target tercapai (selebrasi) */
+@keyframes mascotJump {
+  0%,
+  100% {
+    transform: translateY(0px) scale(1);
+  }
+  35% {
+    transform: translateY(-14px) scale(1.05, 0.96);
+  }
+  60% {
+    transform: translateY(-4px) scale(0.97, 1.03);
+  }
+}
+
+.animate-mascot-jump {
+  animation: mascotJump 0.85s cubic-bezier(0.34, 1.56, 0.64, 1) infinite;
+}
+
+/* Animasi mata berkedip santai untuk maskot kucing */
+@keyframes catBlink {
+  0%,
+  44%,
+  48%,
+  100% {
+    transform: scaleY(1);
+  }
+  46% {
+    transform: scaleY(0.1);
+  }
+}
+
+.animate-cat-blink {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: catBlink 4.6s ease-in-out infinite;
+}
+
+/* Animasi cakar melambai saat ada pengingat jadwal tiba */
+@keyframes pawWave {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-18deg);
+  }
+  75% {
+    transform: rotate(16deg);
+  }
+}
+
+.animate-paw-wave {
+  transform-box: fill-box;
+  transform-origin: bottom center;
+  animation: pawWave 0.65s ease-in-out infinite;
+}
+
+/* Animasi not musik melayang */
+@keyframes floatNote {
+  0%,
+  100% {
+    transform: translateY(0px) rotate(-6deg);
+    opacity: 0.72;
+  }
+  50% {
+    transform: translateY(-10px) rotate(8deg);
+    opacity: 1;
+  }
+}
+
+.animate-float-note {
+  animation: floatNote 3s ease-in-out infinite;
+}
+
+/* Animasi percikan hati/bintang saat maskot atau checkbox diklik */
+@keyframes sparkPop {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) scale(0.5);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--tx, 0px), var(--ty, -32px)) scale(1.2);
+  }
+}
+
+.animate-spark-pop {
+  animation: sparkPop 0.75s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* Animasi roda kaset berputar saat BGM diputar */
+@keyframes spinTape {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-tape {
+  animation: spinTape 3s linear infinite;
+}
+
+/* Slider volume kawaii (warna pink pastel bulat menggemaskan) */
+input[type="range"].kawaii-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 10px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.16);
+  outline: none;
+  cursor: pointer;
+}
+
+input[type="range"].kawaii-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, #fbcfe8 0%, #f9a8d4 60%, #c084fc 100%);
+  border: 2.5px solid #ffffff;
+  box-shadow: 0 2px 8px rgba(249, 168, 212, 0.65);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+input[type="range"].kawaii-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.18);
+  box-shadow: 0 0 14px rgba(249, 168, 212, 0.9);
+}
+
+input[type="range"].kawaii-slider::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, #fbcfe8 0%, #f9a8d4 60%, #c084fc 100%);
+  border: 2.5px solid #ffffff;
+  box-shadow: 0 2px 8px rgba(249, 168, 212, 0.65);
+  transition: transform 0.18s ease;
+}
+
+/* Perapian ikon jam bawaan <input type="time"> pada mode gelap */
+input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: invert(1) brightness(1.1);
+  opacity: 0.8;
+  cursor: pointer;
+}
+
+/* Sembunyikan kursor bawaan browser di desktop saat StarCursor aktif */
+@media (pointer: fine) {
+  html.star-cursor-active,
+  html.star-cursor-active * {
+    cursor: none !important;
+  }
+}
+
+/* Optimasi HP / Layar Sentuh: pastikan kursor bintang benar-benar tersembunyi */
+@media (pointer: coarse) {
+  .star-cursor-layer {
+    display: none !important;
+  }
+}
+
+/* Mode Hemat Baterai (Reduce Motion): jeda seluruh animasi partikel latar belakang */
+html.battery-saver-mode .animate-twinkle,
+html.battery-saver-mode .animate-shooting-star,
+html.battery-saver-mode .animate-rain-drop,
+html.battery-saver-mode .animate-cloud-drift,
+html.battery-saver-mode .animate-gentle-sway,
+html.battery-saver-mode .animate-bokeh-float,
+html.battery-saver-mode .animate-leaf-fall,
+html.battery-saver-mode .animate-warm-mote,
+html.battery-saver-mode .animate-petal-fall,
+html.battery-saver-mode .animate-lantern-rise,
+html.battery-saver-mode .animate-aurora-wave,
+html.battery-saver-mode .animate-gold-dust {
+  animation-play-state: paused !important;
+}
+
+/* Putaran lembut kursor bintang saat diarahkan ke tombol/link */
+@keyframes cursorSpin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-cursor-spin {
+  animation: cursorSpin 4.5s linear infinite;
+}
+
+/* Jejak partikel kilau kursor yang memudar pelan */
+@keyframes trailFade {
+  0% {
+    opacity: 0.95;
+    transform: translate(-50%, -50%) scale(1) rotate(0deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -85%) scale(0.2) rotate(90deg);
+  }
+}
+
+.animate-trail-fade {
+  animation: trailFade 0.65s ease-out forwards;
+}
+
+/* Animasi bergoyang ringan menggemaskan untuk Maskot Buku Catatan Kucing saat diklik */
+@keyframes notebookWiggle {
+  0%,
+  100% {
+    transform: rotate(0deg) scale(1);
+  }
+  20% {
+    transform: rotate(-10deg) scale(1.08);
+  }
+  45% {
+    transform: rotate(9deg) scale(1.1);
+  }
+  70% {
+    transform: rotate(-6deg) scale(1.05);
+  }
+  88% {
+    transform: rotate(4deg) scale(1.02);
+  }
+}
+
+.animate-notebook-wiggle {
+  animation: notebookWiggle 0.58s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Animasi tangan mengelus kepala kucing (pet-pet / headpat) memantul naik-turun lembut */
+@keyframes handPatBounce {
+  0%,
+  100% {
+    transform: translate(-50%, -62%) rotate(-12deg) translateY(0px) scale(1);
+  }
+  45% {
+    transform: translate(-50%, -62%) rotate(-2deg) translateY(7px) scale(0.95, 1.04);
+  }
+}
+
+.animate-hand-pat {
+  animation: handPatBounce 0.42s ease-in-out infinite;
+}
+
+/* Partikel hati ♥ & kilau yang melayang naik pelan saat kucing sedang dielus */
+@keyframes heartRise {
+  0% {
+    opacity: 0;
+    transform: translate(0, 6px) scale(0.6);
+  }
+  20% {
+    opacity: 1;
+    transform: translate(var(--hx, 0px), -4px) scale(1.05);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--hx, 0px), -34px) scale(0.85);
+  }
+}
+
+.animate-heart-rise {
+  animation: heartRise 1.05s ease-out forwards;
+}
+
+/* Animasi lompat kecil anak kucing saat diklik */
+@keyframes petHop {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  40% {
+    transform: translateY(-14px) scale(1.06, 0.94);
+  }
+  70% {
+    transform: translateY(-3px) scale(0.96, 1.04);
+  }
+}
+
+.animate-pet-hop {
+  animation: petHop 0.48s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Animasi bergoyang lucu saat anak kucing digoyangkan (shake) hingga pusing */
+@keyframes petShake {
+  0%,
+  100% {
+    transform: rotate(0deg) translateX(0);
+  }
+  20% {
+    transform: rotate(-14deg) translateX(-4px);
+  }
+  40% {
+    transform: rotate(14deg) translateX(4px);
+  }
+  60% {
+    transform: rotate(-10deg) translateX(-3px);
+  }
+  80% {
+    transform: rotate(10deg) translateX(3px);
+  }
+}
+
+.animate-pet-shake {
+  animation: petShake 0.45s ease-in-out infinite;
+}
+
+/* Animasi napas lembut saat anak kucing tertidur pulas */
+@keyframes petSleep {
+  0%,
+  100% {
+    transform: scale(1, 1);
+  }
+  50% {
+    transform: scale(1.04, 0.96);
+  }
+}
+
+.animate-pet-sleep {
+  animation: petSleep 2.8s ease-in-out infinite;
+}
+
+/* Animasi anak kucing makan ikan dengan lahap & gembira */
+@keyframes petEat {
+  0%,
+  100% {
+    transform: translateY(0) scale(1, 1);
+  }
+  25% {
+    transform: translateY(-4px) scale(1.06, 0.94);
+  }
+  50% {
+    transform: translateY(1px) scale(0.96, 1.05);
+  }
+  75% {
+    transform: translateY(-3px) scale(1.05, 0.95);
+  }
+}
+
+.animate-pet-eat {
+  animation: petEat 0.55s ease-in-out infinite;
+}
+
+/* Animasi rintik hujan lembut jatuh di latar belakang (saat suara Hujan Lembut menyala) */
+@keyframes rainDrop {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, -12vh, 0) rotate(12deg);
+  }
+  12% {
+    opacity: 0.7;
+  }
+  88% {
+    opacity: 0.55;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(-45px, 112vh, 0) rotate(12deg);
+  }
+}
+
+.animate-rain-drop {
+  will-change: transform, opacity;
+  animation: rainDrop var(--rain-duration, 1.4s) linear infinite;
+  animation-delay: var(--rain-delay, 0s);
+}
+
+/* --- ANIMASI 5 TEMA LATAR BELAKANG BERANIMASI (COZY THEMES) --- */
+
+/* 1. Midnight Rainy Window: lampu kota blur (bokeh emas & biru lembut) bernapas pelan */
+@keyframes bokehFloat {
+  0%,
+  100% {
+    opacity: var(--bokeh-opacity, 0.35);
+    transform: translate3d(0, 0, 0) scale(0.92);
+  }
+  50% {
+    opacity: calc(var(--bokeh-opacity, 0.35) + 0.22);
+    transform: translate3d(var(--bokeh-dx, 8px), -10px, 0) scale(1.12);
+  }
+}
+
+.animate-bokeh-float {
+  will-change: transform, opacity;
+  animation: bokehFloat var(--bokeh-duration, 7s) ease-in-out infinite;
+  animation-delay: var(--bokeh-delay, 0s);
+}
+
+/* 2. Cozy Autumn Cafe: daun musim gugur (oranye & emas) melayang berputar perlahan */
+@keyframes leafFall {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, -10vh, 0) rotate(0deg);
+  }
+  12% {
+    opacity: 0.85;
+  }
+  50% {
+    transform: translate3d(var(--leaf-sway, 42px), 52vh, 0) rotate(170deg);
+  }
+  88% {
+    opacity: 0.78;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(var(--leaf-end-x, -26px), 112vh, 0) rotate(340deg);
+  }
+}
+
+.animate-leaf-fall {
+  will-change: transform, opacity;
+  animation: leafFall var(--leaf-duration, 14s) ease-in-out infinite;
+  animation-delay: var(--leaf-delay, 0s);
+}
+
+/* Partikel cahaya sore hangat di Cozy Autumn Cafe */
+@keyframes warmMoteFloat {
+  0%,
+  100% {
+    opacity: 0.18;
+    transform: translate3d(0, 0, 0) scale(0.8);
+  }
+  50% {
+    opacity: 0.75;
+    transform: translate3d(14px, -22px, 0) scale(1.25);
+  }
+}
+
+.animate-warm-mote {
+  will-change: transform, opacity;
+  animation: warmMoteFloat var(--mote-duration, 8s) ease-in-out infinite;
+  animation-delay: var(--mote-delay, 0s);
+}
+
+/* 3. Sakura Lantern Festival: kelopak bunga sakura pink melayang berputar */
+@keyframes petalFall {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, -10vh, 0) rotate(0deg) rotateY(0deg);
+  }
+  10% {
+    opacity: 0.88;
+  }
+  50% {
+    transform: translate3d(var(--petal-sway, -44px), 52vh, 0) rotate(190deg) rotateY(150deg);
+  }
+  88% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(var(--petal-end-x, -80px), 112vh, 0) rotate(370deg) rotateY(320deg);
+  }
+}
+
+.animate-petal-fall {
+  will-change: transform, opacity;
+  animation: petalFall var(--petal-duration, 12s) ease-in-out infinite;
+  animation-delay: var(--petal-delay, 0s);
+}
+
+/* Lentera kertas emas bercahaya terbang perlahan ke langit malam */
+@keyframes lanternRise {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 12vh, 0) scale(0.86) rotate(-2deg);
+  }
+  14% {
+    opacity: 0.88;
+  }
+  50% {
+    transform: translate3d(var(--lantern-sway, 18px), -50vh, 0) scale(0.96) rotate(2.5deg);
+  }
+  86% {
+    opacity: 0.78;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(calc(var(--lantern-sway, 18px) * -0.5), -116vh, 0) scale(0.78) rotate(-2deg);
+  }
+}
+
+.animate-lantern-rise {
+  will-change: transform, opacity;
+  animation: lanternRise var(--lantern-duration, 19s) ease-in-out infinite;
+  animation-delay: var(--lantern-delay, 0s);
+}
+
+/* 4. Astral Crystal Palace: gelombang Aurora Borealis lembut mengalir */
+@keyframes auroraWave {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: translate3d(-4%, 0, 0) skewX(-12deg) scaleY(0.94);
+  }
+  50% {
+    opacity: 0.78;
+    transform: translate3d(5%, -14px, 0) skewX(10deg) scaleY(1.1);
+  }
+}
+
+.animate-aurora-wave {
+  will-change: transform, opacity;
+  animation: auroraWave var(--aurora-duration, 14s) ease-in-out infinite;
+  animation-delay: var(--aurora-delay, 0s);
+}
+
+/* Partikel debu bintang emas (golden stardust) halus mengikuti pergerakan kursor */
+@keyframes goldDustFade {
+  0% {
+    opacity: 0.95;
+    transform: translate(-50%, -50%) scale(1) rotate(0deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--gdx, 0px)), calc(-50% + var(--gdy, 18px))) scale(0.2) rotate(120deg);
+  }
+}
+
+.animate-gold-dust {
+  will-change: transform, opacity;
+  animation: goldDustFade 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* --- ANIMASI 3D FLIP CARD REVEAL UNTUK GACHA "💌 PESAN RAHASIA KUCING" --- */
+.gacha-card-scene {
+  perspective: 1200px;
+}
+
+.gacha-card-inner {
+  transform-style: preserve-3d;
+  transition: transform 0.72s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.gacha-card-inner.is-flipped {
+  transform: rotateY(180deg);
+}
+
+.gacha-card-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.gacha-card-back {
+  transform: rotateY(180deg);
+}
+
+/* --- ANIMASI CO-WORKING BODY DOUBLING (MENGETIK & UAP TEH HANGAT) --- */
+@keyframes catTypingLeft {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  45% {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes catTypingRight {
+  0%,
+  100% {
+    transform: translateY(-3px);
+  }
+  50% {
+    transform: translateY(1px);
+  }
+}
+
+.animate-cat-typing-left {
+  animation: catTypingLeft 0.52s ease-in-out infinite;
+}
+
+.animate-cat-typing-right {
+  animation: catTypingRight 0.52s ease-in-out infinite;
+}
+
+@keyframes steamRise {
+  0% {
+    opacity: 0;
+    transform: translateY(4px) scale(0.9);
+  }
+  35% {
+    opacity: 0.85;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-14px) scale(1.1);
+  }
+}
+
+.animate-steam-rise {
+  animation: steamRise 2.2s ease-in-out infinite;
+  animation-delay: var(--steam-delay, 0s);
+}
+
+/* --- 4 TEMA KERTAS KAWAII NOTEBOOK (CSS Murni) --- */
+
+/* 1. Lavender Lined: kertas bergaris ungu pastel lembut */
+.paper-lavender-lined {
+  background-color: #f6f0ff;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 27px,
+    rgba(167, 139, 250, 0.34) 28px
+  );
+  color: #2e1065;
+  line-height: 28px;
+}
+
+/* 2. Sakura Grid: kertas kotak-kotak pink lembut */
+.paper-sakura-grid {
+  background-color: #fff2f7;
+  background-image:
+    linear-gradient(to right, rgba(244, 114, 182, 0.2) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(244, 114, 182, 0.2) 1px, transparent 1px);
+  background-size: 22px 22px;
+  color: #4a1236;
+  line-height: 26px;
+}
+
+/* 3. Starry Night: kertas malam temaram dengan taburan bintang mini */
+.paper-starry-night {
+  background-color: #16133a;
+  background-image:
+    radial-gradient(rgba(255, 255, 255, 0.42) 1px, transparent 1px),
+    radial-gradient(rgba(249, 168, 212, 0.38) 1.2px, transparent 1.2px);
+  background-size: 38px 38px, 64px 64px;
+  background-position: 0 0, 19px 22px;
+  color: #f5f3ff;
+  line-height: 28px;
+}
+
+/* 4. Cream Dotted: kertas bullet journal titik-titik krem hangat */
+.paper-cream-dotted {
+  background-color: #fffbeb;
+  background-image: radial-gradient(rgba(180, 125, 82, 0.35) 1.3px, transparent 1.3px);
+  background-size: 18px 18px;
+  color: #3b2516;
+  line-height: 27px;
+}
+
+
+
