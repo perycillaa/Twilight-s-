@@ -642,27 +642,11 @@ let lastCatClickXpAt = 0
 let lastCatPetXpAt = 0
 let catAffinityToastTimer: ReturnType<typeof setTimeout> | null = null
 
-// Catatan pembuka bawaan saat pertama kali membuka Kawaii Notebook
-const DEFAULT_NOTEBOOKS: NotebookEntry[] = [
-  {
-    id: 'note-welcome-1',
-    title: "Selamat Datang di Twilight's Notebook ✨",
-    content:
-      'Halo! Di sini kamu bisa menulis catatan belajar, ide proyek, atau jurnal malam dengan 4 pilihan kertas kawaii.\n\nCoba ganti tema kertas di atas (Lavender Lined, Sakura Grid, Starry Night, atau Cream Dotted) sesuai suasana hatimu~ 🌙',
-    tag: 'journal',
-    paperTheme: 'lavender-lined',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-]
+// Daftar catatan awal kosong bagi pengguna baru (tidak memuat catatan pribadi siapa pun)
+const DEFAULT_NOTEBOOKS: NotebookEntry[] = []
 
-// Daftar habit bawaan saat pengguna pertama kali membuka aplikasi
-const DEFAULT_HABITS: HabitItem[] = [
-  { id: 'habit-1', title: 'Minum air putih & stretching ringan', completed: true, type: 'daily', alarmMode: 'once' },
-  { id: 'habit-2', title: 'Fokus 1 sesi Pomodoro (25 menit)', completed: false, type: 'daily', alarmMode: 'once' },
-  { id: 'habit-3', title: 'Baca buku atau catatan 15 menit', completed: false, type: 'daily', alarmMode: 'once' },
-  { id: 'habit-4', title: 'Rapikan meja sebelum tidur', completed: false, type: 'daily', alarmMode: 'once' },
-]
+// Daftar habit awal kosong bagi pengguna baru (localStorage lama pengguna tetap dipertahankan)
+const DEFAULT_HABITS: HabitItem[] = []
 
 /** Normalisasi item habit agar data lama tanpa field `type` / `alarmMode` otomatis rapi */
 function normalizeHabitItem(raw: Partial<HabitItem>, fallbackId: string): HabitItem {
@@ -761,14 +745,15 @@ export function useTwilightStorage() {
   const todayFocusSessions = useState<number>('twilight-today-focus', () => 0)
   const totalFocusSessions = useState<number>('twilight-total-focus', () => 0)
   const todayFocusSeconds = useState<number>('twilights-today-focus-seconds', () => 0)
-  const dailyStreak = useState<number>('twilights-streak', () => 1)
+  const dailyStreak = useState<number>('twilights-streak', () => 0)
   const streakLastDate = useState<string>('twilights-streak-date', () => '')
   const quickNotes = useState<string>('twilights-quick-notes', () => '')
   const userName = useState<string>('twilights-user-name', () => 'Teman Twilight')
   const isStarCursorEnabled = useState<boolean>('twilights-star-cursor', () => true)
   const isBatterySaverMode = useState<boolean>('twilights-battery-saver', () => false)
   const isZenMode = useState<boolean>('twilights-zen-mode', () => false)
-  const treatCoins = useState<number>('twilights-treat-coins', () => 10)
+  // Hadiah selamat datang 5 🐟 untuk pengguna baru (data pengguna lama di localStorage tetap dipertahankan)
+  const treatCoins = useState<number>('twilights-treat-coins', () => 5)
   const ownedAccessories = useState<MascotAccessoryId[]>('twilights-owned-accessories', () => [])
   const equippedAccessory = useState<MascotAccessoryId>('twilights-equipped-accessory', () => 'none')
   // Tema Latar Belakang Beranimasi (Cozy Themes) & 7-Day Full Goal Streak
@@ -1095,40 +1080,23 @@ export function useTwilightStorage() {
 
   /**
    * Sinkronisasi awal dengan TiDB Cloud:
-   * - Jika browser ini SUDAH pernah menyimpan data lokal (`twilights_habits` bukan null),
-   *   pertahankan data lokal pengguna (termasuk array kosong `[]` & centang hari ini) lalu
-   *   sinkronkan ke TiDB agar target default lama di cloud tidak pernah menimpa perubahan pengguna.
-   * - Jika browser benar-benar baru (`twilights_habits === null`), muat data dari TiDB jika ada.
+   * - Pengguna baru (localStorage masih kosong / `hadLocalHabits === false`) selalu memulai
+   *   dari kondisi bersih (tidak menarik data profil pribadi dari cloud).
+   * - Pengguna lama yang sudah memiliki data lokal tetap mempertahankan datanya dan
+   *   menyinkronkannya secara aman ke cloud bila backend tersedia.
    */
   async function hydrateFromCloud() {
     if (!import.meta.client || isCloudHydrated.value) return
     isCloudHydrated.value = true
+
+    if (!hadLocalHabits.value) {
+      cloudSyncStatus.value = 'idle'
+      return
+    }
+
     cloudSyncStatus.value = 'syncing'
-
     try {
-      if (hadLocalHabits.value) {
-        await pushStateToCloud(true)
-        return
-      }
-
-      const res = await $fetch<{
-        ok: boolean
-        exists: boolean
-        data?: Record<string, unknown>
-      }>('/api/sync/state', {
-        query: { profileId: 'default' },
-      })
-
-      if (res?.ok && res.exists && res.data) {
-        applyImportedDataSilently(res.data)
-        checkAndAutoResetDaily()
-        cloudSyncStatus.value = 'synced'
-        cloudLastSyncedAt.value = new Date().toISOString()
-      } else if (res?.ok && !res.exists) {
-        await pushStateToCloud(true)
-      } else {
-        cloudSyncStatus.value = 'offline'
-      }
+      await pushStateToCloud(true)
     } catch {
       cloudSyncStatus.value = 'offline'
     }
@@ -2273,10 +2241,9 @@ export function useTwilightStorage() {
       const effectiveRawHabits = rawCurrentHabits !== null ? rawCurrentHabits : rawLegacyHabits
 
       if (effectiveRawHabits === null) {
-        // Benar-benar pengguna baru (key belum pernah ada di localStorage) -> isi 4 target default
+        // Pengguna baru (localStorage masih kosong): mulai bersih dengan daftar habit kosong []
         hadLocalHabits.value = false
-        habits.value = DEFAULT_HABITS.map(item => ({ ...item }))
-        localStorage.setItem(STORAGE_KEYS.HABITS, JSON.stringify(habits.value))
+        habits.value = []
       } else {
         // Key sudah pernah disimpan (meskipun isinya "[]" karena semua target dihapus)
         // -> JANGAN isi ulang 4 contoh habit default!
@@ -2362,8 +2329,8 @@ export function useTwilightStorage() {
           dailyStreak.value = 0
         }
       } else {
-        dailyStreak.value = completedHabitCount.value > 0 ? 1 : 0
-        streakLastDate.value = completedHabitCount.value > 0 ? todayStr : ''
+        dailyStreak.value = 0
+        streakLastDate.value = ''
       }
 
       // 6. Muat Catatan Cepat

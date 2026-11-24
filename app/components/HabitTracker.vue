@@ -609,12 +609,12 @@ onUnmounted(() => {
 
     <!-- Daftar Target Kebiasaan -->
     <ul class="mt-3.5 flex max-h-56 flex-col gap-2 overflow-y-auto pr-1">
-      <!-- Pesan Motivasi Saat Daftar Masih Kosong -->
+      <!-- Pesan Motivasi Ramah Saat Daftar Masih Kosong -->
       <li
         v-if="habits.length === 0"
-        class="rounded-2xl border border-dashed border-white/25 bg-white/5 px-4 py-6 text-center text-xs font-semibold text-pink-100/85"
+        class="rounded-2xl border border-dashed border-pink-200/30 bg-white/5 px-4 py-6 text-center text-xs font-semibold leading-relaxed text-pink-100/90"
       >
-        Yuk tulis 1 target kecil untuk memulai harimu! 🌱
+        🐾 Belum ada target hari ini! Yuk tulis target pertamamu di bawah dan mulai fokus bareng kucing~
       </li>
 
       <li
