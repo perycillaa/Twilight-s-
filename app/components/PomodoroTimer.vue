@@ -5,6 +5,7 @@ import { useSoundEffects } from '~/composables/useSoundEffects'
 import {
   DEFAULT_TIMER_DURATIONS_SECONDS,
   type TimerModeKey,
+  VIBRATION_PATTERNS,
   useTwilightStorage,
 } from '~/composables/useTwilightStorage'
 
@@ -35,6 +36,7 @@ const {
   activeTimerRemainingSeconds,
   isZenMode,
   isImmersiveZenOpen,
+  isVibrationEnabled,
   twilightFocusIcon,
   pomodoroToggleSignal,
   pomodoroResetSignal,
@@ -43,6 +45,8 @@ const {
   incrementFocusSession,
   toggleZenMode,
   exitZenMode,
+  toggleVibrationEnabled,
+  triggerVibration,
   triggerMascotReaction,
   loadFromStorage,
 } = useTwilightStorage()
@@ -274,6 +278,8 @@ function handleTimerCompleted() {
   if (isBellEnabled.value) {
     playBellChime()
   }
+  // Getaran ritmis ceria di HP saat Timer Fokus / Istirahat selesai ([250, 120, 250, 120, 450])
+  triggerVibration(VIBRATION_PATTERNS.pomodoroDone)
 
   if (currentMode.value === 'focus') {
     incrementFocusSession(totalSeconds.value)
@@ -473,6 +479,25 @@ onUnmounted(() => {
           @click="toggleBell"
         >
           {{ isBellEnabled ? '🔔 Bell' : '🔕 Mute' }}
+        </button>
+
+        <!-- Sakelar Getar HP (hanya tampil di HP / perangkat sentuh < 768px) -->
+        <button
+          type="button"
+          :title="
+            isVibrationEnabled
+              ? 'Getaran HP aktif saat timer & pengingat berbunyi (klik untuk matikan)'
+              : 'Getaran HP mati (klik untuk aktifkan)'
+          "
+          class="mobile-only-control btn-bouncy cursor-pointer rounded-full border px-2.5 py-1 text-[11px] font-semibold"
+          :class="
+            isVibrationEnabled
+              ? 'border-purple-200/50 bg-purple-300/25 text-purple-50'
+              : 'border-white/15 bg-white/5 text-purple-200/60'
+          "
+          @click="toggleVibrationEnabled"
+        >
+          📳 Getar HP: {{ isVibrationEnabled ? 'ON' : 'OFF' }}
         </button>
 
         <span

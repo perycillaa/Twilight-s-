@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useSoundEffects } from '~/composables/useSoundEffects'
-import { useTwilightStorage } from '~/composables/useTwilightStorage'
+import { VIBRATION_PATTERNS, useTwilightStorage } from '~/composables/useTwilightStorage'
 
 const props = withDefaults(
   defineProps<{
@@ -25,6 +25,7 @@ const {
   catKeyboardInteractSignal,
   triggerMascotReaction,
   addCatAffinityXp,
+  triggerVibration,
 } = useTwilightStorage()
 
 // Status Co-Working Body Doubling mengikuti timer aktif: 'focus' (meja belajar), 'break' (teh & ikan bakar), atau 'idle'
@@ -150,6 +151,7 @@ function spawnPetHeart(xPx: number, yPx: number) {
 function beginPettingMode() {
   if (!isBeingPetted.value) {
     isBeingPetted.value = true
+    triggerVibration(VIBRATION_PATTERNS.microHaptic)
   }
   startCatPurr(getEffectiveCatVolume())
   addCatAffinityXp(1, 'pet')
@@ -343,6 +345,7 @@ function handleCatClick() {
 
   endPettingMode()
   playMainCatMeow(getEffectiveCatVolume())
+  triggerVibration(VIBRATION_PATTERNS.microHaptic)
   // +1 XP Kasih Sayang Kucing saat diklik (cooldown anti-spam 2 detik dikelola composable)
   addCatAffinityXp(1, 'click')
 

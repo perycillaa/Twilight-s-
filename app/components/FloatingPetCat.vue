@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useSoundEffects } from '~/composables/useSoundEffects'
-import { useTwilightStorage } from '~/composables/useTwilightStorage'
+import { VIBRATION_PATTERNS, useTwilightStorage } from '~/composables/useTwilightStorage'
 
 const props = withDefaults(
   defineProps<{
@@ -22,6 +22,7 @@ const {
   equippedAccessory,
   feedPetCat,
   addCatAffinityXp,
+  triggerVibration,
 } = useTwilightStorage()
 
 // Status Co-Working Body Doubling Kucing Mini: ikut fokus ('focus'), santai istirahat ('break'), atau idle
@@ -210,6 +211,9 @@ function spawnMiniPetHeart(xPx: number, yPx: number) {
 
 /** Mulai mode pet-pet pada kucing mini: dengkuran hangat, wajah nyaman & +1 XP kasih sayang tiap ~1.5 dtk */
 function beginMiniPetting() {
+  if (!isBeingPetted.value) {
+    triggerVibration(VIBRATION_PATTERNS.microHaptic)
+  }
   markInteraction()
   isAnnoyedShaking.value = false
   isPouting.value = false
@@ -462,6 +466,7 @@ function handlePetClick() {
   isAnnoyedShaking.value = false
   isPouting.value = false
   playMiniCatTapMew(getEffectiveCatVolume())
+  triggerVibration(VIBRATION_PATTERNS.microHaptic)
   addCatAffinityXp(1, 'click')
 
   startledVariant.value = startledVariant.value === 'wide' ? 'sparkle' : 'wide'
@@ -502,6 +507,7 @@ function handleFeedFish() {
   }
 
   playMiniCatTapMew(getEffectiveCatVolume())
+  triggerVibration(VIBRATION_PATTERNS.microHaptic)
   isAnnoyedShaking.value = false
   isPouting.value = false
   isStartledAwake.value = false
