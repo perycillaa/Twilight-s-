@@ -187,6 +187,9 @@ const youtubeInputError = ref<string>('')
 const selectedRadioId = ref<string>(RADIO_CHANNELS[0]?.id ?? 'groove-salad')
 
 const audioRef = ref<HTMLAudioElement | null>(null)
+const youtubeIframeRef = ref<HTMLIFrameElement | null>(null)
+const youtubeLoadMuteFlag = ref<0 | 1>(0)
+let youtubeLoadSyncTimers: ReturnType<typeof setTimeout>[] = []
 const isRadioPlaying = ref<boolean>(false)
 const isBuffering = ref<boolean>(false)
 const radioVolume = ref<number>(60)
@@ -255,13 +258,64 @@ const currentRadio = computed<RadioChannel>(() => {
   return RADIO_CHANNELS.find(c => c.id === selectedRadioId.value) ?? RADIO_CHANNELS[0]!
 })
 
+// URL embed YouTube dengan enablejsapi=1 agar mendukung postMessage mute/unMute tanpa reload iframe
 const youtubeEmbedUrl = computed<string>(() => {
-  return `https://www.youtube.com/embed/${selectedYoutubeId.value}?rel=0&modestbranding=1`
+  const originParam =
+    import.meta.client && window.location?.origin
+      ? `&origin=${encodeURIComponent(window.location.origin)}`
+      : ''
+  const muteParam = youtubeLoadMuteFlag.value === 1 ? '&mute=1' : ''
+  return `https://www.youtube.com/embed/${selectedYoutubeId.value}?rel=0&modestbranding=1&enablejsapi=1${originParam}${muteParam}`
 })
 
 const youtubeWatchUrl = computed<string>(() => {
   return `https://www.youtube.com/watch?v=${selectedYoutubeId.value}`
 })
+
+/** Kirim perintah kontrol langsung ke YouTube Lo-Fi iframe via postMessage (enablejsapi=1) */
+function sendYoutubeCommand(func: 'mute' | 'unMute' | 'setVolume', args: unknown[] = []) {
+  const win = youtubeIframeRef.value?.contentWindow
+  if (!win) return
+  try {
+    win.postMessage(
+      JSON.stringify({ event: 'command', func, args }),
+      '*',
+    )
+  } catch {
+    // Abaikan jika iframe belum siap menerima pesan
+  }
+}
+
+/** Sinkronkan status mute/unmute terbaru ke iframe YouTube saat baru selesai dimuat */
+function clearYoutubeLoadSyncTimers() {
+  for (const timer of youtubeLoadSyncTimers) {
+    clearTimeout(timer)
+  }
+  youtubeLoadSyncTimers = []
+}
+
+function handleYoutubeIframeLoad() {
+  clearYoutubeLoadSyncTimers()
+  const win = youtubeIframeRef.value?.contentWindow
+  if (win) {
+    try {
+      win.postMessage(JSON.stringify({ event: 'listening' }), '*')
+    } catch {
+      // Abaikan
+    }
+  }
+  const syncNow = () => {
+    if (isRadioMuted.value) {
+      sendYoutubeCommand('mute')
+    } else {
+      sendYoutubeCommand('unMute')
+    }
+  }
+  syncNow()
+  // Kirim ulang singkat setelah player internal YouTube selesai inisialisasi
+  youtubeLoadSyncTimers.push(setTimeout(syncNow, 450))
+  youtubeLoadSyncTimers.push(setTimeout(syncNow, 1150))
+}
 
 const effectiveRadioVolume = computed<number>(() =>
   isRadioMuted.value ? 0 : radioVolume.value / 100,
@@ -293,7 +347,7 @@ watch([isAnyAudioSpinning, activeTab], () => {
   isBgmPlaying.value = isAnyAudioSpinning.value || activeTab.value === 'youtube'
 })
 
-// Update volume radio HTML5, sinkronkan mute utama ke seluruh saluran Ambient Mixer & kedua kucing
+// Update volume radio HTML5, sinkronkan mute utama ke YouTube Lo-Fi, seluruh saluran Ambient Mixer & kedua kucing
 watch(
   [isRadioMuted, radioVolume],
   ([muted, vol]) => {
@@ -301,6 +355,9 @@ watch(
     masterAudioVolume.value = Math.max(0, Math.min(1, vol / 100))
     if (mixerMasterGain && mixerCtx) {
       mixerMasterGain.gain.setTargetAtTime(muted ? 0 : 1, mixerCtx.currentTime, 0.06)
+    }
+    if (import.meta.client && activeTab.value === 'youtube') {
+      sendYoutubeCommand(muted ? 'mute' : 'unMute')
     }
   },
   { immediate: true },
@@ -1006,12 +1063,15 @@ function applyCustomYoutubeUrl() {
     return
   }
   youtubeInputError.value = ''
+  // Jika status global sedang Mute saat mengganti video YouTube baru, langsung muat dalam keadaan muted
+  youtubeLoadMuteFlag.value = isRadioMuted.value ? 1 : 0
   selectedYoutubeId.value = videoId
   customYoutubeInput.value = ''
 }
 
 function selectPresetYoutube(videoId: string) {
   youtubeInputError.value = ''
+  youtubeLoadMuteFlag.value = isRadioMuted.value ? 1 : 0
   selectedYoutubeId.value = videoId
 }
 
@@ -1078,11 +1138,14 @@ async function selectRadio(id: string) {
 
 function switchTab(tab: MusicTab) {
   if (activeTab.value === tab) return
-  // Saat pindah ke YouTube, jeda radio saja — Ambient Sound Mixer tetap menyala!
-  if (tab === 'youtube' && (isRadioPlaying.value || isBuffering.value)) {
-    stopHtmlRadio()
-    isRadioPlaying.value = false
-    isBuffering.value = false
+  // Saat pindah ke YouTube, jeda radio saja & pertahankan status mute global pada video YouTube
+  if (tab === 'youtube') {
+    youtubeLoadMuteFlag.value = isRadioMuted.value ? 1 : 0
+    if (isRadioPlaying.value || isBuffering.value) {
+      stopHtmlRadio()
+      isRadioPlaying.value = false
+      isBuffering.value = false
+    }
   }
   errorMessage.value = ''
   activeTab.value = tab
@@ -1090,8 +1153,15 @@ function switchTab(tab: MusicTab) {
 
 function toggleRadioMute(showToast = false) {
   isRadioMuted.value = !isRadioMuted.value
+  if (activeTab.value === 'youtube') {
+    sendYoutubeCommand(isRadioMuted.value ? 'mute' : 'unMute')
+  }
   if (showToast) {
-    showMiniToast(isRadioMuted.value ? '🔇 Audio Senyap' : '🔊 Audio Aktif')
+    showMiniToast(
+      isRadioMuted.value
+        ? '🔇 Semua Audio Senyap (Radio, YouTube & Mixer)'
+        : '🔊 Semua Audio Aktif',
+    )
   }
 }
 
@@ -1124,6 +1194,7 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  clearYoutubeLoadSyncTimers()
   if (import.meta.client) {
     window.removeEventListener('pointerdown', handleFirstAmbientGesture)
     window.removeEventListener('keydown', handleFirstAmbientGesture)
@@ -1157,6 +1228,25 @@ onUnmounted(() => {
         <h2 class="font-display text-lg font-semibold tracking-wide text-pink-200">
           BGM PLAYER
         </h2>
+        <!-- Tombol Mute / Unmute Serentak (Radio, YouTube Lo-Fi & Ambient Mixer) selalu terlihat di kedua tab -->
+        <button
+          type="button"
+          class="btn-bouncy inline-flex cursor-pointer items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-bold transition"
+          :class="
+            isRadioMuted
+              ? 'border-pink-300/75 bg-pink-400/25 text-pink-100 shadow-sm'
+              : 'border-white/15 bg-white/10 text-purple-100 hover:bg-white/20'
+          "
+          :title="
+            isRadioMuted
+              ? 'Nyalakan semua suara: Radio, YouTube & Mixer (M)'
+              : 'Bisukan semua suara: Radio, YouTube & Mixer (M)'
+          "
+          @click="toggleRadioMute(true)"
+        >
+          <span>{{ isRadioMuted ? '🔇' : '🔊' }}</span>
+          <span class="hidden sm:inline">{{ isRadioMuted ? 'Senyap' : 'Aktif' }}</span>
+        </button>
       </div>
 
       <div class="flex rounded-full border border-white/15 bg-black/25 p-0.5 text-[11px]">
@@ -1394,6 +1484,7 @@ onUnmounted(() => {
 
       <div class="overflow-hidden rounded-2xl border border-white/20 bg-black/40 shadow-inner">
         <iframe
+          ref="youtubeIframeRef"
           :key="selectedYoutubeId"
           class="aspect-video w-full"
           :src="youtubeEmbedUrl"
@@ -1402,6 +1493,7 @@ onUnmounted(() => {
           referrerpolicy="strict-origin-when-cross-origin"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
           allowfullscreen
+          @load="handleYoutubeIframeLoad"
         />
       </div>
 
