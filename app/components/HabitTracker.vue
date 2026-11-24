@@ -38,17 +38,30 @@ const {
   notificationPermission,
   syncNotificationPermission,
   requestNotificationPermission,
-  kirimNotifikasiSistem,
+  sendDesktopBanner,
 } = useBackgroundResilience()
 
+const DENIED_NOTIF_GUIDE_MESSAGE =
+  '⚠️ Notifikasi diblokir browser! Klik ikon gembok/pengaturan di sebelah kiri alamat URL situs → ubah Notifikasi menjadi "Izinkan" (Allow).'
+
 const showDeniedNotifGuide = ref<boolean>(false)
+const testCountdownSec = ref<number>(0)
+let testCountdownInterval: ReturnType<typeof setInterval> | null = null
+
+function clearTestNotifTimer() {
+  if (testCountdownInterval) {
+    clearInterval(testCountdownInterval)
+    testCountdownInterval = null
+  }
+  testCountdownSec.value = 0
+}
 
 /** Tombol status notifikasi elegan di header kartu Daily Habit Tracker */
 async function handleEnableScreenNotifications() {
   const current = syncNotificationPermission()
   if (current === 'denied') {
-    showDeniedNotifGuide.value = !showDeniedNotifGuide.value
-    showMiniToast('Notifikasi diblokir browser — buka ikon gembok di bilah alamat untuk mengizinkan 🔒')
+    showDeniedNotifGuide.value = true
+    showMiniToast(DENIED_NOTIF_GUIDE_MESSAGE)
     return
   }
   showDeniedNotifGuide.value = false
@@ -60,47 +73,68 @@ async function handleEnableScreenNotifications() {
   if (result === 'granted') {
     playBellChime()
     triggerVibration(VIBRATION_PATTERNS.habitReminder)
-    await kirimNotifikasiSistem(
+    await sendDesktopBanner(
       "✅ Notif Layar Aktif! — Twilight's",
-      'Hore! Pengingat target & Pomodoro akan muncul di layar Windows dan lockscreen HP-mu 🐾',
-      true,
+      'Hore! Pengingat target & Pomodoro akan muncul di pojok kanan bawah Windows & lockscreen HP-mu 🐾',
       'twilights-notif-welcome',
     )
     showMiniToast('✅ Notif Layar Aktif! Pengingat siap muncul di layar sistem')
   } else if (result === 'denied') {
     showDeniedNotifGuide.value = true
+    showMiniToast(DENIED_NOTIF_GUIDE_MESSAGE)
   }
 }
 
-/** Tombol "🔔 Tes": bunyi bel + getar HP + 1 contoh notifikasi layar sistem */
+/**
+ * Tombol "🔔 Tes" dengan jeda 3 detik:
+ * Memberi waktu pengguna meminimalkan browser ke desktop agar banner Windows Toast
+ * terlihat jelas muncul di pojok kanan bawah layar (di atas jam taskbar)!
+ */
 async function handleTestSystemNotification() {
-  playBellChime()
-  triggerVibration(VIBRATION_PATTERNS.pomodoroDone)
-
   let perm = syncNotificationPermission()
   if (perm === 'default') {
     perm = await requestNotificationPermission(false)
   }
 
-  if (perm === 'granted') {
-    showDeniedNotifGuide.value = false
-    const sent = await kirimNotifikasiSistem(
-      "✨ Tes Notifikasi Layar — Twilight's",
-      'Berhasil! Notifikasi Twilight\'s siap muncul di layar Windows & lockscreen HP-mu 🐾',
-      true,
-      `twilights-notif-test-${Date.now()}`,
-    )
-    showMiniToast(
-      sent
-        ? '🔔 Tes notifikasi layar, bel & getar HP berhasil dikirim! ✨'
-        : '🔔 Bel & getar HP aktif (browser tidak menampilkan pop-up sistem saat ini)',
-    )
-  } else if (perm === 'denied') {
+  if (perm === 'denied') {
     showDeniedNotifGuide.value = true
-    showMiniToast('🔕 Izin notifikasi diblokir — ikuti panduan singkat di bawah untuk mengizinkan')
-  } else {
-    showMiniToast('🔔 Bel & getar HP dites (browser ini belum mendukung notifikasi sistem)')
+    showMiniToast(DENIED_NOTIF_GUIDE_MESSAGE)
+    return
   }
+
+  if (perm === 'unsupported') {
+    playBellChime()
+    triggerVibration(VIBRATION_PATTERNS.pomodoroDone)
+    showMiniToast('🔔 Bel & getar HP dites (browser ini belum mendukung notifikasi sistem)')
+    return
+  }
+
+  showDeniedNotifGuide.value = false
+  clearTestNotifTimer()
+  testCountdownSec.value = 3
+  showMiniToast('⏳ Tes notifikasi dalam 3 detik... Silakan minimize browser ke desktop sekarang! 🔔')
+
+  testCountdownInterval = setInterval(() => {
+    if (testCountdownSec.value > 1) {
+      testCountdownSec.value -= 1
+      return
+    }
+
+    clearTestNotifTimer()
+    playBellChime()
+    triggerVibration(VIBRATION_PATTERNS.pomodoroDone)
+    void sendDesktopBanner(
+      "✨ Tes Notifikasi Layar — Twilight's",
+      'Berhasil! Banner sistem Twilight\'s tampil di pojok kanan bawah Windows & lockscreen HP-mu 🐾',
+      `twilights-notif-test-${Date.now()}`,
+    ).then((sent) => {
+      showMiniToast(
+        sent
+          ? '🔔 Banner notifikasi sistem berhasil dikirim! ✨'
+          : '🔔 Bel & getar aktif — pastikan Do Not Disturb / Focus Assist Windows tidak aktif',
+      )
+    })
+  }, 1000)
 }
 
 // State interaksi Maskot Buku Catatan Kucing (sudut kanan atas kartu Daily Habit Tracker):
@@ -408,6 +442,7 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  clearTestNotifTimer()
   if (reminderCheckInterval) clearInterval(reminderCheckInterval)
   if (import.meta.client) {
     document.removeEventListener('visibilitychange', handleHabitVisibilityChange)
@@ -461,14 +496,19 @@ onUnmounted(() => {
             </span>
           </button>
 
-          <!-- Tombol Tes: kirim 1 contoh notifikasi layar sistem + bunyi bel + getar HP -->
+          <!-- Tombol Tes (jeda 3 detik agar sempat minimize jendela ke desktop Windows) -->
           <button
             type="button"
-            title="Tes langsung: bunyikan bel, getar HP, & kirim 1 contoh notifikasi ke layar Windows / lockscreen HP"
-            class="btn-bouncy inline-flex cursor-pointer items-center gap-1 rounded-full border border-purple-200/40 bg-white/10 px-2.5 py-0.5 text-[10px] font-bold text-purple-100 whitespace-nowrap transition hover:border-pink-200/60 hover:bg-white/20"
+            title="Tes langsung (jeda 3 detik): sempatkan minimize browser agar banner Windows Toast terlihat di pojok kanan bawah"
+            class="btn-bouncy inline-flex cursor-pointer items-center gap-1 rounded-full border px-2.5 py-0.5 text-[10px] font-bold whitespace-nowrap transition"
+            :class="
+              testCountdownSec > 0
+                ? 'border-amber-300/75 bg-amber-400/25 text-amber-100 animate-pulse'
+                : 'border-purple-200/40 bg-white/10 text-purple-100 hover:border-pink-200/60 hover:bg-white/20'
+            "
             @click="handleTestSystemNotification"
           >
-            <span>🔔 Tes</span>
+            <span>{{ testCountdownSec > 0 ? `⏳ Tes (${testCountdownSec}d)...` : '🔔 Tes' }}</span>
           </button>
         </div>
 
@@ -649,14 +689,12 @@ onUnmounted(() => {
     </div>
 
     <!-- Banner Motivasi Saat 100% Target Hari Ini Tuntas + Status Bonus Harian +5 🐟 -->
-    <!-- Panduan Singkat Jika Izin Notifikasi Diblokir Browser (`denied`) -->
+    <!-- Panduan Diagnostik Jika Izin Notifikasi Diblokir Browser (`denied`) -->
     <div
       v-if="showDeniedNotifGuide && notificationPermission === 'denied'"
-      class="mt-2.5 flex items-start justify-between gap-2 rounded-2xl border border-rose-300/45 bg-rose-500/15 px-3 py-2 text-[11px] leading-relaxed text-rose-50"
+      class="mt-2.5 flex items-start justify-between gap-2 rounded-2xl border border-rose-300/50 bg-rose-500/20 px-3 py-2 text-[11px] font-semibold leading-relaxed text-rose-50"
     >
-      <p>
-        <strong>Cara mengizinkan notifikasi:</strong> Ketuk ikon <strong>Gembok / Pengaturan Situs</strong> di bilah alamat browser → pilih <strong>Notifikasi</strong> → ubah ke <strong>Izinkan (Allow)</strong>, lalu muat ulang halaman.
-      </p>
+      <p>{{ DENIED_NOTIF_GUIDE_MESSAGE }}</p>
       <button
         type="button"
         aria-label="Tutup panduan izin notifikasi"

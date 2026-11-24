@@ -191,37 +191,42 @@ export function useBackgroundResilience() {
   }
 
   /**
-   * Fungsi pembantu terpadu untuk mengirim Notifikasi Sistem (Windows Action Center & status bar / lockscreen HP):
-   * - Memeriksa `Notification.permission === 'granted'`.
-   * - Memprioritaskan `navigator.serviceWorker.ready.then(reg => reg.showNotification(...))`
-   *   dengan ikon PNG resmi, vibrate [250, 120, 250, 120, 450], requireInteraction: true, dan renotify: true.
-   * - Otomatis fallback ke `new Notification(...)` jika browser tidak menjalankan Service Worker.
+   * Fungsi `sendDesktopBanner(title, body, tagName)`:
+   * Memunculkan Windows System Toast Notification (pojok kanan bawah desktop) & push banner HP Android:
+   * - Di PC/Desktop (Windows/Mac): langsung memanggil `new Notification(title, options)` dengan
+   *   `requireInteraction: true`, `silent: false`, `icon`, & `onclick -> window.focus() + close()`,
+   *   dengan fallback otomatis ke `registration.showNotification(...)` jika diperlukan.
+   * - Di HP/Android: memprioritaskan `registration.showNotification(...)` lewat Service Worker
+   *   agar muncul di status bar & lockscreen HP.
    */
-  async function kirimNotifikasiSistem(
-    judul: string,
-    pesan: string,
+  async function sendDesktopBanner(
+    title: string,
+    body: string,
+    tagName?: string,
     requireInteraction = true,
-    tag?: string,
   ): Promise<boolean> {
     if (!import.meta.client) return false
     const perm = syncNotificationPermission()
     if (perm !== 'granted') return false
 
     const iconUrl = new URL('icons/icon-192.png', document.baseURI).href
-    const uniqueTag = tag || `twilights-alert-${Date.now()}`
-    const options: ExtendedNotificationOptions = {
-      body: pesan,
+    const uniqueTag = tagName || `twilights-banner-${Date.now()}`
+    const isMobileUa = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || '')
+
+    const swOptions: ExtendedNotificationOptions = {
+      body,
       icon: iconUrl,
       badge: iconUrl,
       tag: uniqueTag,
       renotify: true,
       requireInteraction,
+      silent: false,
       vibrate: [250, 120, 250, 120, 450],
       data: { url: window.location.href },
     }
 
-    // 1. Jalur utama: Service Worker (wajib agar muncul di status bar & lockscreen HP Android + optimal di Windows)
-    if ('serviceWorker' in navigator) {
+    const tryServiceWorkerNotify = async (): Promise<boolean> => {
+      if (!('serviceWorker' in navigator)) return false
       try {
         if (!isServiceWorkerReady.value) {
           await registerServiceWorker()
@@ -231,35 +236,62 @@ export function useBackgroundResilience() {
           new Promise<null>(resolve => setTimeout(() => resolve(null), 1500)),
         ])
         if (reg && typeof reg.showNotification === 'function') {
-          await reg.showNotification(judul, options)
+          await reg.showNotification(title, swOptions)
           return true
         }
       } catch {
-        // Lanjut ke fallback Notification standar
+        // Fallback jika SW gagal
+      }
+      return false
+    }
+
+    const tryDesktopDirectNotify = (): boolean => {
+      try {
+        const notif = new Notification(title, {
+          body,
+          icon: iconUrl,
+          badge: iconUrl,
+          tag: uniqueTag,
+          requireInteraction,
+          silent: false,
+        })
+        notif.onclick = () => {
+          try {
+            window.focus()
+          } catch {
+            // Abaikan jika browser membatasi focus
+          }
+          notif.close()
+        }
+        return true
+      } catch {
+        return false
       }
     }
 
-    // 2. Jalur cadangan: Notification API standar dengan handler klik untuk kembali ke tab Twilight's
-    try {
-      const notif = new Notification(judul, {
-        body: pesan,
-        icon: iconUrl,
-        badge: iconUrl,
-        tag: uniqueTag,
-        requireInteraction,
-      })
-      notif.onclick = () => {
-        try {
-          window.focus()
-        } catch {
-          // Abaikan jika browser membatasi focus
-        }
-        notif.close()
-      }
-      return true
-    } catch {
-      return false
+    if (isMobileUa) {
+      // Di HP/Android: wajib lewat Service Worker agar muncul di status bar & lockscreen
+      const swSent = await tryServiceWorkerNotify()
+      if (swSent) return true
+      return tryDesktopDirectNotify()
     }
+
+    // Di PC/Windows Desktop: langsung panggil `new Notification(...)` agar Windows Toast langsung muncul,
+    // lalu fallback ke Service Worker jika browser membatasi konstruktor Notification langsung.
+    if (tryDesktopDirectNotify()) return true
+    return await tryServiceWorkerNotify()
+  }
+
+  /**
+   * Wrapper kompatibilitas `kirimNotifikasiSistem` yang meneruskan langsung ke `sendDesktopBanner`.
+   */
+  async function kirimNotifikasiSistem(
+    judul: string,
+    pesan: string,
+    requireInteraction = true,
+    tag?: string,
+  ): Promise<boolean> {
+    return await sendDesktopBanner(judul, pesan, tag, requireInteraction)
   }
 
   /**
@@ -421,6 +453,7 @@ export function useBackgroundResilience() {
     syncNotificationPermission,
     registerServiceWorker,
     requestNotificationPermission,
+    sendDesktopBanner,
     kirimNotifikasiSistem,
     setBackgroundAudioKeepAlive,
     resumeKeepAliveIfNeeded,
