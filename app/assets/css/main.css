@@ -14,6 +14,37 @@
   --twilight-secondary: #c4b5fd;
   --twilight-glow: rgba(249, 168, 212, 0.5);
   --twilight-bg-base: #1e1b4b;
+  --accent-primary: #f9a8d4;
+  --accent-secondary: #c4b5fd;
+  --accent-btn-grad: linear-gradient(135deg, #f9a8d4 0%, #c4b5fd 100%);
+  --accent-btn-text: #27103b;
+  --accent-btn-shadow: rgba(249, 168, 212, 0.42);
+  --accent-surface: rgba(139, 92, 246, 0.34);
+  --accent-surface-hover: rgba(139, 92, 246, 0.52);
+  --accent-pill-bg: rgba(249, 168, 212, 0.16);
+  --accent-pill-bg-hover: rgba(249, 168, 212, 0.3);
+  --accent-pill-border: rgba(249, 168, 212, 0.42);
+  --accent-pill-text: #fdf2f8;
+  --accent-badge-bg: rgba(196, 181, 253, 0.18);
+  --accent-badge-border: rgba(216, 180, 254, 0.42);
+  --accent-badge-text: #f3e8ff;
+  --accent-check-fill: #f9a8d4;
+  --accent-check-stroke: #fbcfe8;
+  --accent-check-idle-stroke: #e9d5ff;
+  --accent-check-mark: #311042;
+  --accent-cassette-body: #4c1d95;
+  --accent-cassette-bottom: #311042;
+  --accent-cassette-stroke: #f9a8d4;
+  --accent-cassette-label: #fbcfe8;
+  --accent-cassette-stripe: #c4b5fd;
+  --accent-cassette-window: #1e1b4b;
+  --accent-notebook-cover: #f9a8d4;
+  --accent-notebook-spine: #c084fc;
+  --accent-notebook-page: #fff7fb;
+  --title-color: #f9a8d4;
+  --title-glow: rgba(249, 168, 212, 0.48);
+  --text-primary: #fdf2f8;
+  --text-secondary: #fbcfe8;
 }
 
 /* Tema 2: Pastel Berry / Cotton Candy Sunset (gradasi pink pastel lembut ke peach-rose, tanpa sakura) */
@@ -23,6 +54,37 @@
   --twilight-secondary: #fbcfe8;
   --twilight-glow: rgba(253, 164, 175, 0.52);
   --twilight-bg-base: #5a2248;
+  --accent-primary: #fda4af;
+  --accent-secondary: #fdba74;
+  --accent-btn-grad: linear-gradient(135deg, #fda4af 0%, #fdba74 100%);
+  --accent-btn-text: #3b1024;
+  --accent-btn-shadow: rgba(253, 164, 175, 0.44);
+  --accent-surface: rgba(159, 43, 94, 0.52);
+  --accent-surface-hover: rgba(190, 56, 113, 0.68);
+  --accent-pill-bg: rgba(253, 164, 175, 0.18);
+  --accent-pill-bg-hover: rgba(253, 164, 175, 0.32);
+  --accent-pill-border: rgba(254, 215, 170, 0.45);
+  --accent-pill-text: #fff1f2;
+  --accent-badge-bg: rgba(253, 186, 116, 0.2);
+  --accent-badge-border: rgba(254, 215, 170, 0.46);
+  --accent-badge-text: #ffedd5;
+  --accent-check-fill: #fda4af;
+  --accent-check-stroke: #fecdd3;
+  --accent-check-idle-stroke: #fed7aa;
+  --accent-check-mark: #3b1024;
+  --accent-cassette-body: #6b1d45;
+  --accent-cassette-bottom: #47112d;
+  --accent-cassette-stroke: #fda4af;
+  --accent-cassette-label: #ffe4e6;
+  --accent-cassette-stripe: #fdba74;
+  --accent-cassette-window: #3b1024;
+  --accent-notebook-cover: #fda4af;
+  --accent-notebook-spine: #fb923c;
+  --accent-notebook-page: #fff7ed;
+  --title-color: #ffe4e6;
+  --title-glow: rgba(253, 164, 175, 0.55);
+  --text-primary: #fff1f2;
+  --text-secondary: #fed7aa;
 }
 
 /* Tema 3: Ocean Night (biru laut dalam #13243A -> #1E3A5F dengan aksen sky cyan kontras tinggi) */
@@ -32,6 +94,37 @@
   --twilight-secondary: #38bdf8;
   --twilight-glow: rgba(56, 189, 248, 0.45);
   --twilight-bg-base: #13243a;
+  --accent-primary: #38bdf8;
+  --accent-secondary: #7dd3fc;
+  --accent-btn-grad: linear-gradient(135deg, #7dd3fc 0%, #0ea5e9 100%);
+  --accent-btn-text: #061829;
+  --accent-btn-shadow: rgba(56, 189, 248, 0.44);
+  --accent-surface: rgba(14, 74, 118, 0.62);
+  --accent-surface-hover: rgba(2, 132, 199, 0.58);
+  --accent-pill-bg: rgba(56, 189, 248, 0.16);
+  --accent-pill-bg-hover: rgba(56, 189, 248, 0.3);
+  --accent-pill-border: rgba(125, 211, 252, 0.44);
+  --accent-pill-text: #f0f9ff;
+  --accent-badge-bg: rgba(125, 211, 252, 0.18);
+  --accent-badge-border: rgba(125, 211, 252, 0.46);
+  --accent-badge-text: #e0f2fe;
+  --accent-check-fill: #38bdf8;
+  --accent-check-stroke: #bae6fd;
+  --accent-check-idle-stroke: #7dd3fc;
+  --accent-check-mark: #082032;
+  --accent-cassette-body: #12365c;
+  --accent-cassette-bottom: #0b223b;
+  --accent-cassette-stroke: #7dd3fc;
+  --accent-cassette-label: #e0f2fe;
+  --accent-cassette-stripe: #38bdf8;
+  --accent-cassette-window: #081a2e;
+  --accent-notebook-cover: #7dd3fc;
+  --accent-notebook-spine: #0284c7;
+  --accent-notebook-page: #f0f9ff;
+  --title-color: #7dd3fc;
+  --title-glow: rgba(56, 189, 248, 0.48);
+  --text-primary: #f0f9ff;
+  --text-secondary: #bae6fd;
 }
 
 /* --- VARIAN MODE GELAP (🌙 MIDNIGHT / DARK VARIANT) UNTUK KETIGA TEMA --- */
@@ -204,20 +297,42 @@ html[data-cozy-theme="neon-night-city"] header {
                   --card-bg, --card-border + grafik, tombol aktif & slider.
    ============================================================================ */
 
-/* 1. 🍵 MATCHA GARDEN (Normal & Mode Gelap 🌙) */
+/* 1. 🍵 MATCHA GARDEN (Normal & Mode Gelap 🌙 — Hijau Teh Jepang & Krim Mint Kontras Tinggi, 0% Pink/Ungu) */
 html[data-cozy-theme="matcha-garden"] {
   --twilight-bg-base: #16261e;
   --accent-primary: #4ade80;
-  --accent-secondary: #86efac;
+  --accent-secondary: #a7f3d0;
   --accent-btn-grad: linear-gradient(135deg, #86efac 0%, #4ade80 55%, #16a34a 100%);
-  --accent-btn-text: #0f2418;
-  --accent-btn-shadow: rgba(74, 222, 128, 0.38);
+  --accent-btn-text: #062112;
+  --accent-btn-shadow: rgba(74, 222, 128, 0.42);
+  --accent-surface: rgba(22, 83, 52, 0.72);
+  --accent-surface-hover: rgba(28, 108, 67, 0.85);
+  --accent-pill-bg: rgba(74, 222, 128, 0.15);
+  --accent-pill-bg-hover: rgba(74, 222, 128, 0.28);
+  --accent-pill-border: rgba(134, 239, 172, 0.42);
+  --accent-pill-text: #ecfdf5;
+  --accent-badge-bg: rgba(167, 243, 208, 0.16);
+  --accent-badge-border: rgba(110, 231, 183, 0.45);
+  --accent-badge-text: #d1fae5;
+  --accent-check-fill: #4ade80;
+  --accent-check-stroke: #bbf7d0;
+  --accent-check-idle-stroke: #86efac;
+  --accent-check-mark: #052e16;
+  --accent-cassette-body: #18422c;
+  --accent-cassette-bottom: #0f2a1c;
+  --accent-cassette-stroke: #86efac;
+  --accent-cassette-label: #dcfce7;
+  --accent-cassette-stripe: #4ade80;
+  --accent-cassette-window: #0a2015;
+  --accent-notebook-cover: #86efac;
+  --accent-notebook-spine: #16a34a;
+  --accent-notebook-page: #f0fdf4;
   --title-color: #bbf7d0;
-  --title-glow: rgba(110, 231, 183, 0.35);
+  --title-glow: rgba(74, 222, 128, 0.42);
   --text-primary: #f7fee7;
   --text-secondary: #a7f3d0;
-  --card-bg: rgba(28, 48, 38, 0.88);
-  --card-border: rgba(167, 243, 208, 0.25);
+  --card-bg: rgba(24, 43, 34, 0.9);
+  --card-border: rgba(134, 239, 172, 0.28);
   --chart-bar-a: linear-gradient(to top, #16a34a, #86efac);
   --chart-bar-b: linear-gradient(to top, #22c55e, #bbf7d0);
   --chart-bar-full: linear-gradient(to top, #eab308, #fde68a);
@@ -227,24 +342,46 @@ html[data-cozy-theme="matcha-garden"] {
 
 html[data-cozy-theme="matcha-garden"][data-theme-mode="dark"] {
   --twilight-bg-base: #0d1712;
-  --card-bg: rgba(15, 29, 22, 0.92);
-  --card-border: rgba(167, 243, 208, 0.22);
+  --card-bg: rgba(13, 26, 20, 0.93);
+  --card-border: rgba(134, 239, 172, 0.26);
 }
 
-/* 2. 🍂 COZY AUTUMN CAFE */
+/* 2. 🍂 COZY AUTUMN CAFE (Karamel Amber & Oranye Hangat Kontras Tinggi, 0% Pink/Ungu) */
 html[data-cozy-theme="autumn-cafe"] {
   --twilight-bg-base: #28150d;
   --accent-primary: #fbbf24;
   --accent-secondary: #fb923c;
-  --accent-btn-grad: linear-gradient(135deg, #fbbf24 0%, #fb923c 100%);
-  --accent-btn-text: #2a1308;
-  --accent-btn-shadow: rgba(251, 191, 36, 0.38);
+  --accent-btn-grad: linear-gradient(135deg, #fde68a 0%, #fbbf24 45%, #ea580c 100%);
+  --accent-btn-text: #271005;
+  --accent-btn-shadow: rgba(251, 191, 36, 0.44);
+  --accent-surface: rgba(124, 45, 18, 0.68);
+  --accent-surface-hover: rgba(154, 52, 18, 0.85);
+  --accent-pill-bg: rgba(251, 191, 36, 0.16);
+  --accent-pill-bg-hover: rgba(251, 191, 36, 0.3);
+  --accent-pill-border: rgba(253, 211, 77, 0.46);
+  --accent-pill-text: #fffbeb;
+  --accent-badge-bg: rgba(251, 146, 60, 0.2);
+  --accent-badge-border: rgba(253, 186, 116, 0.48);
+  --accent-badge-text: #ffedd5;
+  --accent-check-fill: #fbbf24;
+  --accent-check-stroke: #fef08a;
+  --accent-check-idle-stroke: #fdba74;
+  --accent-check-mark: #2a1308;
+  --accent-cassette-body: #5c2712;
+  --accent-cassette-bottom: #3b1709;
+  --accent-cassette-stroke: #fbbf24;
+  --accent-cassette-label: #fef3c7;
+  --accent-cassette-stripe: #fb923c;
+  --accent-cassette-window: #261006;
+  --accent-notebook-cover: #fdba74;
+  --accent-notebook-spine: #c2410c;
+  --accent-notebook-page: #fffbeb;
   --title-color: #fde68a;
-  --title-glow: rgba(251, 191, 36, 0.45);
+  --title-glow: rgba(251, 191, 36, 0.48);
   --text-primary: #fffbeb;
   --text-secondary: #fed7aa;
-  --card-bg: rgba(54, 28, 17, 0.86);
-  --card-border: rgba(251, 191, 36, 0.28);
+  --card-bg: rgba(50, 25, 14, 0.88);
+  --card-border: rgba(251, 191, 36, 0.3);
   --chart-bar-a: linear-gradient(to top, #ea580c, #fbbf24);
   --chart-bar-b: linear-gradient(to top, #c2410c, #fb923c);
   --chart-bar-full: linear-gradient(to top, #f59e0b, #fef08a);
@@ -252,20 +389,42 @@ html[data-cozy-theme="autumn-cafe"] {
   --slider-thumb-shadow: rgba(251, 191, 36, 0.65);
 }
 
-/* 3. 🌊 BIOLUMINESCENT OCEAN (Deep Abyssal Teal & Turquoise Gelap — bebas ungu-pink) */
+/* 3. 🌊 BIOLUMINESCENT OCEAN (Deep Abyssal Teal & Turquoise Neon — 0% Ungu/Pink) */
 html[data-cozy-theme="biolum-ocean"] {
   --twilight-bg-base: #020f14;
   --accent-primary: #2dd4bf;
-  --accent-secondary: #38bdf8;
-  --accent-btn-grad: linear-gradient(135deg, #2dd4bf 0%, #0891b2 100%);
-  --accent-btn-text: #041e24;
-  --accent-btn-shadow: rgba(0, 245, 212, 0.42);
+  --accent-secondary: #22d3ee;
+  --accent-btn-grad: linear-gradient(135deg, #5eead4 0%, #2dd4bf 45%, #0891b2 100%);
+  --accent-btn-text: #031c22;
+  --accent-btn-shadow: rgba(0, 245, 212, 0.45);
+  --accent-surface: rgba(8, 72, 92, 0.72);
+  --accent-surface-hover: rgba(14, 102, 128, 0.86);
+  --accent-pill-bg: rgba(45, 212, 191, 0.16);
+  --accent-pill-bg-hover: rgba(45, 212, 191, 0.3);
+  --accent-pill-border: rgba(94, 234, 212, 0.46);
+  --accent-pill-text: #ecfeff;
+  --accent-badge-bg: rgba(34, 211, 238, 0.18);
+  --accent-badge-border: rgba(103, 232, 249, 0.46);
+  --accent-badge-text: #cffafe;
+  --accent-check-fill: #2dd4bf;
+  --accent-check-stroke: #99f6e4;
+  --accent-check-idle-stroke: #5eead4;
+  --accent-check-mark: #042f2e;
+  --accent-cassette-body: #083d4f;
+  --accent-cassette-bottom: #042430;
+  --accent-cassette-stroke: #2dd4bf;
+  --accent-cassette-label: #ccfbf1;
+  --accent-cassette-stripe: #22d3ee;
+  --accent-cassette-window: #021821;
+  --accent-notebook-cover: #5eead4;
+  --accent-notebook-spine: #0891b2;
+  --accent-notebook-page: #ecfeff;
   --title-color: #5eead4;
-  --title-glow: rgba(0, 245, 212, 0.45);
+  --title-glow: rgba(0, 245, 212, 0.48);
   --text-primary: #ecfeff;
   --text-secondary: #99f6e4;
-  --card-bg: rgba(4, 29, 38, 0.86);
-  --card-border: rgba(45, 212, 191, 0.28);
+  --card-bg: rgba(4, 29, 38, 0.88);
+  --card-border: rgba(45, 212, 191, 0.32);
   --chart-bar-a: linear-gradient(to top, #0d9488, #2dd4bf);
   --chart-bar-b: linear-gradient(to top, #0284c7, #38bdf8);
   --chart-bar-full: linear-gradient(to top, #00f5d4, #a5f3fc);
@@ -275,24 +434,46 @@ html[data-cozy-theme="biolum-ocean"] {
 
 html[data-cozy-theme="biolum-ocean"][data-theme-mode="dark"] {
   --twilight-bg-base: #01090d;
-  --card-bg: rgba(2, 19, 26, 0.92);
-  --card-border: rgba(45, 212, 191, 0.25);
+  --card-bg: rgba(2, 19, 26, 0.93);
+  --card-border: rgba(45, 212, 191, 0.28);
 }
 
-/* 4. 🍯 HONEY LIBRARY (Perpustakaan Dalam Ruangan — Emas Madu & Cokelat Amber) */
+/* 4. 🍯 HONEY LIBRARY (Perpustakaan Dalam Ruangan — Emas Madu & Cokelat Amber, 0% Pink/Ungu) */
 html[data-cozy-theme="honey-library"] {
   --twilight-bg-base: #241710;
   --accent-primary: #fcd34d;
-  --accent-secondary: #d97706;
-  --accent-btn-grad: linear-gradient(135deg, #fcd34d 0%, #d97706 100%);
+  --accent-secondary: #f59e0b;
+  --accent-btn-grad: linear-gradient(135deg, #fef08a 0%, #fcd34d 48%, #d97706 100%);
   --accent-btn-text: #271608;
-  --accent-btn-shadow: rgba(252, 211, 77, 0.38);
+  --accent-btn-shadow: rgba(252, 211, 77, 0.42);
+  --accent-surface: rgba(110, 66, 24, 0.72);
+  --accent-surface-hover: rgba(146, 86, 28, 0.86);
+  --accent-pill-bg: rgba(252, 211, 77, 0.16);
+  --accent-pill-bg-hover: rgba(252, 211, 77, 0.3);
+  --accent-pill-border: rgba(253, 224, 71, 0.46);
+  --accent-pill-text: #fffbeb;
+  --accent-badge-bg: rgba(245, 158, 11, 0.2);
+  --accent-badge-border: rgba(252, 211, 77, 0.48);
+  --accent-badge-text: #fef3c7;
+  --accent-check-fill: #fcd34d;
+  --accent-check-stroke: #fef9c3;
+  --accent-check-idle-stroke: #fde68a;
+  --accent-check-mark: #271608;
+  --accent-cassette-body: #523217;
+  --accent-cassette-bottom: #331e0d;
+  --accent-cassette-stroke: #fcd34d;
+  --accent-cassette-label: #fef9c3;
+  --accent-cassette-stripe: #f59e0b;
+  --accent-cassette-window: #241509;
+  --accent-notebook-cover: #fde68a;
+  --accent-notebook-spine: #b45309;
+  --accent-notebook-page: #fffbeb;
   --title-color: #fcd34d;
-  --title-glow: rgba(217, 119, 6, 0.48);
+  --title-glow: rgba(217, 119, 6, 0.5);
   --text-primary: #fffbeb;
   --text-secondary: #fde68a;
-  --card-bg: rgba(45, 28, 18, 0.88);
-  --card-border: rgba(252, 211, 77, 0.28);
+  --card-bg: rgba(45, 28, 18, 0.9);
+  --card-border: rgba(252, 211, 77, 0.3);
   --chart-bar-a: linear-gradient(to top, #b45309, #fcd34d);
   --chart-bar-b: linear-gradient(to top, #92400e, #f59e0b);
   --chart-bar-full: linear-gradient(to top, #eab308, #fef9c3);
@@ -300,41 +481,85 @@ html[data-cozy-theme="honey-library"] {
   --slider-thumb-shadow: rgba(252, 211, 77, 0.65);
 }
 
-/* 5. ☁️ PASTEL CLOUDLAND (Langit — Biru Langit Pastel & Lavender Lembut) */
+/* 5. ☁️ PASTEL CLOUDLAND (Langit — Biru Langit Pastel & Periwinkle Kontras Tinggi) */
 html[data-cozy-theme="pastel-cloudland"] {
   --twilight-bg-base: #27294a;
   --accent-primary: #93c5fd;
   --accent-secondary: #c4b5fd;
-  --accent-btn-grad: linear-gradient(135deg, #93c5fd 0%, #c4b5fd 100%);
-  --accent-btn-text: #1e1b4b;
-  --accent-btn-shadow: rgba(147, 197, 253, 0.44);
+  --accent-btn-grad: linear-gradient(135deg, #bfdbfe 0%, #93c5fd 50%, #a5b4fc 100%);
+  --accent-btn-text: #14193d;
+  --accent-btn-shadow: rgba(147, 197, 253, 0.45);
+  --accent-surface: rgba(56, 67, 128, 0.72);
+  --accent-surface-hover: rgba(74, 88, 162, 0.85);
+  --accent-pill-bg: rgba(147, 197, 253, 0.17);
+  --accent-pill-bg-hover: rgba(147, 197, 253, 0.32);
+  --accent-pill-border: rgba(191, 219, 254, 0.48);
+  --accent-pill-text: #f8fafc;
+  --accent-badge-bg: rgba(165, 180, 252, 0.22);
+  --accent-badge-border: rgba(199, 210, 254, 0.48);
+  --accent-badge-text: #e0e7ff;
+  --accent-check-fill: #93c5fd;
+  --accent-check-stroke: #dbeafe;
+  --accent-check-idle-stroke: #bfdbfe;
+  --accent-check-mark: #172554;
+  --accent-cassette-body: #323a70;
+  --accent-cassette-bottom: #21264d;
+  --accent-cassette-stroke: #93c5fd;
+  --accent-cassette-label: #eff6ff;
+  --accent-cassette-stripe: #a5b4fc;
+  --accent-cassette-window: #171b3b;
+  --accent-notebook-cover: #93c5fd;
+  --accent-notebook-spine: #6366f1;
+  --accent-notebook-page: #f8fafc;
   --title-color: #dbeafe;
-  --title-glow: rgba(196, 181, 253, 0.5);
+  --title-glow: rgba(147, 197, 253, 0.54);
   --text-primary: #f8fafc;
-  --text-secondary: #ddd6fe;
-  --card-bg: rgba(45, 45, 84, 0.82);
-  --card-border: rgba(147, 197, 253, 0.32);
+  --text-secondary: #dbeafe;
+  --card-bg: rgba(42, 46, 86, 0.86);
+  --card-border: rgba(147, 197, 253, 0.34);
   --chart-bar-a: linear-gradient(to top, #3b82f6, #93c5fd);
-  --chart-bar-b: linear-gradient(to top, #8b5cf6, #c4b5fd);
-  --chart-bar-full: linear-gradient(to top, #60a5fa, #fbcfe8);
-  --slider-thumb-grad: linear-gradient(135deg, #dbeafe 0%, #93c5fd 52%, #c4b5fd 100%);
+  --chart-bar-b: linear-gradient(to top, #6366f1, #c7d2fe);
+  --chart-bar-full: linear-gradient(to top, #60a5fa, #e0f2fe);
+  --slider-thumb-grad: linear-gradient(135deg, #dbeafe 0%, #93c5fd 52%, #a5b4fc 100%);
   --slider-thumb-shadow: rgba(147, 197, 253, 0.68);
 }
 
-/* 6. ❄️ WINTER FROST (Biru Es Kristal & Perak Terang) */
+/* 6. ❄️ WINTER FROST (Biru Es Kristal & Perak Terang, 0% Pink/Ungu) */
 html[data-cozy-theme="winter-frost"] {
   --twilight-bg-base: #152536;
-  --accent-primary: #bae6fd;
+  --accent-primary: #7dd3fc;
   --accent-secondary: #e0f2fe;
-  --accent-btn-grad: linear-gradient(135deg, #e0f2fe 0%, #7dd3fc 100%);
-  --accent-btn-text: #0c1e35;
-  --accent-btn-shadow: rgba(186, 230, 253, 0.42);
+  --accent-btn-grad: linear-gradient(135deg, #f0f9ff 0%, #bae6fd 45%, #38bdf8 100%);
+  --accent-btn-text: #091b2e;
+  --accent-btn-shadow: rgba(186, 230, 253, 0.45);
+  --accent-surface: rgba(30, 64, 98, 0.74);
+  --accent-surface-hover: rgba(42, 87, 130, 0.88);
+  --accent-pill-bg: rgba(186, 230, 253, 0.16);
+  --accent-pill-bg-hover: rgba(186, 230, 253, 0.3);
+  --accent-pill-border: rgba(186, 230, 253, 0.48);
+  --accent-pill-text: #f0f9ff;
+  --accent-badge-bg: rgba(125, 211, 252, 0.18);
+  --accent-badge-border: rgba(186, 230, 253, 0.48);
+  --accent-badge-text: #e0f2fe;
+  --accent-check-fill: #7dd3fc;
+  --accent-check-stroke: #e0f2fe;
+  --accent-check-idle-stroke: #bae6fd;
+  --accent-check-mark: #0c1e35;
+  --accent-cassette-body: #1c3b59;
+  --accent-cassette-bottom: #11253a;
+  --accent-cassette-stroke: #bae6fd;
+  --accent-cassette-label: #f0f9ff;
+  --accent-cassette-stripe: #7dd3fc;
+  --accent-cassette-window: #0c1b2b;
+  --accent-notebook-cover: #bae6fd;
+  --accent-notebook-spine: #0284c7;
+  --accent-notebook-page: #f8fafc;
   --title-color: #e0f2fe;
-  --title-glow: rgba(186, 230, 253, 0.52);
+  --title-glow: rgba(186, 230, 253, 0.55);
   --text-primary: #f0f9ff;
   --text-secondary: #bae6fd;
-  --card-bg: rgba(24, 42, 62, 0.86);
-  --card-border: rgba(186, 230, 253, 0.32);
+  --card-bg: rgba(22, 39, 58, 0.88);
+  --card-border: rgba(186, 230, 253, 0.34);
   --chart-bar-a: linear-gradient(to top, #0284c7, #bae6fd);
   --chart-bar-b: linear-gradient(to top, #64748b, #e0f2fe);
   --chart-bar-full: linear-gradient(to top, #38bdf8, #ffffff);
@@ -342,87 +567,175 @@ html[data-cozy-theme="winter-frost"] {
   --slider-thumb-shadow: rgba(186, 230, 253, 0.72);
 }
 
-/* 7. 🌃 NEON NIGHT CITY (Ultimate Completion Theme — Cyan Neon & Magenta Neon) */
+/* 7. 🌃 NEON NIGHT CITY (Ultimate Completion Theme — Cyan Neon & Magenta Neon Kontras Tajam) */
 html[data-cozy-theme="neon-night-city"] {
   --twilight-bg-base: #090514;
   --accent-primary: #00f5d4;
   --accent-secondary: #ff2a85;
-  --accent-btn-grad: linear-gradient(135deg, #00f5d4 0%, #ff2a85 100%);
+  --accent-btn-grad: linear-gradient(135deg, #00f5d4 0%, #22d3ee 50%, #ff2a85 100%);
   --accent-btn-text: #090514;
   --accent-btn-shadow: rgba(0, 245, 212, 0.48);
+  --accent-surface: rgba(34, 15, 68, 0.82);
+  --accent-surface-hover: rgba(54, 22, 102, 0.92);
+  --accent-pill-bg: rgba(0, 245, 212, 0.14);
+  --accent-pill-bg-hover: rgba(0, 245, 212, 0.28);
+  --accent-pill-border: rgba(0, 245, 212, 0.48);
+  --accent-pill-text: #f0fdfa;
+  --accent-badge-bg: rgba(255, 42, 133, 0.22);
+  --accent-badge-border: rgba(255, 42, 133, 0.52);
+  --accent-badge-text: #ffe4f1;
+  --accent-check-fill: #00f5d4;
+  --accent-check-stroke: #99f6e4;
+  --accent-check-idle-stroke: #00f5d4;
+  --accent-check-mark: #090514;
+  --accent-cassette-body: #1b0d38;
+  --accent-cassette-bottom: #0f0721;
+  --accent-cassette-stroke: #00f5d4;
+  --accent-cassette-label: #ccfbf1;
+  --accent-cassette-stripe: #ff2a85;
+  --accent-cassette-window: #070312;
+  --accent-notebook-cover: #00f5d4;
+  --accent-notebook-spine: #ff2a85;
+  --accent-notebook-page: #f0fdfa;
   --title-color: #00f5d4;
-  --title-glow: rgba(255, 42, 133, 0.55);
+  --title-glow: rgba(255, 42, 133, 0.58);
   --text-primary: #f0fdfa;
-  --text-secondary: #ff8ec4;
-  --card-bg: rgba(14, 7, 30, 0.86);
+  --text-secondary: #67e8f9;
+  --card-bg: rgba(14, 7, 30, 0.88);
   --card-border: rgba(0, 245, 212, 0.45);
   --chart-bar-a: linear-gradient(to top, #0891b2, #00f5d4);
   --chart-bar-b: linear-gradient(to top, #be185d, #ff2a85);
   --chart-bar-full: linear-gradient(to top, #00f5d4, #ff2a85);
-  --slider-thumb-grad: linear-gradient(135deg, #00f5d4 0%, #a855f7 50%, #ff2a85 100%);
+  --slider-thumb-grad: linear-gradient(135deg, #00f5d4 0%, #22d3ee 50%, #ff2a85 100%);
   --slider-thumb-shadow: rgba(0, 245, 212, 0.72);
 }
 
-/* 8. 🌧️ MIDNIGHT RAINY WINDOW */
+/* 8. 🌧️ MIDNIGHT RAINY WINDOW (Biru Hujan Malam & Cahaya Lampu Jalan Emas, 0% Pink/Ungu) */
 html[data-cozy-theme="midnight-rain"] {
   --twilight-bg-base: #070b22;
-  --accent-primary: #93c5fd;
+  --accent-primary: #60a5fa;
   --accent-secondary: #fde68a;
-  --accent-btn-grad: linear-gradient(135deg, #bfdbfe 0%, #60a5fa 60%, #2563eb 100%);
-  --accent-btn-text: #0b122e;
-  --accent-btn-shadow: rgba(96, 165, 250, 0.4);
+  --accent-btn-grad: linear-gradient(135deg, #bfdbfe 0%, #60a5fa 55%, #2563eb 100%);
+  --accent-btn-text: #071029;
+  --accent-btn-shadow: rgba(96, 165, 250, 0.44);
+  --accent-surface: rgba(23, 44, 96, 0.78);
+  --accent-surface-hover: rgba(30, 64, 138, 0.9);
+  --accent-pill-bg: rgba(96, 165, 250, 0.16);
+  --accent-pill-bg-hover: rgba(96, 165, 250, 0.3);
+  --accent-pill-border: rgba(147, 197, 253, 0.46);
+  --accent-pill-text: #eff6ff;
+  --accent-badge-bg: rgba(253, 230, 138, 0.16);
+  --accent-badge-border: rgba(253, 230, 138, 0.45);
+  --accent-badge-text: #fef9c3;
+  --accent-check-fill: #60a5fa;
+  --accent-check-stroke: #dbeafe;
+  --accent-check-idle-stroke: #93c5fd;
+  --accent-check-mark: #0b122e;
+  --accent-cassette-body: #142754;
+  --accent-cassette-bottom: #0c1836;
+  --accent-cassette-stroke: #93c5fd;
+  --accent-cassette-label: #e0f2fe;
+  --accent-cassette-stripe: #fde68a;
+  --accent-cassette-window: #070e24;
+  --accent-notebook-cover: #93c5fd;
+  --accent-notebook-spine: #2563eb;
+  --accent-notebook-page: #eff6ff;
   --title-color: #e0f2fe;
-  --title-glow: rgba(147, 197, 253, 0.48);
+  --title-glow: rgba(147, 197, 253, 0.5);
   --text-primary: #f0f9ff;
   --text-secondary: #bfdbfe;
-  --card-bg: rgba(14, 22, 54, 0.84);
-  --card-border: rgba(147, 197, 253, 0.28);
+  --card-bg: rgba(12, 20, 50, 0.88);
+  --card-border: rgba(147, 197, 253, 0.3);
   --chart-bar-a: linear-gradient(to top, #2563eb, #93c5fd);
-  --chart-bar-b: linear-gradient(to top, #4f46e5, #c7d2fe);
+  --chart-bar-b: linear-gradient(to top, #1d4ed8, #bfdbfe);
   --chart-bar-full: linear-gradient(to top, #eab308, #fef08a);
   --slider-thumb-grad: linear-gradient(135deg, #e0f2fe 0%, #60a5fa 60%, #2563eb 100%);
   --slider-thumb-shadow: rgba(96, 165, 250, 0.65);
 }
 
-/* 9. 🌸 SAKURA LANTERN FESTIVAL (Pink Sakura & Magenta Lembut) */
+/* 9. 🌸 SAKURA LANTERN FESTIVAL (Pink Sakura Cerah & Lentera Persik Hangat Kontras Tinggi) */
 html[data-cozy-theme="sakura-lantern"] {
   --twilight-bg-base: #240e38;
   --accent-primary: #f472b6;
-  --accent-secondary: #e879f9;
-  --accent-btn-grad: linear-gradient(135deg, #f472b6 0%, #e879f9 100%);
+  --accent-secondary: #fda4af;
+  --accent-btn-grad: linear-gradient(135deg, #fbcfe8 0%, #f472b6 55%, #db2777 100%);
   --accent-btn-text: #2a0a24;
   --accent-btn-shadow: rgba(244, 114, 182, 0.45);
+  --accent-surface: rgba(102, 27, 84, 0.72);
+  --accent-surface-hover: rgba(131, 35, 108, 0.86);
+  --accent-pill-bg: rgba(244, 114, 182, 0.18);
+  --accent-pill-bg-hover: rgba(244, 114, 182, 0.32);
+  --accent-pill-border: rgba(249, 168, 212, 0.48);
+  --accent-pill-text: #fff1f2;
+  --accent-badge-bg: rgba(253, 186, 116, 0.2);
+  --accent-badge-border: rgba(253, 211, 77, 0.46);
+  --accent-badge-text: #ffedd5;
+  --accent-check-fill: #f472b6;
+  --accent-check-stroke: #fce7f3;
+  --accent-check-idle-stroke: #f9a8d4;
+  --accent-check-mark: #2a0a24;
+  --accent-cassette-body: #591c4f;
+  --accent-cassette-bottom: #381032;
+  --accent-cassette-stroke: #f9a8d4;
+  --accent-cassette-label: #fce7f3;
+  --accent-cassette-stripe: #fda4af;
+  --accent-cassette-window: #240921;
+  --accent-notebook-cover: #f9a8d4;
+  --accent-notebook-spine: #db2777;
+  --accent-notebook-page: #fff1f2;
   --title-color: #fce7f3;
-  --title-glow: rgba(244, 114, 182, 0.52);
+  --title-glow: rgba(244, 114, 182, 0.54);
   --text-primary: #fff1f2;
   --text-secondary: #fbcfe8;
-  --card-bg: rgba(54, 18, 62, 0.84);
-  --card-border: rgba(244, 114, 182, 0.34);
+  --card-bg: rgba(50, 16, 58, 0.88);
+  --card-border: rgba(244, 114, 182, 0.36);
   --chart-bar-a: linear-gradient(to top, #db2777, #f472b6);
-  --chart-bar-b: linear-gradient(to top, #a21caf, #e879f9);
+  --chart-bar-b: linear-gradient(to top, #be185d, #fda4af);
   --chart-bar-full: linear-gradient(to top, #f472b6, #fde68a);
-  --slider-thumb-grad: linear-gradient(135deg, #fce7f3 0%, #f472b6 55%, #e879f9 100%);
+  --slider-thumb-grad: linear-gradient(135deg, #fce7f3 0%, #f472b6 55%, #fda4af 100%);
   --slider-thumb-shadow: rgba(244, 114, 182, 0.68);
 }
 
-/* 10. 💎 ASTRAL CRYSTAL PALACE (Hijau Aurora & Ungu Kosmik) */
+/* 10. 💎 ASTRAL CRYSTAL PALACE (Hijau Aurora & Kristal Emas Royal Kontras Tinggi) */
 html[data-cozy-theme="astral-palace"] {
   --twilight-bg-base: #04071a;
   --accent-primary: #34d399;
-  --accent-secondary: #a78bfa;
-  --accent-btn-grad: linear-gradient(135deg, #34d399 0%, #a78bfa 100%);
-  --accent-btn-text: #0a1428;
-  --accent-btn-shadow: rgba(52, 211, 153, 0.42);
+  --accent-secondary: #fde047;
+  --accent-btn-grad: linear-gradient(135deg, #6ee7b7 0%, #34d399 50%, #059669 100%);
+  --accent-btn-text: #041c14;
+  --accent-btn-shadow: rgba(52, 211, 153, 0.44);
+  --accent-surface: rgba(20, 34, 86, 0.78);
+  --accent-surface-hover: rgba(31, 51, 122, 0.9);
+  --accent-pill-bg: rgba(52, 211, 153, 0.16);
+  --accent-pill-bg-hover: rgba(52, 211, 153, 0.3);
+  --accent-pill-border: rgba(110, 231, 183, 0.46);
+  --accent-pill-text: #ecfdf5;
+  --accent-badge-bg: rgba(253, 224, 71, 0.16);
+  --accent-badge-border: rgba(253, 224, 71, 0.48);
+  --accent-badge-text: #fef9c3;
+  --accent-check-fill: #34d399;
+  --accent-check-stroke: #a7f3d0;
+  --accent-check-idle-stroke: #6ee7b7;
+  --accent-check-mark: #052e16;
+  --accent-cassette-body: #142257;
+  --accent-cassette-bottom: #0b1336;
+  --accent-cassette-stroke: #34d399;
+  --accent-cassette-label: #ecfdf5;
+  --accent-cassette-stripe: #fde047;
+  --accent-cassette-window: #070d26;
+  --accent-notebook-cover: #6ee7b7;
+  --accent-notebook-spine: #eab308;
+  --accent-notebook-page: #f0fdf4;
   --title-color: #a7f3d0;
-  --title-glow: rgba(167, 139, 250, 0.52);
+  --title-glow: rgba(52, 211, 153, 0.5);
   --text-primary: #f8fafc;
-  --text-secondary: #c4b5fd;
-  --card-bg: rgba(12, 18, 52, 0.85);
+  --text-secondary: #a7f3d0;
+  --card-bg: rgba(12, 18, 52, 0.88);
   --card-border: rgba(52, 211, 153, 0.36);
   --chart-bar-a: linear-gradient(to top, #059669, #34d399);
-  --chart-bar-b: linear-gradient(to top, #7c3aed, #a78bfa);
+  --chart-bar-b: linear-gradient(to top, #ca8a04, #fde047);
   --chart-bar-full: linear-gradient(to top, #34d399, #fde68a);
-  --slider-thumb-grad: linear-gradient(135deg, #6ee7b7 0%, #34d399 50%, #a78bfa 100%);
+  --slider-thumb-grad: linear-gradient(135deg, #a7f3d0 0%, #34d399 50%, #fde047 100%);
   --slider-thumb-shadow: rgba(52, 211, 153, 0.68);
 }
 
@@ -520,26 +833,137 @@ html[data-cozy-theme="biolum-ocean"] header {
     inset 0 1px 0 rgba(94, 234, 212, 0.24) !important;
 }
 
-/* Selaraskan tombol & chip bernuansa pink/ungu tersisa pada tema non-ungu (Bioluminescent, Matcha, Autumn, Honey, Winter) */
-html[data-cozy-theme="biolum-ocean"] .bg-pink-300\/20,
-html[data-cozy-theme="biolum-ocean"] .bg-pink-400\/15,
-html[data-cozy-theme="biolum-ocean"] .bg-purple-300\/20,
-html[data-cozy-theme="biolum-ocean"] .bg-purple-300\/25,
-html[data-cozy-theme="matcha-garden"] .bg-pink-300\/20,
-html[data-cozy-theme="matcha-garden"] .bg-pink-400\/15,
-html[data-cozy-theme="matcha-garden"] .bg-purple-300\/20,
-html[data-cozy-theme="matcha-garden"] .bg-purple-300\/25,
-html[data-cozy-theme="autumn-cafe"] .bg-pink-300\/20,
-html[data-cozy-theme="autumn-cafe"] .bg-pink-400\/15,
-html[data-cozy-theme="autumn-cafe"] .bg-purple-300\/20,
-html[data-cozy-theme="honey-library"] .bg-pink-300\/20,
-html[data-cozy-theme="honey-library"] .bg-pink-400\/15,
-html[data-cozy-theme="honey-library"] .bg-purple-300\/20,
-html[data-cozy-theme="winter-frost"] .bg-pink-300\/20,
-html[data-cozy-theme="winter-frost"] .bg-pink-400\/15,
-html[data-cozy-theme="winter-frost"] .bg-purple-300\/20 {
-  background-color: color-mix(in srgb, var(--accent-primary) 20%, transparent) !important;
-  border-color: color-mix(in srgb, var(--accent-primary) 42%, transparent) !important;
+/* Selaraskan tombol, chip, RESET, status dot, lencana & habit selesai untuk SEMUA tema non-ungu secara penuh */
+.cozy-pill-btn {
+  background-image: none !important;
+  background-color: var(--accent-pill-bg) !important;
+  border-color: var(--accent-pill-border) !important;
+  color: var(--accent-pill-text) !important;
+}
+
+.cozy-pill-btn:hover:not(:disabled) {
+  background-color: var(--accent-pill-bg-hover) !important;
+}
+
+.cozy-reset-btn {
+  background-image: none !important;
+  background-color: var(--accent-surface) !important;
+  border-color: var(--accent-pill-border) !important;
+  color: var(--text-primary) !important;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.28) !important;
+}
+
+.cozy-reset-btn:hover:not(:disabled) {
+  background-color: var(--accent-surface-hover) !important;
+}
+
+.cozy-pause-active {
+  background-image: var(--accent-btn-grad) !important;
+  background-color: var(--accent-secondary) !important;
+  border-color: var(--accent-pill-border) !important;
+  color: var(--accent-btn-text) !important;
+  box-shadow: 0 6px 18px var(--accent-btn-shadow) !important;
+}
+
+.cozy-badge {
+  background-image: none !important;
+  background-color: var(--accent-badge-bg) !important;
+  border-color: var(--accent-badge-border) !important;
+  color: var(--accent-badge-text) !important;
+}
+
+.cozy-toggle-secondary {
+  background-image: linear-gradient(135deg, var(--accent-secondary) 0%, var(--accent-primary) 100%) !important;
+  background-color: var(--accent-secondary) !important;
+  color: var(--accent-btn-text) !important;
+  box-shadow: 0 4px 12px var(--accent-btn-shadow) !important;
+}
+
+.cozy-dot {
+  background-color: var(--accent-primary) !important;
+  box-shadow: 0 0 8px var(--accent-primary) !important;
+}
+
+.cozy-dot-idle {
+  background-color: color-mix(in srgb, var(--accent-secondary) 55%, transparent) !important;
+}
+
+.cozy-habit-done {
+  background-color: color-mix(in srgb, var(--accent-primary) 14%, transparent) !important;
+  border-color: color-mix(in srgb, var(--accent-primary) 38%, transparent) !important;
+}
+
+.cozy-sub-card {
+  border-color: color-mix(in srgb, var(--accent-primary) 32%, transparent) !important;
+}
+
+.cozy-glow-orb {
+  background-color: color-mix(in srgb, var(--accent-primary) 22%, transparent) !important;
+}
+
+.cozy-divider-left {
+  background-image: linear-gradient(to right, transparent, var(--accent-primary)) !important;
+}
+
+.cozy-divider-right {
+  background-image: linear-gradient(to left, transparent, var(--accent-primary)) !important;
+}
+
+.cozy-sparkle {
+  color: var(--accent-primary) !important;
+}
+
+.cozy-sparkle-alt {
+  color: var(--accent-secondary) !important;
+}
+
+/* Selaraskan tombol, garis strikethrough, & border tersisa pada tema non-ungu (termasuk Ocean Night base theme) */
+html[data-theme="ocean"] .cozy-active-btn,
+html[data-theme="sakura"] .cozy-active-btn {
+  background-image: var(--accent-btn-grad) !important;
+  background-color: var(--accent-primary) !important;
+  color: var(--accent-btn-text) !important;
+  border-color: var(--accent-pill-border) !important;
+  box-shadow: 0 6px 18px var(--accent-btn-shadow) !important;
+}
+
+html[data-cozy-theme]:not([data-cozy-theme="classic"]) .decoration-pink-300\/80,
+html[data-theme="ocean"] .decoration-pink-300\/80 {
+  text-decoration-color: var(--accent-primary) !important;
+}
+
+html[data-cozy-theme]:not([data-cozy-theme="classic"]) .bg-pink-300\/20,
+html[data-cozy-theme]:not([data-cozy-theme="classic"]) .bg-pink-400\/15,
+html[data-cozy-theme]:not([data-cozy-theme="classic"]) .bg-pink-300\/15,
+html[data-cozy-theme]:not([data-cozy-theme="classic"]) .bg-purple-300\/15,
+html[data-cozy-theme]:not([data-cozy-theme="classic"]) .bg-purple-300\/20,
+html[data-cozy-theme]:not([data-cozy-theme="classic"]) .bg-purple-300\/25,
+html[data-cozy-theme]:not([data-cozy-theme="classic"]) .bg-fuchsia-400\/20,
+html[data-theme="ocean"] .bg-pink-300\/20,
+html[data-theme="ocean"] .bg-pink-400\/15,
+html[data-theme="ocean"] .bg-pink-300\/15,
+html[data-theme="ocean"] .bg-purple-300\/15,
+html[data-theme="ocean"] .bg-purple-300\/20,
+html[data-theme="ocean"] .bg-purple-300\/25,
+html[data-theme="ocean"] .bg-fuchsia-400\/20 {
+  background-color: var(--accent-pill-bg) !important;
+  border-color: var(--accent-pill-border) !important;
+  color: var(--accent-pill-text) !important;
+}
+
+html[data-cozy-theme]:not([data-cozy-theme="classic"]) .border-pink-200\/35,
+html[data-cozy-theme]:not([data-cozy-theme="classic"]) .border-pink-200\/30,
+html[data-cozy-theme]:not([data-cozy-theme="classic"]) .border-pink-200\/25,
+html[data-cozy-theme]:not([data-cozy-theme="classic"]) .border-pink-300\/30,
+html[data-cozy-theme]:not([data-cozy-theme="classic"]) .border-purple-200\/35,
+html[data-cozy-theme]:not([data-cozy-theme="classic"]) .border-purple-200\/30,
+html[data-theme="ocean"] .border-pink-200\/35,
+html[data-theme="ocean"] .border-pink-200\/30,
+html[data-theme="ocean"] .border-pink-200\/25,
+html[data-theme="ocean"] .border-pink-300\/30,
+html[data-theme="ocean"] .border-purple-200\/35,
+html[data-theme="ocean"] .border-purple-200\/30 {
+  border-color: var(--accent-pill-border) !important;
 }
 
 /* Efek cahaya lembut untuk judul bubble Twilight's */
@@ -642,6 +1066,88 @@ html[data-cozy-theme="winter-frost"] .bg-purple-300\/20 {
 .animate-cloud-drift {
   animation: cloudDrift var(--drift-duration, 14s) ease-in-out infinite;
   animation-delay: var(--drift-delay, 0s);
+}
+
+/* Animasi Spesial Maskot Tema 👑 Astral Crystal Palace & 🌃 Neon Night City (ringan GPU, otomatis pause saat Alt-Tab) */
+@keyframes astralOrbit {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-astral-orbit {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: astralOrbit 26s linear infinite;
+}
+
+.animate-astral-orbit-reverse {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: astralOrbit 18s linear infinite reverse;
+}
+
+@keyframes crystalFloat {
+  0%,
+  100% {
+    transform: translateY(0px) scale(1);
+    opacity: 0.78;
+  }
+  50% {
+    transform: translateY(-5px) scale(1.14);
+    opacity: 1;
+  }
+}
+
+.animate-crystal-float {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: crystalFloat var(--crystal-dur, 3.2s) ease-in-out infinite;
+  animation-delay: var(--crystal-delay, 0s);
+}
+
+@keyframes neonEqBounce {
+  0%,
+  100% {
+    transform: scaleY(0.35);
+    opacity: 0.65;
+  }
+  45% {
+    transform: scaleY(1.15);
+    opacity: 1;
+  }
+  75% {
+    transform: scaleY(0.6);
+    opacity: 0.85;
+  }
+}
+
+.animate-neon-eq {
+  transform-box: fill-box;
+  transform-origin: bottom center;
+  animation: neonEqBounce var(--eq-dur, 1.1s) ease-in-out infinite;
+  animation-delay: var(--eq-delay, 0s);
+}
+
+@keyframes neonRingPulse {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(0.98);
+  }
+  50% {
+    opacity: 0.98;
+    transform: scale(1.03);
+  }
+}
+
+.animate-neon-ring-pulse {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: neonRingPulse 2.6s ease-in-out infinite;
 }
 
 /* Animasi melayang lembut untuk maskot kucing saat diam (idle) */

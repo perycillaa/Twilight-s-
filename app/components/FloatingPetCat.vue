@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { getCatMascotThemePalette } from '~/composables/useCatThemeStyle'
 import { useSoundEffects } from '~/composables/useSoundEffects'
 import { VIBRATION_PATTERNS, useTwilightStorage } from '~/composables/useTwilightStorage'
 
@@ -13,6 +14,9 @@ const props = withDefaults(
 )
 
 const {
+  theme,
+  activeCozyTheme,
+  graphicsQuality,
   isPomodoroRunning,
   activeTimerMode,
   isImmersiveZenOpen,
@@ -24,6 +28,9 @@ const {
   addCatAffinityXp,
   triggerVibration,
 } = useTwilightStorage()
+
+const catStyle = computed(() => getCatMascotThemePalette(activeCozyTheme.value, theme.value))
+const showSpecialEffects = computed<boolean>(() => graphicsQuality.value !== 'low')
 
 // Status Co-Working Body Doubling Kucing Mini: ikut fokus ('focus'), santai istirahat ('break'), atau idle
 const coWorkingMode = computed<'focus' | 'break' | 'idle'>(() => {
@@ -588,7 +595,12 @@ onUnmounted(() => {
     v-if="!props.inlineMode && !isImmersiveZenOpen && isHidden"
     type="button"
     title="Munculkan kembali teman kucing kecil"
-    class="btn-bouncy fixed bottom-4 left-4 z-40 flex cursor-pointer items-center gap-1.5 rounded-full border border-white/25 bg-[#2b184f]/85 px-3 py-1.5 text-xs font-semibold text-pink-100 shadow-lg backdrop-blur-md hover:bg-[#3b216b]"
+    class="btn-bouncy fixed bottom-4 left-4 z-40 flex cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold shadow-lg backdrop-blur-md"
+    :style="{
+      backgroundColor: catStyle.bubbleBg,
+      borderColor: catStyle.bubbleBorder,
+      color: catStyle.bubbleText,
+    }"
     @click="isHidden = false; markInteraction()"
   >
     <span>🐱</span>
@@ -641,16 +653,18 @@ onUnmounted(() => {
       v-for="heart in petHearts"
       :key="heart.id"
       aria-hidden="true"
-      class="animate-heart-rise pointer-events-none absolute z-20 text-xs font-bold text-pink-300 drop-shadow-[0_0_5px_rgba(249,168,212,0.85)]"
+      class="animate-heart-rise pointer-events-none absolute z-20 text-xs font-bold"
       :style="{
         left: heart.left,
         top: heart.top,
+        color: catStyle.notePrimary,
+        textShadow: `0 0 6px ${catStyle.notePrimary}`,
         '--hx': heart.hx,
       }"
     >
       {{ heart.symbol }}
     </span>
-    <!-- Gelembung Emote di Atas Kepala Kucing (hati besar 💖 saat makan ikan!) -->
+    <!-- Gelembung Emote di Atas Kepala Kucing (selaras warna & efek tema aktif) -->
     <Transition
       enter-active-class="transition duration-200 ease-out"
       enter-from-class="translate-y-2 opacity-0 scale-75"
@@ -664,11 +678,22 @@ onUnmounted(() => {
         class="pointer-events-none absolute left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full border shadow-md backdrop-blur-sm"
         :class="
           isEating
-            ? '-top-12 animate-bounce border-pink-300/80 bg-pink-400/35 px-3 py-1 text-2xl shadow-pink-500/40'
+            ? '-top-12 animate-bounce px-3 py-1 text-2xl'
             : displayedEmote === '💤'
-              ? '-top-9 animate-float-note border-indigo-200/35 bg-[#261647]/85 px-2.5 py-0.5 text-sm text-indigo-100'
-              : '-top-9 border-white/30 bg-[#261647]/90 px-2.5 py-0.5 text-xs font-bold text-pink-100'
+              ? '-top-9 animate-float-note px-2.5 py-0.5 text-sm'
+              : '-top-9 px-2.5 py-0.5 text-xs font-bold'
         "
+        :style="{
+          backgroundColor: catStyle.bubbleBg,
+          borderColor: catStyle.bubbleBorder,
+          color: catStyle.bubbleText,
+          boxShadow:
+            catStyle.specialMode === 'neon'
+              ? '0 0 12px rgba(0, 245, 212, 0.35), 0 0 8px rgba(255, 42, 133, 0.28)'
+              : catStyle.specialMode === 'astral'
+                ? '0 0 12px rgba(253, 224, 71, 0.35)'
+                : undefined,
+        }"
       >
         {{ displayedEmote }}
       </div>
@@ -681,7 +706,12 @@ onUnmounted(() => {
       data-pet-action
       aria-label="Sembunyikan teman kucing sementara"
       title="Sembunyikan sementara"
-      class="absolute -right-1.5 -top-1.5 z-10 flex h-6 w-6 cursor-pointer items-center justify-center rounded-full border border-white/40 bg-[#1e1b4b]/95 text-[11px] font-bold text-pink-200 opacity-90 shadow-md transition hover:bg-pink-400 hover:text-[#1e1b4b] md:-right-1 md:-top-1 md:h-5 md:w-5 md:text-[10px] md:opacity-0 md:group-hover:opacity-100"
+      class="absolute -right-1.5 -top-1.5 z-10 flex h-6 w-6 cursor-pointer items-center justify-center rounded-full border text-[11px] font-bold opacity-90 shadow-md transition md:-right-1 md:-top-1 md:h-5 md:w-5 md:text-[10px] md:opacity-0 md:group-hover:opacity-100"
+      :style="{
+        backgroundColor: catStyle.bubbleBg,
+        borderColor: catStyle.bubbleBorder,
+        color: catStyle.bubbleText,
+      }"
       @click.stop="isHidden = true"
     >
       ✕
@@ -693,12 +723,20 @@ onUnmounted(() => {
       data-pet-action
       :title="`Beri makan ikan (-5 🐟, koinmu: ${treatCoins} 🐟)`"
       class="btn-bouncy absolute -bottom-7 left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded-full border px-2.5 py-0.5 text-[10px] font-bold shadow-lg backdrop-blur-md transition"
-      :class="[
-        showFeedPrompt ? 'opacity-100' : 'opacity-0 group-hover:opacity-100',
+      :class="showFeedPrompt ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'"
+      :style="
         treatCoins >= 5
-          ? 'border-pink-200/60 bg-[#2b184f]/95 text-pink-100 hover:bg-[#f9a8d4] hover:text-[#311042]'
-          : 'border-white/20 bg-[#1e1b4b]/85 text-purple-200/70',
-      ]"
+          ? {
+              backgroundColor: catStyle.bubbleBg,
+              borderColor: catStyle.bubbleBorder,
+              color: catStyle.bubbleText,
+            }
+          : {
+              backgroundColor: 'rgba(15, 23, 42, 0.8)',
+              borderColor: 'rgba(255, 255, 255, 0.2)',
+              color: 'rgba(255, 255, 255, 0.55)',
+            }
+      "
       @click.stop="handleFeedFish"
     >
       Beri Ikan (🐟 5)
@@ -724,6 +762,62 @@ onUnmounted(() => {
       >
         <!-- Bayangan lembut di bawah anak kucing -->
         <ellipse cx="55" cy="96" rx="28" ry="6" fill="#0f0a26" opacity="0.35" />
+
+        <!-- === EFEK SPESIAL MINI CAT: 👑 ASTRAL CRYSTAL PALACE === -->
+        <g v-if="catStyle.specialMode === 'astral'">
+          <circle cx="55" cy="56" r="44" fill="url(#miniCatSpecialAura)" opacity="0.88" />
+          <g :class="{ 'animate-astral-orbit': showSpecialEffects }">
+            <circle cx="55" cy="56" r="45" stroke="#fde047" stroke-width="1.3" stroke-dasharray="5 6" opacity="0.75" />
+            <circle cx="55" cy="11" r="2.2" fill="#fef08a" />
+            <circle cx="55" cy="101" r="2" fill="#34d399" />
+          </g>
+          <g v-if="showSpecialEffects">
+            <path class="animate-crystal-float" style="--crystal-dur: 3s" d="M12 36 L16 42 L12 48 L8 42 Z" fill="#34d399" stroke="#fef08a" stroke-width="1" />
+            <path class="animate-crystal-float" style="--crystal-dur: 3.4s; --crystal-delay: 0.7s" d="M98 34 L102 40 L98 46 L94 40 Z" fill="#fde047" stroke="#ffffff" stroke-width="1" />
+          </g>
+        </g>
+
+        <!-- === EFEK SPESIAL MINI CAT: 🌃 NEON NIGHT CITY === -->
+        <g v-else-if="catStyle.specialMode === 'neon'">
+          <circle cx="55" cy="56" r="44" fill="url(#miniCatSpecialAura)" opacity="0.92" />
+          <g :class="{ 'animate-astral-orbit': showSpecialEffects }">
+            <circle cx="55" cy="56" r="46" stroke="#00f5d4" stroke-width="1.6" stroke-dasharray="14 7 4 7" opacity="0.82" />
+          </g>
+          <circle
+            cx="55"
+            cy="56"
+            r="41"
+            stroke="#ff2a85"
+            stroke-width="1.5"
+            stroke-dasharray="9 6"
+            :class="{ 'animate-neon-ring-pulse': showSpecialEffects }"
+            opacity="0.78"
+          />
+          <g v-if="showSpecialEffects">
+            <rect class="animate-neon-eq" style="--eq-dur: 0.9s" x="6" y="48" width="3" height="16" rx="1.5" fill="#00f5d4" />
+            <rect class="animate-neon-eq" style="--eq-dur: 1.1s; --eq-delay: 0.25s" x="10.5" y="42" width="3" height="22" rx="1.5" fill="#ff2a85" />
+            <rect class="animate-neon-eq" style="--eq-dur: 1.0s; --eq-delay: 0.15s" x="96.5" y="42" width="3" height="22" rx="1.5" fill="#ff2a85" />
+            <rect class="animate-neon-eq" style="--eq-dur: 0.85s; --eq-delay: 0.4s" x="101" y="48" width="3" height="16" rx="1.5" fill="#00f5d4" />
+          </g>
+        </g>
+
+        <!-- === EFEK ATMOSFER MINI HALUS TEMA TOKO REGULER === -->
+        <g v-else-if="showSpecialEffects && catStyle.ambientAccent === 'matcha'">
+          <ellipse class="animate-crystal-float" style="--crystal-dur: 3.4s" cx="14" cy="40" rx="4" ry="2.2" transform="rotate(-30 14 40)" fill="#4ade80" opacity="0.82" />
+          <ellipse class="animate-crystal-float" style="--crystal-dur: 3.1s; --crystal-delay: 0.8s" cx="96" cy="36" rx="3.8" ry="2" transform="rotate(28 96 36)" fill="#86efac" opacity="0.82" />
+        </g>
+        <g v-else-if="showSpecialEffects && catStyle.ambientAccent === 'ocean'">
+          <circle class="animate-crystal-float" style="--crystal-dur: 3.2s" cx="14" cy="38" r="3.4" fill="none" stroke="#5eead4" stroke-width="1.3" opacity="0.85" />
+          <circle class="animate-crystal-float" style="--crystal-dur: 3.6s; --crystal-delay: 0.7s" cx="96" cy="34" r="3.8" fill="none" stroke="#22d3ee" stroke-width="1.3" opacity="0.85" />
+        </g>
+        <g v-else-if="showSpecialEffects && catStyle.ambientAccent === 'autumn'">
+          <ellipse class="animate-crystal-float" style="--crystal-dur: 3.5s" cx="14" cy="38" rx="4.2" ry="2.2" transform="rotate(-25 14 38)" fill="#fb923c" opacity="0.85" />
+          <ellipse class="animate-crystal-float" style="--crystal-dur: 3.2s; --crystal-delay: 0.7s" cx="96" cy="40" rx="4" ry="2.1" transform="rotate(30 96 40)" fill="#fbbf24" opacity="0.85" />
+        </g>
+        <g v-else-if="showSpecialEffects && catStyle.ambientAccent === 'frost'">
+          <circle class="animate-crystal-float" style="--crystal-dur: 3.3s" cx="14" cy="36" r="2.6" fill="#e0f2fe" opacity="0.88" />
+          <circle class="animate-crystal-float" style="--crystal-dur: 3.7s; --crystal-delay: 0.8s" cx="96" cy="36" r="2.6" fill="#bae6fd" opacity="0.88" />
+        </g>
 
         <!-- AKSESORIS BELAKANG TUBUH: ✨ Sayap Malaikat & Aura Bintang (Milestone Lv. 20 MAX) -->
         <g v-if="equippedAccessory === 'angel-wings'">
@@ -787,25 +881,45 @@ onUnmounted(() => {
           />
         </g>
         <g v-else>
-          <!-- Pita kalung mungil pastel bawaan -->
-          <path d="M40 65 Q55 72 70 65" stroke="#f9a8d4" stroke-width="4" stroke-linecap="round" />
-          <circle cx="55" cy="70" r="3.2" fill="#fde68a" />
+          <!-- Pita kalung mungil bawaan (menyesuaikan palet tema aktif + permata/cyber core di tema spesial) -->
+          <path d="M40 65 Q55 72 70 65" :stroke="catStyle.collarFill" stroke-width="4.2" stroke-linecap="round" />
+          <path
+            v-if="catStyle.specialMode === 'astral'"
+            d="M55 66.5 L58.5 71 L55 75.5 L51.5 71 Z"
+            fill="#34d399"
+            stroke="#fde047"
+            stroke-width="1.2"
+          />
+          <g v-else-if="catStyle.specialMode === 'neon'">
+            <rect x="50.5" y="67.5" width="9" height="6" rx="3" fill="#090514" stroke="#00f5d4" stroke-width="1.2" />
+            <circle cx="55" cy="70.5" r="1.8" fill="#ff2a85" />
+          </g>
+          <circle v-else cx="55" cy="70" r="3.2" :fill="catStyle.bellFill" />
         </g>
 
-        <!-- Telinga Kiri & Kanan (abu-abu lembut dengan dalam pink pastel) -->
+        <!-- Telinga Kiri & Kanan (bagian dalam selaras tema) -->
         <path d="M33 44 L29 22 L47 33 Z" fill="#cbd5e1" stroke="#94a3b8" stroke-width="1.5" stroke-linejoin="round" />
-        <path d="M34 40 L32 27 L43 34 Z" fill="#fbcfe8" />
+        <path d="M34 40 L32 27 L43 34 Z" :fill="catStyle.earInner" />
 
         <path d="M77 44 L81 22 L63 33 Z" fill="#cbd5e1" stroke="#94a3b8" stroke-width="1.5" stroke-linejoin="round" />
-        <path d="M76 40 L78 27 L67 34 Z" fill="#fbcfe8" />
+        <path d="M76 40 L78 27 L67 34 Z" :fill="catStyle.earInner" />
 
         <!-- Kepala bulat anak kucing -->
         <ellipse cx="55" cy="50" rx="28" ry="23" fill="#e7e5e4" />
 
-        <!-- Corak bulu dahi krem/abu lucu -->
-        <path d="M55 28 V35" stroke="#94a3b8" stroke-width="3" stroke-linecap="round" />
-        <path d="M48 29 L50 35" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round" />
-        <path d="M62 29 L60 35" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round" />
+        <!-- Corak dahi (Bulan Sabit Emas di Astral, Lambang Cyber di Neon, atau Corak Tabby Bawaan) -->
+        <g v-if="catStyle.specialMode === 'astral'">
+          <path d="M56.5 29 A3.6 3.6 0 1 0 56.5 35.8 A2.8 2.8 0 1 1 56.5 29 Z" fill="#fde047" stroke="#b45309" stroke-width="0.6" />
+        </g>
+        <g v-else-if="catStyle.specialMode === 'neon'">
+          <path d="M51 32.5 L55 29.5 L59 32.5" stroke="#00f5d4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+          <circle cx="55" cy="35" r="1.3" fill="#ff2a85" />
+        </g>
+        <g v-else>
+          <path d="M55 28 V35" stroke="#94a3b8" stroke-width="3" stroke-linecap="round" />
+          <path d="M48 29 L50 35" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round" />
+          <path d="M62 29 L60 35" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round" />
+        </g>
 
         <!-- SINKRONISASI AKSESORI KEPALA REAL-TIME (mengikuti Kucing Putih utama: Pita Pink, Topi Penyihir, Mahkota Bintang) -->
         <!-- 1. Mahkota Bintang -->
@@ -979,6 +1093,18 @@ onUnmounted(() => {
           <circle cx="64.8" cy="48.5" r="1.4" fill="#ffffff" />
         </g>
 
+        <!-- Mini Visor Hologram Cyber Neon (khusus 🌃 Neon Night City, transparan agar ekspresi tetap 100% imut!) -->
+        <g v-if="catStyle.specialMode === 'neon' && equippedAccessory !== 'round-glasses'">
+          <path
+            d="M34 44.5 H76 C77.5 44.5, 78 46.8, 77 50.5 L74.5 54.5 C73 56, 69 56, 66 55 L57.5 52.5 H52.5 L44 55 C41 56, 37 56, 35.5 54.5 L33 50.5 C32 46.8, 32.5 44.5, 34 44.5 Z"
+            fill="url(#miniNeonVisorGrad)"
+            stroke="#00f5d4"
+            stroke-width="1.4"
+            stroke-linejoin="round"
+          />
+          <path d="M38 46.5 L43 52.5" stroke="#ffffff" stroke-width="1.1" stroke-linecap="round" opacity="0.6" />
+        </g>
+
         <!-- 9. 👓 Kacamata Bulat Tipis di Wajah Kucing Mini -->
         <g v-if="equippedAccessory === 'round-glasses'">
           <circle cx="44" cy="50" r="7.5" fill="rgba(255,251,235,0.22)" stroke="#f59e0b" stroke-width="1.6" />
@@ -988,13 +1114,13 @@ onUnmounted(() => {
           <line x1="73.5" y1="49.5" x2="80" y2="48.5" stroke="#f59e0b" stroke-width="1.4" />
         </g>
 
-        <!-- Pipi Merona Pink (makin cerah saat di-pet-pet / nyaman) -->
+        <!-- Pipi Merona (selaras tema, makin cerah saat di-pet-pet / nyaman) -->
         <ellipse
           cx="37"
           cy="56"
           rx="5"
           ry="3.1"
-          fill="#f9a8d4"
+          :fill="catStyle.cheekColor"
           :opacity="isBeingPetted || isSmugSatisfied || isStartledAwake || isEating ? 0.96 : 0.65"
         />
         <ellipse
@@ -1002,7 +1128,7 @@ onUnmounted(() => {
           cy="56"
           rx="5"
           ry="3.1"
-          fill="#f9a8d4"
+          :fill="catStyle.cheekColor"
           :opacity="isBeingPetted || isSmugSatisfied || isStartledAwake || isEating ? 0.96 : 0.65"
         />
 
@@ -1045,6 +1171,17 @@ onUnmounted(() => {
         <!-- Cakar Depan Mungil -->
         <ellipse cx="44" cy="91" rx="6.5" ry="4.5" fill="#f5f5f4" stroke="#cbd5e1" stroke-width="1.2" />
         <ellipse cx="66" cy="91" rx="6.5" ry="4.5" fill="#f5f5f4" stroke="#cbd5e1" stroke-width="1.2" />
+
+        <defs>
+          <radialGradient id="miniCatSpecialAura" cx="55" cy="56" r="44" gradientUnits="userSpaceOnUse">
+            <stop :stop-color="catStyle.auraInner" stop-opacity="0.34" />
+            <stop offset="1" :stop-color="catStyle.auraOuter" stop-opacity="0.04" />
+          </radialGradient>
+          <linearGradient id="miniNeonVisorGrad" x1="34" y1="44" x2="76" y2="55" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#00f5d4" stop-opacity="0.28" />
+            <stop offset="1" stop-color="#ff2a85" stop-opacity="0.3" />
+          </linearGradient>
+        </defs>
       </svg>
     </div>
   </div>

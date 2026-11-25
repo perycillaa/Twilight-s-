@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { useBackgroundResilience } from '~/composables/useBackgroundResilience'
 import {
   type AmbientChannelId,
   useTwilightStorage,
@@ -180,6 +181,11 @@ const {
   updateAmbientChannel,
   showMiniToast,
 } = useTwilightStorage()
+const {
+  updateMediaSessionBgm,
+  registerMediaSessionHandlers,
+  resumeKeepAliveIfNeeded,
+} = useBackgroundResilience()
 
 // --- State Sumber Musik Utama (Radio Online / YouTube Lo-Fi) ---
 const activeTab = ref<MusicTab>('radio')
@@ -335,6 +341,31 @@ const isAnyAudioSpinning = computed<boolean>(() => {
     isStreamEnabled.value
   )
 })
+
+const activeAmbientLabels = computed<string[]>(() => {
+  const labels: string[] = []
+  if (isRainEnabled.value) labels.push('Hujan')
+  if (isBrownEnabled.value) labels.push('Ombak')
+  if (isCampfireEnabled.value) labels.push('Api Unggun')
+  if (isNightWindEnabled.value) labels.push('Angin Malam')
+  if (isStreamEnabled.value) labels.push('Gemericik Air')
+  return labels
+})
+
+// Sinkronkan status Radio & Ambient Mixer ke Kartu Media Session (Lock Screen HP & Windows Media Overlay)
+watch(
+  [isRadioPlaying, currentRadio, activeAmbientLabels, isRadioMuted],
+  () => {
+    updateMediaSessionBgm({
+      isRadioPlaying: isRadioPlaying.value,
+      radioTitle: currentRadio.value.name,
+      radioSubtitle: currentRadio.value.subtitle,
+      activeAmbientLabels: activeAmbientLabels.value,
+      isMuted: isRadioMuted.value,
+    })
+  },
+  { immediate: true },
+)
 
 // Sinkronkan status sakelar Hujan Lembut dengan efek visual hujan di latar belakang
 watch(
@@ -1152,6 +1183,31 @@ async function selectRadio(id: string) {
   }
 }
 
+/** Pindah ke stasiun Radio berikutnya/sebelumnya (dipicu tombol Next/Prev di Lock Screen HP atau Windows Media Control) */
+async function selectRelativeRadio(step: 1 | -1) {
+  const currentIdx = RADIO_CHANNELS.findIndex(c => c.id === selectedRadioId.value)
+  const safeIdx = currentIdx >= 0 ? currentIdx : 0
+  const nextIdx = (safeIdx + step + RADIO_CHANNELS.length) % RADIO_CHANNELS.length
+  const nextChannel = RADIO_CHANNELS[nextIdx]
+  if (!nextChannel) return
+  selectedRadioId.value = nextChannel.id
+  errorMessage.value = ''
+  stopHtmlRadio()
+  isRadioPlaying.value = false
+  isBuffering.value = false
+  await startRadioStream()
+}
+
+/** Jaga agar Ambient Sound Mixer (Web Audio API) & media anchor tidak dibekukan saat pindah ke Home Screen HP */
+function handleBgmVisibilityChange() {
+  if (activeAmbientLabels.value.length > 0 && mixerCtx?.state === 'suspended') {
+    mixerCtx.resume().catch(() => {})
+  }
+  if (activeAmbientLabels.value.length > 0 || isRadioPlaying.value) {
+    resumeKeepAliveIfNeeded()
+  }
+}
+
 function switchTab(tab: MusicTab) {
   if (activeTab.value === tab) return
   // Saat pindah ke YouTube, jeda radio saja & pertahankan status mute global pada video YouTube
@@ -1211,6 +1267,24 @@ onMounted(() => {
   if (import.meta.client) {
     window.addEventListener('pointerdown', handleFirstAmbientGesture, { passive: true })
     window.addEventListener('keydown', handleFirstAmbientGesture, { passive: true })
+    document.addEventListener('visibilitychange', handleBgmVisibilityChange)
+    registerMediaSessionHandlers({
+      onToggleRadio: () => {
+        if (activeTab.value === 'radio') {
+          void toggleRadioPlay()
+        }
+      },
+      onNextRadio: () => {
+        if (activeTab.value === 'radio') {
+          void selectRelativeRadio(1)
+        }
+      },
+      onPrevRadio: () => {
+        if (activeTab.value === 'radio') {
+          void selectRelativeRadio(-1)
+        }
+      },
+    })
   }
 })
 
@@ -1219,6 +1293,7 @@ onUnmounted(() => {
   if (import.meta.client) {
     window.removeEventListener('pointerdown', handleFirstAmbientGesture)
     window.removeEventListener('keydown', handleFirstAmbientGesture)
+    document.removeEventListener('visibilitychange', handleBgmVisibilityChange)
   }
   stopHtmlRadio()
   stopRainLayer()
@@ -1234,6 +1309,10 @@ onUnmounted(() => {
     mixerCtx.close().catch(() => {})
     mixerCtx = null
   }
+  updateMediaSessionBgm({
+    isRadioPlaying: false,
+    activeAmbientLabels: [],
+  })
   isBgmPlaying.value = false
   isRainAmbientOn.value = false
 })
@@ -1298,10 +1377,12 @@ onUnmounted(() => {
       </div>
     </div>
 
-    <!-- Elemen <audio> HTML5 untuk Radio Online -->
+    <!-- Elemen <audio> HTML5 untuk Radio Online (mendukung pemutaran latar belakang HP & Media Session) -->
     <audio
       ref="audioRef"
       preload="none"
+      playsinline
+      x-webkit-airplay="allow"
       @waiting="isBuffering = true"
       @playing="isBuffering = false"
       @canplay="isBuffering = false"
@@ -1326,25 +1407,25 @@ onUnmounted(() => {
               width="112"
               height="70"
               rx="12"
-              fill="#4c1d95"
-              stroke="#f9a8d4"
+              fill="var(--accent-cassette-body, #4c1d95)"
+              stroke="var(--accent-cassette-stroke, #f9a8d4)"
               stroke-width="2.5"
             />
-            <rect x="13" y="12" width="94" height="34" rx="6" fill="#fbcfe8" />
-            <rect x="13" y="12" width="94" height="9" rx="4" fill="#c4b5fd" />
-            <line x1="20" y1="26" x2="100" y2="26" stroke="#a855f7" stroke-width="1.5" opacity="0.4" />
-            <rect x="28" y="29" width="64" height="14" rx="7" fill="#1e1b4b" />
+            <rect x="13" y="12" width="94" height="34" rx="6" fill="var(--accent-cassette-label, #fbcfe8)" />
+            <rect x="13" y="12" width="94" height="9" rx="4" fill="var(--accent-cassette-stripe, #c4b5fd)" />
+            <line x1="20" y1="26" x2="100" y2="26" stroke="var(--accent-cassette-body, #a855f7)" stroke-width="1.5" opacity="0.4" />
+            <rect x="28" y="29" width="64" height="14" rx="7" fill="var(--accent-cassette-window, #1e1b4b)" />
 
             <!-- Roda Pita Kiri (berputar saat Radio atau Ambient Mixer aktif) -->
             <g
               style="transform-origin: 41px 36px"
               :class="{ 'animate-spin-tape': isAnyAudioSpinning }"
             >
-              <circle cx="41" cy="36" r="5.5" fill="#f9a8d4" />
-              <circle cx="41" cy="36" r="2.2" fill="#1e1b4b" />
-              <line x1="41" y1="30.5" x2="41" y2="33" stroke="#1e1b4b" stroke-width="1.5" />
-              <line x1="41" y1="39" x2="41" y2="41.5" stroke="#1e1b4b" stroke-width="1.5" />
-              <line x1="35.5" y1="36" x2="38" y2="36" stroke="#1e1b4b" stroke-width="1.5" />
+              <circle cx="41" cy="36" r="5.5" fill="var(--accent-cassette-stroke, #f9a8d4)" />
+              <circle cx="41" cy="36" r="2.2" fill="var(--accent-cassette-window, #1e1b4b)" />
+              <line x1="41" y1="30.5" x2="41" y2="33" stroke="var(--accent-cassette-window, #1e1b4b)" stroke-width="1.5" />
+              <line x1="41" y1="39" x2="41" y2="41.5" stroke="var(--accent-cassette-window, #1e1b4b)" stroke-width="1.5" />
+              <line x1="35.5" y1="36" x2="38" y2="36" stroke="var(--accent-cassette-window, #1e1b4b)" stroke-width="1.5" />
             </g>
 
             <!-- Roda Pita Kanan -->
@@ -1352,18 +1433,18 @@ onUnmounted(() => {
               style="transform-origin: 79px 36px"
               :class="{ 'animate-spin-tape': isAnyAudioSpinning }"
             >
-              <circle cx="79" cy="36" r="5.5" fill="#f9a8d4" />
-              <circle cx="79" cy="36" r="2.2" fill="#1e1b4b" />
-              <line x1="79" y1="30.5" x2="79" y2="33" stroke="#1e1b4b" stroke-width="1.5" />
-              <line x1="79" y1="39" x2="79" y2="41.5" stroke="#1e1b4b" stroke-width="1.5" />
-              <line x1="82" y1="36" x2="84.5" y2="36" stroke="#1e1b4b" stroke-width="1.5" />
+              <circle cx="79" cy="36" r="5.5" fill="var(--accent-cassette-stroke, #f9a8d4)" />
+              <circle cx="79" cy="36" r="2.2" fill="var(--accent-cassette-window, #1e1b4b)" />
+              <line x1="79" y1="30.5" x2="79" y2="33" stroke="var(--accent-cassette-window, #1e1b4b)" stroke-width="1.5" />
+              <line x1="79" y1="39" x2="79" y2="41.5" stroke="var(--accent-cassette-window, #1e1b4b)" stroke-width="1.5" />
+              <line x1="82" y1="36" x2="84.5" y2="36" stroke="var(--accent-cassette-window, #1e1b4b)" stroke-width="1.5" />
             </g>
 
-            <path d="M26 74 L32 58 H88 L94 74 Z" fill="#311042" />
-            <circle cx="43" cy="66" r="2.5" fill="#e9d5ff" />
-            <circle cx="77" cy="66" r="2.5" fill="#e9d5ff" />
-            <circle cx="12" cy="66" r="1.8" fill="#fbcfe8" opacity="0.7" />
-            <circle cx="108" cy="66" r="1.8" fill="#fbcfe8" opacity="0.7" />
+            <path d="M26 74 L32 58 H88 L94 74 Z" fill="var(--accent-cassette-bottom, #311042)" />
+            <circle cx="43" cy="66" r="2.5" fill="var(--accent-cassette-label, #e9d5ff)" />
+            <circle cx="77" cy="66" r="2.5" fill="var(--accent-cassette-label, #e9d5ff)" />
+            <circle cx="12" cy="66" r="1.8" fill="var(--accent-cassette-stroke, #fbcfe8)" opacity="0.7" />
+            <circle cx="108" cy="66" r="1.8" fill="var(--accent-cassette-stroke, #fbcfe8)" opacity="0.7" />
           </svg>
         </div>
 
@@ -1373,8 +1454,8 @@ onUnmounted(() => {
               class="h-2 w-2 rounded-full"
               :class="
                 isRadioPlaying
-                  ? 'animate-pulse bg-pink-300 shadow-[0_0_8px_#f9a8d4]'
-                  : 'bg-purple-300/40'
+                  ? 'cozy-dot animate-pulse bg-pink-300'
+                  : 'cozy-dot-idle bg-purple-300/40'
               "
             />
             <span class="text-[10px] font-bold uppercase tracking-wider text-pink-200/90">
@@ -1429,7 +1510,7 @@ onUnmounted(() => {
           class="btn-bouncy cursor-pointer rounded-full border px-2.5 py-1 text-xs font-semibold"
           :class="
             selectedRadioId === channel.id
-              ? 'border-sky-300/75 bg-sky-300/25 text-sky-100'
+              ? 'cozy-pill-btn border-sky-300/75 bg-sky-300/25 text-sky-100'
               : 'border-white/15 bg-white/5 text-purple-200/80 hover:bg-white/15 hover:text-white'
           "
           @click="selectRadio(channel.id)"
@@ -1483,7 +1564,7 @@ onUnmounted(() => {
             class="btn-bouncy cursor-pointer rounded-full border px-2.5 py-1 text-xs font-semibold"
             :class="
               selectedYoutubeId === yt.videoId
-                ? 'border-purple-300/70 bg-purple-300/25 text-purple-100'
+                ? 'cozy-pill-btn border-purple-300/70 bg-purple-300/25 text-purple-100'
                 : 'border-white/15 bg-white/5 text-purple-200/80 hover:bg-white/15'
             "
             @click="selectPresetYoutube(yt.videoId)"
@@ -1560,7 +1641,7 @@ onUnmounted(() => {
             class="btn-bouncy w-36 shrink-0 cursor-pointer rounded-full border px-2.5 py-1 text-left text-[11px] font-semibold"
             :class="
               isRainEnabled
-                ? 'border-pink-300/75 bg-pink-300/25 text-pink-100'
+                ? 'cozy-pill-btn border-pink-300/75 bg-pink-300/25 text-pink-100'
                 : 'border-white/15 bg-white/5 text-purple-200/75 hover:bg-white/15'
             "
             @click="toggleAmbientChannel('rain')"

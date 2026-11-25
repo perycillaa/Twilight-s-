@@ -484,9 +484,9 @@ onUnmounted(() => {
           :class="isZenMode ? 'opacity-40 hover:opacity-100' : 'opacity-100'"
         >
           <span
-            class="font-display inline-flex items-center gap-1.5 rounded-full border border-pink-200/35 bg-white/15 px-3 py-1 text-sm font-bold text-pink-200 shadow-sm"
+            class="cozy-sub-card font-display inline-flex items-center gap-1.5 rounded-full border border-pink-200/35 bg-white/15 px-3 py-1 text-sm font-bold text-pink-200 shadow-sm"
           >
-            <span class="h-2 w-2 animate-pulse rounded-full bg-pink-300 shadow-[0_0_8px_#f9a8d4]" />
+            <span class="cozy-dot h-2 w-2 animate-pulse rounded-full bg-pink-300 shadow-[0_0_8px_#f9a8d4]" />
             {{ currentTime }}
           </span>
 
@@ -507,7 +507,7 @@ onUnmounted(() => {
             >
             <button
               type="submit"
-              class="btn-bouncy cursor-pointer rounded-full bg-[#f9a8d4] px-2.5 py-1 text-[11px] font-bold text-[#311042]"
+              class="cozy-active-btn btn-bouncy cursor-pointer rounded-full bg-[#f9a8d4] px-2.5 py-1 text-[11px] font-bold text-[#311042]"
             >
               Simpan
             </button>
@@ -542,7 +542,7 @@ onUnmounted(() => {
             <button
               type="button"
               title="Instal Twilight's ke layar utama agar terbuka layaknya aplikasi native & bisa offline"
-              class="btn-bouncy inline-flex cursor-pointer items-center gap-1 rounded-full border border-pink-300/65 bg-gradient-to-r from-[#f9a8d4]/30 to-[#c084fc]/30 px-2.5 py-1 text-[11px] font-bold text-pink-50 shadow-sm shadow-pink-500/20 hover:from-[#f9a8d4]/45 hover:to-[#c084fc]/45"
+              class="cozy-pill-btn btn-bouncy inline-flex cursor-pointer items-center gap-1 rounded-full border border-pink-300/65 bg-gradient-to-r from-[#f9a8d4]/30 to-[#c084fc]/30 px-2.5 py-1 text-[11px] font-bold text-pink-50 shadow-sm"
               @click="triggerPwaInstall"
             >
               <span>📲</span>
@@ -590,7 +590,7 @@ onUnmounted(() => {
             <button
               type="button"
               title="Masuk ke Twilight Focus (tampilan layar penuh meja belajar) — Pintasan [T]"
-              class="btn-bouncy inline-flex cursor-pointer items-center gap-1 rounded-full border border-indigo-200/45 bg-gradient-to-r from-indigo-400/25 via-purple-400/25 to-pink-400/25 px-2.5 py-1 text-[11px] font-bold text-pink-50 hover:from-indigo-400/40 hover:to-pink-400/40"
+              class="cozy-pill-btn btn-bouncy inline-flex cursor-pointer items-center gap-1 rounded-full border border-indigo-200/45 bg-gradient-to-r from-indigo-400/25 via-purple-400/25 to-pink-400/25 px-2.5 py-1 text-[11px] font-bold text-pink-50"
               @click="isImmersiveZenOpen = true"
             >
               <span>{{ twilightFocusIcon }}</span>
@@ -601,7 +601,7 @@ onUnmounted(() => {
             <button
               type="button"
               title="Buka Kawaii Notebook (buku catatan digital)"
-              class="btn-bouncy inline-flex cursor-pointer items-center gap-1 rounded-full border border-pink-200/35 bg-pink-300/15 px-2.5 py-1 text-[11px] font-semibold text-pink-100 hover:bg-pink-300/30"
+              class="cozy-pill-btn btn-bouncy inline-flex cursor-pointer items-center gap-1 rounded-full border border-pink-200/35 bg-pink-300/15 px-2.5 py-1 text-[11px] font-semibold text-pink-100"
               @click="isNotebookOpen = true"
             >
               <span>📔</span>
@@ -616,7 +616,7 @@ onUnmounted(() => {
               :class="
                 activeAlarmBadge
                   ? 'border-amber-200/70 bg-amber-300/25 text-amber-100 shadow-sm shadow-amber-400/20'
-                  : 'border-purple-200/35 bg-purple-300/15 text-purple-100 hover:bg-purple-300/30'
+                  : 'cozy-pill-btn border-purple-200/35 bg-purple-300/15 text-purple-100'
               "
               @click="isAlarmOpen = true"
             >
@@ -643,7 +643,7 @@ onUnmounted(() => {
               :class="
                 isZenMode
                   ? 'cursor-not-allowed border-white/15 bg-white/5 text-purple-200/70 opacity-30'
-                  : 'btn-bouncy cursor-pointer border-sky-200/35 bg-sky-300/15 text-sky-100 hover:bg-sky-300/30'
+                  : 'cozy-pill-btn btn-bouncy cursor-pointer border-sky-200/35 bg-sky-300/15 text-sky-100'
               "
               @click="!isZenMode && (isMiniGameOpen = true)"
             >
@@ -681,7 +681,7 @@ onUnmounted(() => {
                   ? 'border-emerald-300/70 bg-emerald-400/25 text-emerald-100 shadow-sm'
                   : graphicsQuality === 'medium'
                     ? 'border-amber-200/60 bg-amber-300/20 text-amber-100 shadow-sm'
-                    : 'border-pink-200/50 bg-pink-300/20 text-pink-100 shadow-sm'
+                    : 'cozy-pill-btn border-pink-200/50 bg-pink-300/20 text-pink-100 shadow-sm'
               "
               @click="cycleGraphicsQuality"
             >
@@ -700,7 +700,7 @@ onUnmounted(() => {
               class="desktop-only-control btn-bouncy inline-flex cursor-pointer items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-semibold"
               :class="
                 isStarCursorEnabled
-                  ? 'border-pink-200/45 bg-pink-300/20 text-pink-100 shadow-sm'
+                  ? 'cozy-pill-btn border-pink-200/45 bg-pink-300/20 text-pink-100 shadow-sm'
                   : 'border-white/15 bg-white/5 text-purple-200/70 hover:bg-white/15 hover:text-white'
               "
               @click="toggleStarCursor"
@@ -714,7 +714,7 @@ onUnmounted(() => {
               type="button"
               title="Panduan Keyboard Shortcuts (Tekan ?)"
               aria-label="Buka panduan Keyboard Shortcuts"
-              class="desktop-only-control btn-bouncy inline-flex cursor-pointer items-center justify-center rounded-full border border-pink-200/35 bg-white/10 px-2.5 py-1 text-xs font-semibold text-pink-100 shadow-sm transition hover:border-pink-300/65 hover:bg-pink-300/25"
+              class="cozy-pill-btn desktop-only-control btn-bouncy inline-flex cursor-pointer items-center justify-center rounded-full border border-pink-200/35 bg-white/10 px-2.5 py-1 text-xs font-semibold text-pink-100 shadow-sm transition"
               @click="isShortcutsModalOpen = true"
             >
               ⌨️

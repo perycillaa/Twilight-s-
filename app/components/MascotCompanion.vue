@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { getCatMascotThemePalette } from '~/composables/useCatThemeStyle'
 import { useSoundEffects } from '~/composables/useSoundEffects'
 import { VIBRATION_PATTERNS, useTwilightStorage } from '~/composables/useTwilightStorage'
 
@@ -13,6 +14,7 @@ const props = withDefaults(
 )
 
 const {
+  theme,
   currentMascotMood,
   mascotSpeech,
   isPomodoroRunning,
@@ -29,6 +31,10 @@ const {
   addCatAffinityXp,
   triggerVibration,
 } = useTwilightStorage()
+
+// Palet & efek spesial maskot kucing otomatis mengikuti tema aktif (termasuk efek WAW Astral & Neon)
+const catStyle = computed(() => getCatMascotThemePalette(activeCozyTheme.value, theme.value))
+const showSpecialEffects = computed<boolean>(() => graphicsQuality.value !== 'low')
 
 // Status Co-Working Body Doubling mengikuti timer aktif: 'focus' (meja belajar), 'break' (teh & ikan bakar), atau 'idle'
 const coWorkingState = computed<'focus' | 'break' | 'idle'>(() => {
@@ -378,8 +384,8 @@ function handleCatClick() {
   const nextQuote = ENCOURAGING_QUOTES[nextIdx] ?? 'Cheer your day with me! 🎵'
   triggerMascotReaction('happy', nextQuote, 3200)
 
-  // Munculkan 6 partikel hati/bintang pastel yang menyebar
-  const burstSymbols = ['💖', '✨', '⭐', '💗', '🎵', '♥']
+  // Munculkan 6 partikel sesuai tema aktif (kristal/mahkota di Astral, kilat neon di Neon City, daun di Matcha, dll.)
+  const burstSymbols = catStyle.value.burstSymbols
   const nowId = Date.now()
   const newBurst: ClickParticle[] = burstSymbols.map((symbol, i) => {
     const angle = (Math.PI * 2 * i) / burstSymbols.length - Math.PI / 2
@@ -422,15 +428,30 @@ onUnmounted(() => {
 <template>
   <!-- Komponen Karakter Pendamping Kucing Interaktif -->
   <div class="relative flex flex-col items-center">
-    <!-- Gelembung Dialog Maskot Kucing -->
+    <!-- Gelembung Dialog Maskot Kucing (menyesuaikan palet & glow tema aktif) -->
     <div
-      class="relative mb-2 max-w-[240px] rounded-2xl border border-white/25 bg-white/15 px-3.5 py-2 text-center text-xs font-semibold leading-snug text-pink-50 shadow-md backdrop-blur-sm transition-all duration-300"
+      class="relative mb-2 max-w-[240px] rounded-2xl border px-3.5 py-2 text-center text-xs font-semibold leading-snug shadow-md backdrop-blur-sm transition-all duration-300"
+      :style="{
+        backgroundColor: catStyle.bubbleBg,
+        borderColor: catStyle.bubbleBorder,
+        color: catStyle.bubbleText,
+        boxShadow:
+          catStyle.specialMode === 'neon'
+            ? '0 4px 18px rgba(0, 245, 212, 0.25), 0 0 12px rgba(255, 42, 133, 0.22)'
+            : catStyle.specialMode === 'astral'
+              ? '0 4px 18px rgba(253, 224, 71, 0.24), 0 0 12px rgba(52, 211, 153, 0.2)'
+              : undefined,
+      }"
     >
       {{ displayedSpeech }}
       <!-- Ekor kecil gelembung dialog -->
       <span
         aria-hidden="true"
-        class="absolute -bottom-1.5 left-1/2 h-3 w-3 -translate-x-1/2 rotate-45 border-b border-r border-white/25 bg-[#3a245c]/90"
+        class="absolute -bottom-1.5 left-1/2 h-3 w-3 -translate-x-1/2 rotate-45 border-b border-r"
+        :style="{
+          backgroundColor: catStyle.bubbleBg,
+          borderColor: catStyle.bubbleBorder,
+        }"
       />
     </div>
 
@@ -469,10 +490,12 @@ onUnmounted(() => {
         v-for="heart in petHearts"
         :key="heart.id"
         aria-hidden="true"
-        class="animate-heart-rise pointer-events-none absolute z-20 text-sm font-bold text-pink-300 drop-shadow-[0_0_6px_rgba(249,168,212,0.85)]"
+        class="animate-heart-rise pointer-events-none absolute z-20 text-sm font-bold"
         :style="{
           left: heart.left,
           top: heart.top,
+          color: catStyle.notePrimary,
+          textShadow: `0 0 8px ${catStyle.notePrimary}`,
           '--hx': heart.hx,
         }"
       >
@@ -504,31 +527,37 @@ onUnmounted(() => {
             : undefined
         "
       >
-        <!-- Not musik & kilau ekspresi di sekitar maskot -->
+        <!-- Not musik & kilau ekspresi di sekitar maskot (mengikuti warna tema aktif) -->
         <span
-          class="animate-float-note font-display pointer-events-none absolute -left-2 top-2 text-lg text-pink-300"
-          style="animation-delay: 0.1s"
+          class="animate-float-note font-display pointer-events-none absolute -left-2 top-2 text-lg"
+          :style="{ color: catStyle.notePrimary, animationDelay: '0.1s' }"
         >
           {{
             activeFaceMode === 'click-star' || activeFaceMode === 'click-cheer'
               ? '✨'
               : currentMascotMood === 'celebrate'
                 ? '★'
-                : '♪'
+                : catStyle.specialMode === 'astral'
+                  ? '✦'
+                  : catStyle.specialMode === 'neon'
+                    ? '⚡'
+                    : '♪'
           }}
         </span>
         <span
-          class="animate-float-note font-display pointer-events-none absolute -right-2 top-5 text-xl text-purple-200"
-          style="animation-delay: 0.9s"
+          class="animate-float-note font-display pointer-events-none absolute -right-2 top-5 text-xl"
+          :style="{ color: catStyle.noteSecondary, animationDelay: '0.9s' }"
         >
           {{
             activeFaceMode === 'click-star' || activeFaceMode === 'click-cheer'
               ? '♥'
               : currentMascotMood === 'reminder'
                 ? '⏰'
-                : activeFaceMode === 'music'
-                  ? '♪'
-                  : '♫'
+                : catStyle.specialMode === 'astral'
+                  ? '💎'
+                  : activeFaceMode === 'music'
+                    ? '♪'
+                    : '♫'
           }}
         </span>
 
@@ -590,8 +619,154 @@ onUnmounted(() => {
           role="img"
           aria-label="Maskot kucing interaktif Twilight's memakai headphone"
         >
-          <!-- Aura lembut di belakang kucing -->
-          <circle cx="110" cy="116" r="76" fill="url(#twilightCatAura)" opacity="0.92" />
+          <!-- Aura lembut di belakang kucing (otomatis mengikuti palet tema) -->
+          <circle cx="110" cy="116" r="78" fill="url(#twilightCatAura)" opacity="0.95" />
+
+          <!-- === EFEK SPESIAL 1: 👑 ASTRAL CRYSTAL PALACE (Orbit Konstelasi Emas + 4 Kristal Aurora Melayang) === -->
+          <g v-if="catStyle.specialMode === 'astral'">
+            <!-- Cincin orbit konstelasi emas berputar pelan -->
+            <g :class="{ 'animate-astral-orbit': showSpecialEffects }">
+              <circle
+                cx="110"
+                cy="116"
+                r="92"
+                stroke="#fde047"
+                stroke-width="1.6"
+                stroke-dasharray="7 8 2 8"
+                opacity="0.72"
+              />
+              <circle cx="110" cy="24" r="3.4" fill="#fef08a" />
+              <circle cx="110" cy="208" r="2.8" fill="#34d399" />
+              <circle cx="18" cy="116" r="3" fill="#6ee7b7" />
+              <circle cx="202" cy="116" r="3" fill="#fde047" />
+            </g>
+            <!-- Cincin aurora dalam berputar berlawanan -->
+            <g :class="{ 'animate-astral-orbit-reverse': showSpecialEffects }">
+              <circle
+                cx="110"
+                cy="116"
+                r="82"
+                stroke="#34d399"
+                stroke-width="1.4"
+                stroke-dasharray="18 14"
+                opacity="0.58"
+              />
+            </g>
+            <!-- 4 Kristal Berlian Melayang Berkilau -->
+            <g v-if="showSpecialEffects">
+              <path
+                class="animate-crystal-float"
+                style="--crystal-dur: 3.1s; --crystal-delay: 0s"
+                d="M26 52 L32 62 L26 72 L20 62 Z"
+                fill="#34d399"
+                stroke="#fef08a"
+                stroke-width="1.4"
+              />
+              <path
+                class="animate-crystal-float"
+                style="--crystal-dur: 3.5s; --crystal-delay: 0.7s"
+                d="M194 48 L200 58 L194 68 L188 58 Z"
+                fill="#fde047"
+                stroke="#ffffff"
+                stroke-width="1.4"
+              />
+              <path
+                class="animate-crystal-float"
+                style="--crystal-dur: 2.9s; --crystal-delay: 1.2s"
+                d="M24 150 L29 158 L24 166 L19 158 Z"
+                fill="#a7f3d0"
+                stroke="#fde047"
+                stroke-width="1.2"
+              />
+              <path
+                class="animate-crystal-float"
+                style="--crystal-dur: 3.3s; --crystal-delay: 0.4s"
+                d="M196 148 L201 156 L196 164 L191 156 Z"
+                fill="#6ee7b7"
+                stroke="#ffffff"
+                stroke-width="1.2"
+              />
+              <!-- Bintang 4 sudut astral -->
+              <path d="M40 32 L42 37 L47 39 L42 41 L40 46 L38 41 L33 39 L38 37 Z" fill="#fef08a" />
+              <path d="M180 30 L182 35 L187 37 L182 39 L180 44 L178 39 L173 37 L178 35 Z" fill="#6ee7b7" />
+            </g>
+          </g>
+
+          <!-- === EFEK SPESIAL 2: 🌃 NEON NIGHT CITY (Dual Cyber Neon Halo + Equalizer Bars Synthwave) === -->
+          <g v-else-if="catStyle.specialMode === 'neon'">
+            <!-- Cincin luar Cyan Neon berputar pelan -->
+            <g :class="{ 'animate-astral-orbit': showSpecialEffects }">
+              <circle
+                cx="110"
+                cy="116"
+                r="93"
+                stroke="#00f5d4"
+                stroke-width="2"
+                stroke-dasharray="26 10 6 10"
+                opacity="0.78"
+              />
+            </g>
+            <!-- Cincin dalam Magenta Neon berdenyut -->
+            <circle
+              cx="110"
+              cy="116"
+              r="84"
+              stroke="#ff2a85"
+              stroke-width="2"
+              stroke-dasharray="14 8"
+              :class="{ 'animate-neon-ring-pulse': showSpecialEffects }"
+              opacity="0.72"
+            />
+            <!-- 6 Batang Audio Equalizer Neon Kiri & Kanan -->
+            <g v-if="showSpecialEffects">
+              <rect class="animate-neon-eq" style="--eq-dur: 0.95s; --eq-delay: 0s" x="14" y="108" width="4.5" height="24" rx="2.2" fill="#00f5d4" />
+              <rect class="animate-neon-eq" style="--eq-dur: 1.15s; --eq-delay: 0.2s" x="21" y="98" width="4.5" height="34" rx="2.2" fill="#ff2a85" />
+              <rect class="animate-neon-eq" style="--eq-dur: 0.85s; --eq-delay: 0.4s" x="28" y="112" width="4.5" height="20" rx="2.2" fill="#22d3ee" />
+
+              <rect class="animate-neon-eq" style="--eq-dur: 0.9s; --eq-delay: 0.15s" x="187.5" y="112" width="4.5" height="20" rx="2.2" fill="#22d3ee" />
+              <rect class="animate-neon-eq" style="--eq-dur: 1.1s; --eq-delay: 0.35s" x="194.5" y="98" width="4.5" height="34" rx="2.2" fill="#ff2a85" />
+              <rect class="animate-neon-eq" style="--eq-dur: 1.0s; --eq-delay: 0.55s" x="201.5" y="108" width="4.5" height="24" rx="2.2" fill="#00f5d4" />
+
+              <!-- Kilau cyber diamond di sudut atas -->
+              <path d="M34 46 L42 46 M38 42 L38 50" stroke="#00f5d4" stroke-width="2" stroke-linecap="round" />
+              <path d="M178 44 L186 44 M182 40 L182 48" stroke="#ff2a85" stroke-width="2" stroke-linecap="round" />
+            </g>
+          </g>
+
+          <!-- === EFEK ATMOSFER MINI UNTUK TEMA TOKO REGULER (Gelembung Laut / Daun Autumn / Salju Frost / Madu / Sakura) === -->
+          <g v-else-if="showSpecialEffects && catStyle.ambientAccent === 'ocean'">
+            <circle class="animate-crystal-float" style="--crystal-dur: 3.4s" cx="30" cy="72" r="5" fill="none" stroke="#5eead4" stroke-width="1.6" opacity="0.8" />
+            <circle class="animate-crystal-float" style="--crystal-dur: 2.9s; --crystal-delay: 0.7s" cx="192" cy="64" r="6" fill="none" stroke="#22d3ee" stroke-width="1.6" opacity="0.8" />
+            <circle class="animate-crystal-float" style="--crystal-dur: 3.8s; --crystal-delay: 1.1s" cx="24" cy="144" r="3.5" fill="#00f5d4" opacity="0.65" />
+            <circle class="animate-crystal-float" style="--crystal-dur: 3.2s; --crystal-delay: 0.3s" cx="194" cy="146" r="3.5" fill="#5eead4" opacity="0.7" />
+          </g>
+          <g v-else-if="showSpecialEffects && catStyle.ambientAccent === 'autumn'">
+            <ellipse class="animate-crystal-float" style="--crystal-dur: 3.6s" cx="28" cy="66" rx="6.5" ry="3.5" transform="rotate(-30 28 66)" fill="#fb923c" opacity="0.85" />
+            <ellipse class="animate-crystal-float" style="--crystal-dur: 3.2s; --crystal-delay: 0.8s" cx="192" cy="72" rx="6" ry="3.2" transform="rotate(28 192 72)" fill="#fbbf24" opacity="0.85" />
+          </g>
+          <g v-else-if="showSpecialEffects && catStyle.ambientAccent === 'frost'">
+            <g class="animate-crystal-float" style="--crystal-dur: 3.4s" stroke="#e0f2fe" stroke-width="1.6" stroke-linecap="round" opacity="0.85">
+              <line x1="28" y1="60" x2="28" y2="72" />
+              <line x1="22" y1="66" x2="34" y2="66" />
+              <line x1="24" y1="62" x2="32" y2="70" />
+              <line x1="32" y1="62" x2="24" y2="70" />
+            </g>
+            <g class="animate-crystal-float" style="--crystal-dur: 3.8s; --crystal-delay: 0.9s" stroke="#bae6fd" stroke-width="1.6" stroke-linecap="round" opacity="0.85">
+              <line x1="192" y1="58" x2="192" y2="70" />
+              <line x1="186" y1="64" x2="198" y2="64" />
+              <line x1="188" y1="60" x2="196" y2="68" />
+              <line x1="196" y1="60" x2="188" y2="68" />
+            </g>
+          </g>
+          <g v-else-if="showSpecialEffects && catStyle.ambientAccent === 'honey'">
+            <circle class="animate-crystal-float" style="--crystal-dur: 3.2s" cx="28" cy="70" r="3.2" fill="#fde68a" opacity="0.85" />
+            <circle class="animate-crystal-float" style="--crystal-dur: 3.7s; --crystal-delay: 0.6s" cx="192" cy="64" r="3.6" fill="#fcd34d" opacity="0.85" />
+            <circle class="animate-crystal-float" style="--crystal-dur: 3.1s; --crystal-delay: 1.2s" cx="188" cy="148" r="2.6" fill="#fef08a" opacity="0.8" />
+          </g>
+          <g v-else-if="showSpecialEffects && catStyle.ambientAccent === 'sakura'">
+            <ellipse class="animate-crystal-float" style="--crystal-dur: 3.5s" cx="28" cy="68" rx="5.5" ry="3.2" transform="rotate(-25 28 68)" fill="#f9a8d4" opacity="0.85" />
+            <ellipse class="animate-crystal-float" style="--crystal-dur: 3.2s; --crystal-delay: 0.8s" cx="192" cy="64" rx="5.5" ry="3.2" transform="rotate(32 192 64)" fill="#fda4af" opacity="0.85" />
+          </g>
 
           <!-- AKSESORIS BELAKANG TUBUH: ✨ Sayap Malaikat & Aura Bintang (Milestone Lv. 20 MAX) -->
           <g v-if="equippedAccessory === 'angel-wings'">
@@ -752,19 +927,19 @@ onUnmounted(() => {
             <path d="M146 26 L147.4 29.4 L150.8 30.8 L147.4 32.2 L146 35.6 L144.6 32.2 L141.2 30.8 L144.6 29.4 Z" fill="#fbcfe8" />
           </g>
 
-          <!-- Band Headphone Atas (berkilau neon pastel ekstra saat 🎧 Headphone Lo-Fi dipakai) -->
+          <!-- Band Headphone Atas (mengikuti palet tema aktif + berkilau ekstra saat 🎧 Headphone Lo-Fi dipakai) -->
           <path
             d="M46 112 C46 58, 174 58, 174 112"
-            :stroke="equippedAccessory === 'lofi-headphones' ? '#c084fc' : '#f9a8d4'"
+            :stroke="equippedAccessory === 'lofi-headphones' ? '#c084fc' : catStyle.hpBand"
             :stroke-width="equippedAccessory === 'lofi-headphones' ? '15' : '13'"
             stroke-linecap="round"
           />
           <path
             d="M52 106 C56 66, 164 66, 168 106"
-            :stroke="equippedAccessory === 'lofi-headphones' ? '#f9a8d4' : '#fdf2f8'"
+            :stroke="equippedAccessory === 'lofi-headphones' ? '#f9a8d4' : catStyle.hpBandHighlight"
             :stroke-width="equippedAccessory === 'lofi-headphones' ? '4.5' : '3'"
             stroke-linecap="round"
-            :opacity="equippedAccessory === 'lofi-headphones' ? '0.92' : '0.55'"
+            :opacity="equippedAccessory === 'lofi-headphones' ? '0.92' : '0.68'"
           />
 
           <!-- Tubuh kecil kucing -->
@@ -772,7 +947,7 @@ onUnmounted(() => {
             d="M72 174 C72 150, 148 150, 148 174 L152 192 C136 198, 84 198, 68 192 Z"
             fill="#f5ecff"
           />
-          <!-- Aksesoris Leher: 🧣 Syal Rajut / 💖 Kalung Hati Bintang / Syal Default -->
+          <!-- Aksesoris Leher: 🧣 Syal Rajut / 💖 Kalung Hati Bintang / Syal Bawaan Bertema -->
           <g v-if="equippedAccessory === 'knit-scarf'">
             <!-- Syal rajut hangat bergaris krem & rose -->
             <path
@@ -812,40 +987,69 @@ onUnmounted(() => {
             <path d="M110 169 L111.2 172 L114.2 173.2 L111.2 174.4 L110 177.4 L108.8 174.4 L105.8 173.2 L108.8 172 Z" fill="#fef08a" />
           </g>
           <g v-else>
-            <!-- Syal pastel bawaan -->
+            <!-- Syal / Kalung bawaan menyesuaikan palet tema (Kalung Kristal di Astral, Choker Cyber di Neon) -->
             <path
               d="M79 156 Q110 172 141 156 Q137 167 110 172 Q83 167 79 156 Z"
-              fill="#c4b5fd"
+              :fill="catStyle.collarFill"
+              :stroke="catStyle.specialMode !== 'none' ? catStyle.collarStroke : 'none'"
+              :stroke-width="catStyle.specialMode !== 'none' ? '1.6' : '0'"
             />
-            <circle cx="110" cy="169" r="5" fill="#fde68a" />
+            <!-- Liontin Kristal Berlian (Astral) / Core Energi Cyber (Neon) / Lonceng Bawaan -->
+            <path
+              v-if="catStyle.specialMode === 'astral'"
+              d="M110 162 L116 170 L110 178 L104 170 Z"
+              fill="#34d399"
+              stroke="#fef08a"
+              stroke-width="1.6"
+            />
+            <g v-else-if="catStyle.specialMode === 'neon'">
+              <rect x="103" y="164" width="14" height="10" rx="5" fill="#090514" stroke="#00f5d4" stroke-width="1.6" />
+              <circle cx="110" cy="169" r="3" fill="#ff2a85" />
+            </g>
+            <circle v-else cx="110" cy="169" r="5" :fill="catStyle.bellFill" />
           </g>
 
           <!-- Telinga Kiri & Kanan -->
           <path
             d="M66 96 L58 58 L93 78 Z"
             fill="#fff7fb"
-            stroke="#e9d5ff"
+            :stroke="catStyle.earStroke"
             stroke-width="2"
             stroke-linejoin="round"
           />
-          <path d="M68 90 L64 67 L85 79 Z" fill="#fbcfe8" />
+          <path d="M68 90 L64 67 L85 79 Z" :fill="catStyle.earInner" />
 
           <path
             d="M154 96 L162 58 L127 78 Z"
             fill="#fff7fb"
-            stroke="#e9d5ff"
+            :stroke="catStyle.earStroke"
             stroke-width="2"
             stroke-linejoin="round"
           />
-          <path d="M152 90 L156 67 L135 79 Z" fill="#fbcfe8" />
+          <path d="M152 90 L156 67 L135 79 Z" :fill="catStyle.earInner" />
 
           <!-- Kepala Kucing Bulat -->
           <ellipse cx="110" cy="116" rx="54" ry="47" fill="#fff7fb" />
 
-          <!-- Garis dahi lembut -->
-          <path d="M110 71 V81" stroke="#e9d5ff" stroke-width="4" stroke-linecap="round" />
-          <path d="M99 73 L102 82" stroke="#e9d5ff" stroke-width="3.5" stroke-linecap="round" />
-          <path d="M121 73 L118 82" stroke="#e9d5ff" stroke-width="3.5" stroke-linecap="round" />
+          <!-- Tanda Dahi Spesial (Bulan Sabit Emas di Astral, Lambang Cyber di Neon, atau Garis Dahi Bertema) -->
+          <g v-if="catStyle.specialMode === 'astral'">
+            <path
+              d="M113 73 A6.5 6.5 0 1 0 113 85 A5 5 0 1 1 113 73 Z"
+              fill="#fde047"
+              stroke="#d97706"
+              stroke-width="0.9"
+            />
+            <circle cx="115.5" cy="79" r="1.5" fill="#34d399" />
+          </g>
+          <g v-else-if="catStyle.specialMode === 'neon'">
+            <path d="M103 77 L110 72 L117 77" stroke="#00f5d4" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" />
+            <circle cx="110" cy="81" r="2.2" fill="#ff2a85" />
+          </g>
+          <g v-else>
+            <path d="M110 71 V81" :stroke="catStyle.foreheadMark" stroke-width="4" stroke-linecap="round" />
+            <path d="M99 73 L102 82" :stroke="catStyle.foreheadMark" stroke-width="3.5" stroke-linecap="round" />
+            <path d="M121 73 L118 82" :stroke="catStyle.foreheadMark" stroke-width="3.5" stroke-linecap="round" />
+          </g>
 
           <!-- 3. Aksesori Pita Pink Kawaii di dekat telinga kiri kucing -->
           <g v-if="equippedAccessory === 'pink-bow'" transform="translate(76, 76) rotate(-18)">
@@ -866,16 +1070,22 @@ onUnmounted(() => {
             <circle cx="0" cy="2" r="4.2" fill="#fdf2f8" stroke="#f472b6" stroke-width="1.5" />
           </g>
 
-          <!-- Earcup Headphone Kiri & Kanan (cahaya pastel lo-fi ekstra saat 🎧 Headphone Lo-Fi dipakai) -->
+          <!-- Earcup Headphone Kiri & Kanan (mengikuti palet tema + bingkai berkilau di Astral & Neon) -->
           <rect
             x="38"
             y="96"
             width="22"
             height="42"
             rx="11"
-            :fill="equippedAccessory === 'lofi-headphones' ? '#9333ea' : '#c084fc'"
-            :stroke="equippedAccessory === 'lofi-headphones' ? '#f9a8d4' : 'none'"
-            :stroke-width="equippedAccessory === 'lofi-headphones' ? '2.2' : '0'"
+            :fill="equippedAccessory === 'lofi-headphones' ? '#9333ea' : catStyle.hpCupOuter"
+            :stroke="
+              equippedAccessory === 'lofi-headphones'
+                ? '#f9a8d4'
+                : catStyle.specialMode !== 'none'
+                  ? catStyle.hpBand
+                  : 'none'
+            "
+            :stroke-width="equippedAccessory === 'lofi-headphones' || catStyle.specialMode !== 'none' ? '2.2' : '0'"
           />
           <rect
             x="44"
@@ -883,9 +1093,14 @@ onUnmounted(() => {
             width="14"
             height="32"
             rx="7"
-            :fill="equippedAccessory === 'lofi-headphones' ? '#f472b6' : '#f9a8d4'"
+            :fill="equippedAccessory === 'lofi-headphones' ? '#f472b6' : catStyle.hpCupInner"
           />
-          <circle cx="49" cy="117" :r="equippedAccessory === 'lofi-headphones' ? '5' : '4'" :fill="equippedAccessory === 'lofi-headphones' ? '#67e8f9' : '#fef9c3'" />
+          <circle
+            cx="49"
+            cy="117"
+            :r="equippedAccessory === 'lofi-headphones' || catStyle.specialMode !== 'none' ? '4.8' : '4'"
+            :fill="equippedAccessory === 'lofi-headphones' ? '#67e8f9' : catStyle.hpLed"
+          />
 
           <rect
             x="160"
@@ -893,9 +1108,15 @@ onUnmounted(() => {
             width="22"
             height="42"
             rx="11"
-            :fill="equippedAccessory === 'lofi-headphones' ? '#9333ea' : '#c084fc'"
-            :stroke="equippedAccessory === 'lofi-headphones' ? '#f9a8d4' : 'none'"
-            :stroke-width="equippedAccessory === 'lofi-headphones' ? '2.2' : '0'"
+            :fill="equippedAccessory === 'lofi-headphones' ? '#9333ea' : catStyle.hpCupOuter"
+            :stroke="
+              equippedAccessory === 'lofi-headphones'
+                ? '#f9a8d4'
+                : catStyle.specialMode !== 'none'
+                  ? catStyle.hpBand
+                  : 'none'
+            "
+            :stroke-width="equippedAccessory === 'lofi-headphones' || catStyle.specialMode !== 'none' ? '2.2' : '0'"
           />
           <rect
             x="162"
@@ -903,9 +1124,14 @@ onUnmounted(() => {
             width="14"
             height="32"
             rx="7"
-            :fill="equippedAccessory === 'lofi-headphones' ? '#f472b6' : '#f9a8d4'"
+            :fill="equippedAccessory === 'lofi-headphones' ? '#f472b6' : catStyle.hpCupInner"
           />
-          <circle cx="171" cy="117" :r="equippedAccessory === 'lofi-headphones' ? '5' : '4'" :fill="equippedAccessory === 'lofi-headphones' ? '#67e8f9' : '#fef9c3'" />
+          <circle
+            cx="171"
+            cy="117"
+            :r="equippedAccessory === 'lofi-headphones' || catStyle.specialMode !== 'none' ? '4.8' : '4'"
+            :fill="equippedAccessory === 'lofi-headphones' ? '#67e8f9' : catStyle.hpLed"
+          />
 
           <!-- EKSPRESI MATA DINAMIS KUCING UTAMA -->
           <!-- 1. Saat Diklik (Variasi A): Mata Bintang Berbinar (★ ω ★) -->
@@ -992,6 +1218,18 @@ onUnmounted(() => {
             <circle cx="132.5" cy="116" r="1.1" fill="#ffffff" />
           </g>
 
+          <!-- VISOR HOLOGRAM CYBER NEON (khusus tema ultimate 🌃 Neon Night City — transparan agar ekspresi mata tetap 100% terlihat!) -->
+          <g v-if="catStyle.specialMode === 'neon' && equippedAccessory !== 'round-glasses'">
+            <path
+              d="M68 103 H152 C155 103, 156 107, 154 114 L149 122 C146 125, 138 125, 132 124 L115 119 H105 L88 124 C82 125, 74 125, 71 122 L66 114 C64 107, 65 103, 68 103 Z"
+              fill="url(#neonVisorGrad)"
+              stroke="#00f5d4"
+              stroke-width="2"
+              stroke-linejoin="round"
+            />
+            <path d="M76 106 L88 119 M134 106 L142 115" stroke="#ffffff" stroke-width="1.6" stroke-linecap="round" opacity="0.55" />
+          </g>
+
           <!-- KACAMATA BULAT (toko 👓 Kacamata Bulat) ATAU KACAMATA FOKUS (saat Pomodoro / BGM aktif) -->
           <g v-if="equippedAccessory === 'round-glasses'">
             <circle cx="90" cy="114" r="14.5" fill="rgba(255,251,235,0.24)" stroke="#f59e0b" stroke-width="2.4" />
@@ -1002,13 +1240,13 @@ onUnmounted(() => {
             <path d="M82 106 Q86 103 90 105" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" opacity="0.7" />
             <path d="M122 106 Q126 103 130 105" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" opacity="0.7" />
           </g>
-          <g v-else-if="currentMascotMood === 'focus'">
+          <g v-else-if="currentMascotMood === 'focus' && catStyle.specialMode !== 'neon'">
             <circle
               cx="90"
               cy="114"
               r="14"
               fill="rgba(255,255,255,0.22)"
-              stroke="#a78bfa"
+              :stroke="catStyle.focusGlassesStroke"
               stroke-width="3"
             />
             <circle
@@ -1016,21 +1254,21 @@ onUnmounted(() => {
               cy="114"
               r="14"
               fill="rgba(255,255,255,0.22)"
-              stroke="#a78bfa"
+              :stroke="catStyle.focusGlassesStroke"
               stroke-width="3"
             />
-            <line x1="104" y1="114" x2="116" y2="114" stroke="#a78bfa" stroke-width="3" />
-            <line x1="65" y1="111" x2="76" y2="113" stroke="#a78bfa" stroke-width="2.5" />
-            <line x1="144" y1="113" x2="155" y2="111" stroke="#a78bfa" stroke-width="2.5" />
+            <line x1="104" y1="114" x2="116" y2="114" :stroke="catStyle.focusGlassesStroke" stroke-width="3" />
+            <line x1="65" y1="111" x2="76" y2="113" :stroke="catStyle.focusGlassesStroke" stroke-width="2.5" />
+            <line x1="144" y1="113" x2="155" y2="111" :stroke="catStyle.focusGlassesStroke" stroke-width="2.5" />
           </g>
 
-          <!-- Pipi Merona Pink Pastel (makin cerah saat dielus / diklik / menyemangati) -->
+          <!-- Pipi Merona (selaras tema, makin cerah saat dielus / diklik / menyemangati) -->
           <ellipse
             cx="76"
             cy="126"
             rx="10"
             ry="6"
-            fill="#f9a8d4"
+            :fill="catStyle.cheekColor"
             :opacity="
               activeFaceMode === 'petted' ||
               activeFaceMode === 'click-star' ||
@@ -1038,7 +1276,7 @@ onUnmounted(() => {
               currentMascotMood === 'happy' ||
               currentMascotMood === 'celebrate'
                 ? 0.96
-                : 0.6
+                : 0.58
             "
           />
           <ellipse
@@ -1046,7 +1284,7 @@ onUnmounted(() => {
             cy="126"
             rx="10"
             ry="6"
-            fill="#f9a8d4"
+            :fill="catStyle.cheekColor"
             :opacity="
               activeFaceMode === 'petted' ||
               activeFaceMode === 'click-star' ||
@@ -1054,7 +1292,7 @@ onUnmounted(() => {
               currentMascotMood === 'happy' ||
               currentMascotMood === 'celebrate'
                 ? 0.96
-                : 0.6
+                : 0.58
             "
           />
 
@@ -1097,11 +1335,11 @@ onUnmounted(() => {
             stroke-linejoin="round"
           />
 
-          <!-- Kumis Halus -->
-          <path d="M64 122 L53 120" stroke="#c4b5fd" stroke-width="2.2" stroke-linecap="round" />
-          <path d="M65 129 L54 131" stroke="#c4b5fd" stroke-width="2.2" stroke-linecap="round" />
-          <path d="M156 122 L167 120" stroke="#c4b5fd" stroke-width="2.2" stroke-linecap="round" />
-          <path d="M155 129 L166 131" stroke="#c4b5fd" stroke-width="2.2" stroke-linecap="round" />
+          <!-- Kumis Halus (mengikuti warna tema) -->
+          <path d="M64 122 L53 120" :stroke="catStyle.whiskerColor" stroke-width="2.2" stroke-linecap="round" />
+          <path d="M65 129 L54 131" :stroke="catStyle.whiskerColor" stroke-width="2.2" stroke-linecap="round" />
+          <path d="M156 122 L167 120" :stroke="catStyle.whiskerColor" stroke-width="2.2" stroke-linecap="round" />
+          <path d="M155 129 L166 131" :stroke="catStyle.whiskerColor" stroke-width="2.2" stroke-linecap="round" />
 
           <!-- CO-WORKING BODY DOUBLING: Meja Kayu Belajar (Focus) / Meja Teh & Ikan Bakar (Break) / Pose Siaga Biasa -->
           <!-- A. Mode FOKUS: Meja kayu kecil + buku catatan terbuka + laptop mini menyala + cakar mengetik pelan -->
@@ -1129,7 +1367,7 @@ onUnmounted(() => {
               <!-- Pendar cahaya layar laptop -->
               <ellipse cx="32" cy="14" rx="34" ry="18" fill="#bae6fd" opacity="0.22" />
               <!-- Cangkang & layar laptop -->
-              <rect x="6" y="0" width="52" height="30" rx="4.5" fill="#4c1d95" stroke="#e9d5ff" stroke-width="1.6" />
+              <rect x="6" y="0" width="52" height="30" rx="4.5" :fill="catStyle.laptopShell" :stroke="catStyle.earStroke" stroke-width="1.6" />
               <rect x="10" y="3.5" width="44" height="22" rx="2.5" fill="#e0f2fe" />
               <!-- Ikon bintang & garis catatan di layar menyala -->
               <path d="M32 7 L33.4 10.6 L37 12 L33.4 13.4 L32 17 L30.6 13.4 L27 12 L30.6 10.6 Z" fill="#f472b6" />
@@ -1185,9 +1423,9 @@ onUnmounted(() => {
                 stroke-linecap="round"
               />
               <!-- Gagang cangkir -->
-              <path d="M30 8 C37 8, 37 19, 30 19" stroke="#f9a8d4" stroke-width="3" fill="none" stroke-linecap="round" />
-              <!-- Badan cangkir pastel -->
-              <path d="M2 4 H30 L27 24 C26 26, 6 26, 5 24 Z" fill="#fbcfe8" stroke="#f472b6" stroke-width="1.4" />
+              <path d="M30 8 C37 8, 37 19, 30 19" :stroke="catStyle.cupStroke" stroke-width="3" fill="none" stroke-linecap="round" />
+              <!-- Badan cangkir bertema -->
+              <path d="M2 4 H30 L27 24 C26 26, 6 26, 5 24 Z" :fill="catStyle.cupBody" :stroke="catStyle.cupStroke" stroke-width="1.4" />
               <ellipse cx="16" cy="5" rx="13" ry="3.2" fill="#92400e" />
               <path d="M13 13 L16 16 L19 13" stroke="#ec4899" stroke-width="1.4" stroke-linecap="round" fill="none" />
             </g>
@@ -1251,11 +1489,16 @@ onUnmounted(() => {
               cy="0"
               r="1"
               gradientUnits="userSpaceOnUse"
-              gradientTransform="translate(110 116) rotate(90) scale(76)"
+              gradientTransform="translate(110 116) rotate(90) scale(78)"
             >
-              <stop stop-color="#f9a8d4" stop-opacity="0.34" />
-              <stop offset="1" stop-color="#c084fc" stop-opacity="0.04" />
+              <stop :stop-color="catStyle.auraInner" :stop-opacity="catStyle.specialMode !== 'none' ? '0.44' : '0.34'" />
+              <stop offset="1" :stop-color="catStyle.auraOuter" :stop-opacity="catStyle.specialMode !== 'none' ? '0.12' : '0.04'" />
             </radialGradient>
+            <linearGradient id="neonVisorGrad" x1="68" y1="103" x2="152" y2="124" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#00f5d4" stop-opacity="0.28" />
+              <stop offset="0.55" stop-color="#22d3ee" stop-opacity="0.16" />
+              <stop offset="1" stop-color="#ff2a85" stop-opacity="0.3" />
+            </linearGradient>
           </defs>
         </svg>
       </div>

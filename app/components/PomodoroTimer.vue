@@ -53,7 +53,12 @@ const {
 const { playBellChime } = useSoundEffects()
 const {
   isTabTitleBlinking,
+  requestNotificationPermission,
   kirimNotifikasiSistem,
+  showRunningTimerNotification,
+  closeRunningTimerNotification,
+  updateMediaSessionTimer,
+  registerMediaSessionHandlers,
   acquireScreenWakeLock,
   releaseScreenWakeLock,
   reacquireWakeLockIfNeeded,
@@ -75,6 +80,7 @@ const editSeconds = ref<number>(0)
 const hoursInputRef = ref<HTMLInputElement | null>(null)
 
 let timerInterval: ReturnType<typeof setInterval> | null = null
+let blurNotifTimeout: ReturnType<typeof setTimeout> | null = null
 // Waktu target eksak (Date.now() + sisaDetik * 1000) agar akurat 100% meski tab diminimize atau layar HP dikunci
 let targetEndTimeMs: number | null = null
 
@@ -268,12 +274,36 @@ function selectMode(modeKey: TimerModeKey) {
   customStatus.value = ''
 }
 
+/** Sinkronkan status Pomodoro Timer ke Kartu Media Session (Lock Screen HP & Windows Media Control) */
+function syncTimerMediaSession() {
+  updateMediaSessionTimer({
+    isRunning: isRunning.value,
+    isPaused: isPaused.value,
+    modeLabel: activeModeConfig.value.baseLabel,
+    totalSeconds: totalSeconds.value,
+    remainingSeconds: remainingSeconds.value,
+    targetEndTimeMs,
+  })
+}
+
+/** Munculkan notifikasi status timer berjalan di Windows Action Center (PC) & Bilah Atas HP */
+function notifyBackgroundRunningTimer() {
+  if (!isRunning.value) return
+  void showRunningTimerNotification({
+    modeLabel: activeModeConfig.value.baseLabel,
+    remainingSeconds: remainingSeconds.value,
+    targetEndTimeMs,
+  })
+}
+
 /** Selesaikan sesi timer saat targetEndTimeMs tercapai */
 function handleTimerCompleted() {
   targetEndTimeMs = null
   remainingSeconds.value = 0
   pauseTimer(false)
   exitZenMode()
+  void closeRunningTimerNotification()
+  syncTimerMediaSession()
 
   if (isBellEnabled.value) {
     playBellChime()
@@ -315,15 +345,53 @@ function syncRemainingFromClock() {
   }
 }
 
-/** Saat pengguna kembali ke tab/membuka layar HP, langsung sinkronkan waktu & aktifkan lagi Screen Wake Lock */
+/** Saat pengguna keluar ke Home/Alt-Tab tampilkan notifikasi status; saat kembali, tutup & sinkronkan waktu */
 function handleVisibilityChange() {
+  if (document.hidden) {
+    if (isRunning.value) {
+      syncRemainingFromClock()
+      syncTimerMediaSession()
+      notifyBackgroundRunningTimer()
+    }
+    return
+  }
+
+  void closeRunningTimerNotification()
   if (isRunning.value) {
     syncRemainingFromClock()
+    syncTimerMediaSession()
     void reacquireWakeLockIfNeeded()
   }
 }
 
-/** Tombol START: mulai hitung mundur berbasis Date.now() + aktifkan Screen Wake Lock opsional */
+/** Di PC: saat pengguna Alt-Tab ke jendela lain (bukan klik iframe YouTube), munculkan notifikasi Windows Action Center */
+function handleWindowBlur() {
+  if (!isRunning.value) return
+  if (blurNotifTimeout) clearTimeout(blurNotifTimeout)
+  blurNotifTimeout = setTimeout(() => {
+    blurNotifTimeout = null
+    if (!isRunning.value) return
+    if (document.hasFocus()) return
+    // Jangan munculkan notifikasi jika fokus hanya berpindah ke dalam iframe YouTube Lo-Fi di halaman yang sama
+    if (document.activeElement?.tagName === 'IFRAME') return
+    syncRemainingFromClock()
+    notifyBackgroundRunningTimer()
+  }, 320)
+}
+
+function handleWindowFocus() {
+  if (blurNotifTimeout) {
+    clearTimeout(blurNotifTimeout)
+    blurNotifTimeout = null
+  }
+  void closeRunningTimerNotification()
+  if (isRunning.value) {
+    syncRemainingFromClock()
+    syncTimerMediaSession()
+  }
+}
+
+/** Tombol START: mulai hitung mundur berbasis Date.now() + aktifkan Media Session & izin notifikasi */
 function startTimer() {
   if (isRunning.value) return
   isEditingDuration.value = false
@@ -337,6 +405,9 @@ function startTimer() {
   isPaused.value = false
   targetEndTimeMs = Date.now() + remainingSeconds.value * 1000
   void acquireScreenWakeLock()
+  // Minta izin notifikasi sekali saja jika masih 'default' agar notifikasi timer HP & Windows PC bisa muncul
+  void requestNotificationPermission(true)
+  syncTimerMediaSession()
 
   if (currentMode.value === 'focus') {
     triggerMascotReaction('focus', 'Mode jenius aktif! Yuk fokus bareng~ 👓✨', 2600)
@@ -349,7 +420,7 @@ function startTimer() {
   timerInterval = setInterval(syncRemainingFromClock, 500)
 }
 
-/** Tombol PAUSE: jeda hitung mundur & lepaskan Screen Wake Lock */
+/** Tombol PAUSE: jeda hitung mundur, tutup notifikasi status berjalan & lepaskan Screen Wake Lock */
 function pauseTimer(showPausedNote = true) {
   if (isRunning.value && targetEndTimeMs !== null) {
     remainingSeconds.value = Math.max(0, Math.ceil((targetEndTimeMs - Date.now()) / 1000))
@@ -359,7 +430,12 @@ function pauseTimer(showPausedNote = true) {
     clearInterval(timerInterval)
     timerInterval = null
   }
+  if (blurNotifTimeout) {
+    clearTimeout(blurNotifTimeout)
+    blurNotifTimeout = null
+  }
   void releaseScreenWakeLock()
+  void closeRunningTimerNotification()
 
   if (isRunning.value) {
     isRunning.value = false
@@ -370,6 +446,7 @@ function pauseTimer(showPausedNote = true) {
   } else if (!showPausedNote) {
     isPaused.value = false
   }
+  syncTimerMediaSession()
 }
 
 /**
@@ -383,6 +460,7 @@ function resetTimer() {
   isPaused.value = false
   remainingSeconds.value = totalSeconds.value
   customStatus.value = ''
+  syncTimerMediaSession()
 }
 
 onMounted(() => {
@@ -392,16 +470,32 @@ onMounted(() => {
   }
   if (import.meta.client) {
     document.addEventListener('visibilitychange', handleVisibilityChange)
+    window.addEventListener('blur', handleWindowBlur)
+    window.addEventListener('focus', handleWindowFocus)
+    registerMediaSessionHandlers({
+      onToggleTimer: () => {
+        if (isRunning.value) {
+          pauseTimer(true)
+        } else {
+          startTimer()
+        }
+      },
+    })
   }
 })
 
 onUnmounted(() => {
   if (timerInterval) clearInterval(timerInterval)
+  if (blurNotifTimeout) clearTimeout(blurNotifTimeout)
   targetEndTimeMs = null
   void releaseScreenWakeLock()
+  void closeRunningTimerNotification()
+  updateMediaSessionTimer({ isRunning: false, isPaused: false, targetEndTimeMs: null })
   isPomodoroRunning.value = false
   if (import.meta.client) {
     document.removeEventListener('visibilitychange', handleVisibilityChange)
+    window.removeEventListener('blur', handleWindowBlur)
+    window.removeEventListener('focus', handleWindowFocus)
     if (!isTabTitleBlinking.value) {
       document.title = DEFAULT_TAB_TITLE
     }
@@ -433,7 +527,7 @@ onUnmounted(() => {
         <button
           type="button"
           title="Masuk ke Twilight Focus (layar penuh meja belajar) — Pintasan [T]"
-          class="btn-bouncy inline-flex min-h-[38px] shrink-0 cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-full border border-purple-200/45 bg-gradient-to-r from-purple-400/25 via-indigo-400/25 to-pink-400/25 px-3 py-2 text-xs font-semibold text-pink-50 shadow-sm hover:from-purple-400/40 hover:to-pink-400/40 sm:min-h-0 sm:px-2.5 sm:py-1.5 sm:text-[11px]"
+          class="cozy-pill-btn btn-bouncy inline-flex min-h-[38px] shrink-0 cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-full border border-purple-200/45 bg-gradient-to-r from-purple-400/25 via-indigo-400/25 to-pink-400/25 px-3 py-2 text-xs font-semibold text-pink-50 shadow-sm sm:min-h-0 sm:px-2.5 sm:py-1.5 sm:text-[11px]"
           @click="isImmersiveZenOpen = true"
         >
           <span>{{ twilightFocusIcon }} Twilight Focus</span>
@@ -454,7 +548,7 @@ onUnmounted(() => {
           class="btn-bouncy inline-flex min-h-[38px] shrink-0 cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-full border px-3.5 py-2 text-xs font-semibold transition-all duration-300 sm:min-h-0 sm:px-3 sm:py-1.5 sm:text-[11px]"
           :class="
             isZenMode
-              ? 'border-amber-200/80 bg-gradient-to-r from-amber-300/35 via-pink-300/30 to-purple-300/35 text-amber-50 shadow-md shadow-amber-400/25 ring-1 ring-amber-200/50'
+              ? 'cozy-active-btn border-amber-200/80 bg-gradient-to-r from-amber-300/35 via-pink-300/30 to-purple-300/35 text-amber-50 shadow-md ring-1 ring-amber-200/50'
               : 'border-white/15 bg-white/10 text-purple-100 hover:bg-white/20'
           "
           @click="toggleZenMode"
@@ -473,7 +567,7 @@ onUnmounted(() => {
           class="btn-bouncy cursor-pointer rounded-full border px-2.5 py-1 text-[11px] font-semibold"
           :class="
             isBellEnabled
-              ? 'border-pink-200/40 bg-pink-300/20 text-pink-100'
+              ? 'cozy-pill-btn border-pink-200/40 bg-pink-300/20 text-pink-100'
               : 'border-white/15 bg-white/5 text-purple-200/60'
           "
           @click="toggleBell"
@@ -492,7 +586,7 @@ onUnmounted(() => {
           class="mobile-only-control btn-bouncy cursor-pointer rounded-full border px-2.5 py-1 text-[11px] font-semibold"
           :class="
             isVibrationEnabled
-              ? 'border-purple-200/50 bg-purple-300/25 text-purple-50'
+              ? 'cozy-pill-btn border-purple-200/50 bg-purple-300/25 text-purple-50'
               : 'border-white/15 bg-white/5 text-purple-200/60'
           "
           @click="toggleVibrationEnabled"
@@ -501,7 +595,7 @@ onUnmounted(() => {
         </button>
 
         <span
-          class="rounded-full border border-pink-300/30 bg-pink-400/15 px-2.5 py-1 text-[11px] font-semibold text-pink-200"
+          class="cozy-badge rounded-full border border-pink-300/30 bg-pink-400/15 px-2.5 py-1 text-[11px] font-semibold text-pink-200"
         >
           ✦ {{ todayFocusSessions }} Sesi
         </span>
@@ -529,25 +623,25 @@ onUnmounted(() => {
     <!-- Angka Timer Besar Berhias Bintang Kecil + Pesan Kontekstual -->
     <div class="relative my-5 flex flex-col items-center justify-center py-2">
       <span
-        class="animate-twinkle pointer-events-none absolute left-4 top-1 text-base text-pink-300 sm:left-10"
+        class="cozy-sparkle animate-twinkle pointer-events-none absolute left-4 top-1 text-base text-pink-300 sm:left-10"
         style="--twinkle-duration: 2.8s"
       >
         ✦
       </span>
       <span
-        class="animate-twinkle pointer-events-none absolute right-5 top-0 text-sm text-amber-200 sm:right-12"
+        class="cozy-sparkle-alt animate-twinkle pointer-events-none absolute right-5 top-0 text-sm text-amber-200 sm:right-12"
         style="--twinkle-duration: 3.4s; --twinkle-delay: 0.7s"
       >
         ✧
       </span>
       <span
-        class="animate-twinkle pointer-events-none absolute bottom-3 left-8 text-xs text-purple-200 sm:left-16"
+        class="cozy-sparkle-alt animate-twinkle pointer-events-none absolute bottom-3 left-8 text-xs text-purple-200 sm:left-16"
         style="--twinkle-duration: 3.1s; --twinkle-delay: 1.2s"
       >
         ★
       </span>
       <span
-        class="animate-twinkle pointer-events-none absolute bottom-2 right-8 text-base text-pink-200 sm:right-14"
+        class="cozy-sparkle animate-twinkle pointer-events-none absolute bottom-2 right-8 text-base text-pink-200 sm:right-14"
         style="--twinkle-duration: 3.8s; --twinkle-delay: 0.4s"
       >
         ✦
@@ -558,9 +652,9 @@ onUnmounted(() => {
         class="mb-1.5 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-bold tracking-wide uppercase transition-all duration-300"
         :class="
           isRunning
-            ? 'border-pink-200/70 bg-pink-400/25 text-pink-100 shadow-sm shadow-pink-500/30'
+            ? 'cozy-pill-btn border-pink-200/70 bg-pink-400/25 text-pink-100 shadow-sm'
             : isPaused
-              ? 'border-purple-200/70 bg-purple-400/25 text-purple-100 shadow-sm shadow-purple-500/30'
+              ? 'cozy-badge border-purple-200/70 bg-purple-400/25 text-purple-100 shadow-sm'
               : 'border-white/15 bg-white/10 text-purple-200/80'
         "
       >
@@ -568,10 +662,10 @@ onUnmounted(() => {
           class="h-1.5 w-1.5 rounded-full"
           :class="
             isRunning
-              ? 'animate-pulse bg-pink-300 shadow-[0_0_8px_#f9a8d4]'
+              ? 'cozy-dot animate-pulse bg-pink-300'
               : isPaused
-                ? 'bg-purple-300'
-                : 'bg-purple-200/60'
+                ? 'cozy-dot bg-purple-300'
+                : 'cozy-dot-idle bg-purple-200/60'
           "
         />
         <span>{{ isRunning ? 'Sedang Berjalan' : isPaused ? 'Terjeda' : 'Siap Mulai' }}</span>
@@ -677,8 +771,9 @@ onUnmounted(() => {
         @click="openEditMode"
       >
         <div
-          class="font-display select-none font-bold tracking-wider text-white tabular-nums drop-shadow-[0_4px_18px_rgba(249,168,212,0.45)] transition-all duration-300"
+          class="font-display select-none font-bold tracking-wider text-white tabular-nums transition-all duration-300"
           :class="isHourDisplayMode ? 'text-5xl sm:text-6xl' : 'text-6xl sm:text-7xl'"
+          style="text-shadow: 0 4px 18px var(--title-glow, rgba(249, 168, 212, 0.45))"
         >
           {{ formattedTime }}
         </div>
@@ -738,9 +833,9 @@ onUnmounted(() => {
         class="btn-bouncy font-display inline-flex items-center justify-center gap-1.5 rounded-full px-4 py-2.5 text-sm font-semibold tracking-wide transition-all duration-200 focus:outline-none"
         :class="
           isPaused
-            ? 'cursor-default bg-gradient-to-r from-[#c4b5fd] to-[#a78bfa] text-[#1e1b4b] ring-2 ring-purple-200/90 shadow-lg shadow-purple-500/45'
+            ? 'cozy-pause-active cursor-default bg-gradient-to-r from-[#c4b5fd] to-[#a78bfa] text-[#1e1b4b] ring-2 ring-white/55 shadow-lg'
             : isRunning
-              ? 'cursor-pointer border border-purple-200/45 bg-purple-300/20 text-purple-100 hover:bg-[#c4b5fd] hover:text-[#1e1b4b] hover:shadow-md hover:shadow-purple-500/25'
+              ? 'cozy-pill-btn cursor-pointer border border-purple-200/45 bg-purple-300/20 text-purple-100'
               : 'cursor-not-allowed border border-white/10 bg-white/5 text-purple-200/40'
         "
         :disabled="!isRunning"
@@ -748,14 +843,14 @@ onUnmounted(() => {
       >
         <span
           v-if="isPaused"
-          class="h-2 w-2 rounded-full bg-[#1e1b4b]"
+          class="h-2 w-2 rounded-full bg-current"
         />
         <span>PAUSE</span>
       </button>
 
       <button
         type="button"
-        class="btn-bouncy font-display cursor-pointer rounded-full border border-purple-200/35 bg-[#8b5cf6]/35 px-4 py-2.5 text-sm font-semibold tracking-wide text-purple-100 shadow-lg shadow-indigo-950/20 hover:bg-[#8b5cf6]/55 focus:outline-none"
+        class="cozy-reset-btn btn-bouncy font-display cursor-pointer rounded-full border border-purple-200/35 bg-[#8b5cf6]/35 px-4 py-2.5 text-sm font-semibold tracking-wide text-purple-100 shadow-lg focus:outline-none"
         @click="resetTimer"
       >
         RESET

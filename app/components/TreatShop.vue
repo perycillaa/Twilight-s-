@@ -132,7 +132,7 @@ function handleSelectCozyTheme(id: CozyThemeId) {
         </span>
         <span
           v-else-if="isAccessoryOwned(item.id, item.milestoneLevel)"
-          class="shrink-0 rounded-full bg-purple-300/25 px-2 py-0.5 text-[10px] font-semibold text-purple-100"
+          class="cozy-badge shrink-0 rounded-full bg-purple-300/25 px-2 py-0.5 text-[10px] font-semibold text-purple-100"
         >
           Pasang
         </span>
@@ -179,7 +179,7 @@ function handleSelectCozyTheme(id: CozyThemeId) {
                 ? 'border-[#00f5d4]/80 bg-gradient-to-r from-[#090514]/85 via-[#00f5d4]/15 to-[#ff2a85]/20 shadow-[0_0_14px_rgba(0,245,212,0.28)]'
                 : themeItem.id === 'astral-palace'
                   ? 'border-amber-300/80 bg-gradient-to-r from-indigo-500/25 via-emerald-400/15 to-amber-300/20 shadow-[0_0_12px_rgba(253,224,71,0.2)]'
-                  : 'border-pink-300/80 bg-pink-300/20'
+                  : 'cozy-habit-done border-pink-300/80 bg-pink-300/20'
               : themeItem.id === 'neon-night-city' && !isCozyThemeOwned(themeItem.id)
                 ? 'border-[#00f5d4]/30 bg-gradient-to-r from-[#090514]/75 via-[#170b2e]/70 to-[#2b0c26]/60'
                 : themeItem.id === 'astral-palace' && !isCozyThemeOwned(themeItem.id)
@@ -224,7 +224,7 @@ function handleSelectCozyTheme(id: CozyThemeId) {
             <button
               v-else-if="isCozyThemeOwned(themeItem.id)"
               type="button"
-              class="btn-bouncy shrink-0 cursor-pointer rounded-full bg-purple-300/25 px-2.5 py-0.5 text-[10px] font-semibold text-purple-100 hover:bg-purple-300/40"
+              class="cozy-pill-btn btn-bouncy shrink-0 cursor-pointer rounded-full border bg-purple-300/25 px-2.5 py-0.5 text-[10px] font-semibold text-purple-100"
               @click="handleSelectCozyTheme(themeItem.id)"
             >
               Pakai

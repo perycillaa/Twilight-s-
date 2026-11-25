@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
-import { type ThemeName, useTwilightStorage } from '~/composables/useTwilightStorage'
+import { type CozyThemeId, type ThemeName, useTwilightStorage } from '~/composables/useTwilightStorage'
 
-const { theme, isStarCursorEnabled, graphicsConfig } = useTwilightStorage()
+const { theme, activeCozyTheme, isStarCursorEnabled, graphicsConfig } = useTwilightStorage()
 
 // Deteksi layar sentuh / HP agar kursor kustom otomatis nonaktif dan tidak mengganggu
 const isTouchDevice = ref<boolean>(false)
@@ -72,7 +72,79 @@ const themeCursorPalette: Record<
   },
 }
 
-const activePalette = computed(() => themeCursorPalette[theme.value] ?? themeCursorPalette.twilight)
+// Warna bintang kursor & kilau otomatis mengikuti Tema Toko aktif (Cozy Theme) atau tema warna dasar
+const cozyCursorPalette: Partial<
+  Record<CozyThemeId, { fill: string; stroke: string; glow: string; trailColors: string[] }>
+> = {
+  'matcha-garden': {
+    fill: '#86efac',
+    stroke: '#f0fdf4',
+    glow: 'drop-shadow(0 0 8px rgba(74, 222, 128, 0.92)) drop-shadow(0 0 16px rgba(134, 239, 172, 0.6))',
+    trailColors: ['#86efac', '#4ade80', '#bbf7d0', '#fef08a'],
+  },
+  'autumn-cafe': {
+    fill: '#fbbf24',
+    stroke: '#fffbeb',
+    glow: 'drop-shadow(0 0 8px rgba(251, 191, 36, 0.92)) drop-shadow(0 0 16px rgba(251, 146, 60, 0.65))',
+    trailColors: ['#fbbf24', '#fde68a', '#fb923c', '#fed7aa'],
+  },
+  'biolum-ocean': {
+    fill: '#2dd4bf',
+    stroke: '#ecfeff',
+    glow: 'drop-shadow(0 0 8px rgba(0, 245, 212, 0.95)) drop-shadow(0 0 16px rgba(34, 211, 238, 0.7))',
+    trailColors: ['#00f5d4', '#2dd4bf', '#22d3ee', '#99f6e4'],
+  },
+  'honey-library': {
+    fill: '#fcd34d',
+    stroke: '#fffbeb',
+    glow: 'drop-shadow(0 0 8px rgba(252, 211, 77, 0.92)) drop-shadow(0 0 16px rgba(217, 119, 6, 0.65))',
+    trailColors: ['#fcd34d', '#fde68a', '#f59e0b', '#fef3c7'],
+  },
+  'pastel-cloudland': {
+    fill: '#93c5fd',
+    stroke: '#f8fafc',
+    glow: 'drop-shadow(0 0 8px rgba(147, 197, 253, 0.92)) drop-shadow(0 0 16px rgba(196, 181, 253, 0.65))',
+    trailColors: ['#93c5fd', '#bfdbfe', '#c4b5fd', '#e0f2fe'],
+  },
+  'winter-frost': {
+    fill: '#bae6fd',
+    stroke: '#ffffff',
+    glow: 'drop-shadow(0 0 8px rgba(186, 230, 253, 0.95)) drop-shadow(0 0 16px rgba(125, 211, 252, 0.7))',
+    trailColors: ['#e0f2fe', '#bae6fd', '#7dd3fc', '#ffffff'],
+  },
+  'neon-night-city': {
+    fill: '#00f5d4',
+    stroke: '#f0fdfa',
+    glow: 'drop-shadow(0 0 8px rgba(0, 245, 212, 0.95)) drop-shadow(0 0 16px rgba(255, 42, 133, 0.75))',
+    trailColors: ['#00f5d4', '#ff2a85', '#22d3ee', '#f472b6'],
+  },
+  'midnight-rain': {
+    fill: '#93c5fd',
+    stroke: '#eff6ff',
+    glow: 'drop-shadow(0 0 8px rgba(96, 165, 250, 0.92)) drop-shadow(0 0 16px rgba(253, 230, 138, 0.55))',
+    trailColors: ['#93c5fd', '#60a5fa', '#dbeafe', '#fde68a'],
+  },
+  'sakura-lantern': {
+    fill: '#f472b6',
+    stroke: '#fff1f2',
+    glow: 'drop-shadow(0 0 8px rgba(244, 114, 182, 0.92)) drop-shadow(0 0 16px rgba(253, 164, 175, 0.65))',
+    trailColors: ['#f472b6', '#fbcfe8', '#fda4af', '#fde68a'],
+  },
+  'astral-palace': {
+    fill: '#34d399',
+    stroke: '#ecfdf5',
+    glow: 'drop-shadow(0 0 8px rgba(52, 211, 153, 0.92)) drop-shadow(0 0 16px rgba(253, 224, 71, 0.65))',
+    trailColors: ['#34d399', '#6ee7b7', '#fde047', '#a7f3d0'],
+  },
+}
+
+const activePalette = computed(() => {
+  if (activeCozyTheme.value !== 'classic') {
+    const cozyPal = cozyCursorPalette[activeCozyTheme.value]
+    if (cozyPal) return cozyPal
+  }
+  return themeCursorPalette[theme.value] ?? themeCursorPalette.twilight
+})
 
 // Kursor kustom hanya aktif di desktop ketika tombol toggle menyala
 const isActive = computed<boolean>(() => isStarCursorEnabled.value && !isTouchDevice.value)

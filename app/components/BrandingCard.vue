@@ -113,7 +113,7 @@ onUnmounted(() => {
     <!-- Cahaya dekorasi lembut di atas kartu -->
     <div
       aria-hidden="true"
-      class="pointer-events-none absolute -top-12 left-1/2 h-32 w-56 -translate-x-1/2 rounded-full bg-pink-300/20 blur-2xl"
+      class="cozy-glow-orb pointer-events-none absolute -top-12 left-1/2 h-32 w-56 -translate-x-1/2 rounded-full bg-pink-300/20 blur-2xl"
     />
 
     <!-- 1. Judul Utama "Twilight's", Slogan & Daily Spark Quote -->
@@ -129,9 +129,9 @@ onUnmounted(() => {
       </p>
 
       <div class="mt-1.5 flex items-center justify-center gap-2 text-pink-200/75">
-        <span class="h-[1.5px] w-10 rounded-full bg-gradient-to-r from-transparent to-pink-300/70" />
-        <span class="text-xs">✦</span>
-        <span class="h-[1.5px] w-10 rounded-full bg-gradient-to-l from-transparent to-pink-300/70" />
+        <span class="cozy-divider-left h-[1.5px] w-10 rounded-full bg-gradient-to-r from-transparent to-pink-300/70" />
+        <span class="cozy-sparkle text-xs">✦</span>
+        <span class="cozy-divider-right h-[1.5px] w-10 rounded-full bg-gradient-to-l from-transparent to-pink-300/70" />
       </div>
 
       <!-- Daily Spark Quote (klik untuk shuffle) -->
@@ -158,7 +158,7 @@ onUnmounted(() => {
           class="btn-bouncy flex cursor-pointer items-center justify-center gap-1 rounded-xl border px-2.5 py-1.5 text-[10.5px] font-bold shadow-sm transition sm:col-span-7"
           :class="
             treatCoins >= SECRET_CARD_GACHA_COST
-              ? 'border-pink-300/60 bg-gradient-to-r from-pink-400/30 via-fuchsia-400/25 to-purple-400/30 text-pink-50 hover:from-pink-400/45 hover:to-purple-400/45'
+              ? 'cozy-pill-btn border-pink-300/60 bg-gradient-to-r from-pink-400/30 via-fuchsia-400/25 to-purple-400/30 text-pink-50'
               : 'border-white/15 bg-white/5 text-purple-200/70 hover:bg-white/10'
           "
           @click="openSecretCardGacha"
@@ -170,7 +170,7 @@ onUnmounted(() => {
         <button
           type="button"
           title="Buka Album Koleksi Kartu Rahasia Kucing"
-          class="btn-bouncy flex cursor-pointer items-center justify-center gap-1 rounded-xl border border-purple-200/35 bg-white/10 px-2 py-1.5 text-[10.5px] font-semibold text-purple-100 hover:bg-white/20 sm:col-span-5"
+          class="cozy-pill-btn btn-bouncy flex cursor-pointer items-center justify-center gap-1 rounded-xl border border-purple-200/35 bg-white/10 px-2 py-1.5 text-[10.5px] font-semibold text-purple-100 sm:col-span-5"
           @click="openSecretCardAlbum"
         >
           <span>📖</span>
@@ -180,7 +180,7 @@ onUnmounted(() => {
 
       <!-- WIDGET 1: Jam & Suasana Langit (Twilight Clock & Sky Pill) -->
       <div
-        class="mt-2.5 flex items-center justify-between gap-2 rounded-2xl border border-pink-200/25 bg-gradient-to-r from-white/10 via-pink-300/10 to-purple-300/10 px-3 py-2 text-left shadow-sm backdrop-blur-md"
+        class="cozy-sub-card mt-2.5 flex items-center justify-between gap-2 rounded-2xl border border-pink-200/25 bg-white/10 px-3 py-2 text-left shadow-sm backdrop-blur-md"
       >
         <div class="flex min-w-0 items-center gap-1.5">
           <span class="shrink-0 text-sm leading-none">{{ skyPhaseInfo.icon }}</span>
@@ -313,7 +313,7 @@ onUnmounted(() => {
       <button
         type="button"
         title="Buat & simpan gambar Kartu Progres Belajar Hari Ini (.png)"
-        class="btn-bouncy flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-pink-200/40 bg-gradient-to-r from-pink-400/20 via-purple-400/20 to-indigo-400/20 px-3 py-1.5 text-[11px] font-bold text-pink-100 shadow-sm transition hover:border-pink-200/70 hover:from-pink-400/35 hover:to-indigo-400/35"
+        class="cozy-pill-btn btn-bouncy flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-pink-200/40 bg-gradient-to-r from-pink-400/20 via-purple-400/20 to-indigo-400/20 px-3 py-1.5 text-[11px] font-bold text-pink-100 shadow-sm transition"
         @click="isStudyCardModalOpen = true"
       >
         <span>📸</span>
@@ -321,7 +321,7 @@ onUnmounted(() => {
       </button>
 
       <!-- KARTU BERTAB MINI: Catatan & Mood | Aksesori Kucing -->
-      <div class="w-full rounded-2xl border border-pink-200/25 bg-white/10 p-3 shadow-inner">
+      <div class="cozy-sub-card w-full rounded-2xl border border-pink-200/25 bg-white/10 p-3 shadow-inner">
         <!-- Navigasi 2 Tab Ringkas -->
         <div class="mb-3 grid grid-cols-2 gap-1 rounded-xl bg-black/25 p-1 text-[11px]">
           <button

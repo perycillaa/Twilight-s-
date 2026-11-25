@@ -93,7 +93,7 @@ const weeklyMotivation = computed<string>(() => {
       </div>
 
       <span
-        class="rounded-full border border-pink-300/30 bg-pink-300/20 px-3 py-1 text-xs font-bold text-pink-100"
+        class="cozy-badge rounded-full border border-pink-300/30 bg-pink-300/20 px-3 py-1 text-xs font-bold text-pink-100"
       >
         Hari ini: {{ todayCompletionRate }}%
       </span>
@@ -147,7 +147,8 @@ const weeklyMotivation = computed<string>(() => {
               <!-- 2. Tooltip Detail Melayang Saat Hover Batang / Emoji -->
               <div
                 role="tooltip"
-                class="pointer-events-none absolute -top-8 z-30 whitespace-nowrap rounded-xl border border-pink-200/40 bg-[#1e1b4b]/95 px-2.5 py-1 text-[10px] font-bold text-pink-100 opacity-0 shadow-lg transition-all duration-200 group-hover:-top-9 group-hover:opacity-100"
+                class="cozy-sub-card pointer-events-none absolute -top-8 z-30 whitespace-nowrap rounded-xl border border-pink-200/40 px-2.5 py-1 text-[10px] font-bold text-pink-100 opacity-0 shadow-lg transition-all duration-200 group-hover:-top-9 group-hover:opacity-100"
+                style="background-color: var(--twilight-bg-base, #1e1b4b)"
                 :class="
                   index === 0
                     ? 'left-0'
@@ -234,7 +235,7 @@ const weeklyMotivation = computed<string>(() => {
 
       <button
         type="button"
-        class="btn-bouncy cursor-pointer rounded-full border border-pink-200/40 bg-pink-300/20 px-3 py-1 text-xs font-bold text-pink-100 shadow-sm hover:bg-pink-300/35"
+        class="cozy-pill-btn btn-bouncy cursor-pointer rounded-full border border-pink-200/40 bg-pink-300/20 px-3 py-1 text-xs font-bold text-pink-100 shadow-sm"
         @click="isReceiptModalOpen = true"
       >
         🧾 Struk Hari Ini

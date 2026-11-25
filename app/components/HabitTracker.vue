@@ -579,10 +579,10 @@ onUnmounted(() => {
               role="img"
               aria-label="Maskot buku catatan bertelinga kucing interaktif"
             >
-              <path d="M16 18 L19 7 L27 15 Z" fill="#f9a8d4" />
-              <path d="M19 15 L20.5 10.5 L24.5 14.5 Z" fill="#fdf2f8" />
-              <path d="M48 18 L45 7 L37 15 Z" fill="#f9a8d4" />
-              <path d="M45 15 L43.5 10.5 L39.5 14.5 Z" fill="#fdf2f8" />
+              <path d="M16 18 L19 7 L27 15 Z" fill="var(--accent-notebook-cover, #f9a8d4)" />
+              <path d="M19 15 L20.5 10.5 L24.5 14.5 Z" fill="var(--accent-notebook-page, #fdf2f8)" />
+              <path d="M48 18 L45 7 L37 15 Z" fill="var(--accent-notebook-cover, #f9a8d4)" />
+              <path d="M45 15 L43.5 10.5 L39.5 14.5 Z" fill="var(--accent-notebook-page, #fdf2f8)" />
 
               <rect
                 x="13"
@@ -590,12 +590,12 @@ onUnmounted(() => {
                 width="38"
                 height="43"
                 rx="9"
-                fill="#f9a8d4"
-                stroke="#fdf2f8"
+                fill="var(--accent-notebook-cover, #f9a8d4)"
+                stroke="var(--accent-notebook-page, #fdf2f8)"
                 stroke-width="2"
               />
-              <rect x="13" y="14" width="7" height="43" rx="4" fill="#c084fc" />
-              <rect x="23" y="21" width="24" height="30" rx="5" fill="#fff7fb" />
+              <rect x="13" y="14" width="7" height="43" rx="4" fill="var(--accent-notebook-spine, #c084fc)" />
+              <rect x="23" y="21" width="24" height="30" rx="5" fill="var(--accent-notebook-page, #fff7fb)" />
 
               <!-- EKSPRESI MATA MASKOT BUKU KUCING -->
               <g v-if="notebookCatFace === 'click-star'">
@@ -609,13 +609,13 @@ onUnmounted(() => {
                 />
               </g>
               <g v-else-if="notebookCatFace === 'click-happy' || notebookCatFace === 'check-joy'">
-                <path d="M28.5 34 Q31 30.8 33.5 34" stroke="#3b215c" stroke-width="1.9" stroke-linecap="round" />
-                <path d="M36.5 34 Q39 30.8 41.5 34" stroke="#3b215c" stroke-width="1.9" stroke-linecap="round" />
+                <path d="M28.5 34 Q31 30.8 33.5 34" stroke="var(--accent-cassette-window, #3b215c)" stroke-width="1.9" stroke-linecap="round" />
+                <path d="M36.5 34 Q39 30.8 41.5 34" stroke="var(--accent-cassette-window, #3b215c)" stroke-width="1.9" stroke-linecap="round" />
               </g>
               <g v-else class="animate-cat-blink">
-                <circle cx="31" cy="33" r="1.9" fill="#3b215c" />
+                <circle cx="31" cy="33" r="1.9" fill="var(--accent-cassette-window, #3b215c)" />
                 <circle cx="30.4" cy="32.3" r="0.6" fill="#ffffff" />
-                <circle cx="39" cy="33" r="1.9" fill="#3b215c" />
+                <circle cx="39" cy="33" r="1.9" fill="var(--accent-cassette-window, #3b215c)" />
                 <circle cx="38.4" cy="32.3" r="0.6" fill="#ffffff" />
               </g>
 
@@ -624,7 +624,7 @@ onUnmounted(() => {
                 cy="36.5"
                 rx="2.4"
                 ry="1.4"
-                fill="#f9a8d4"
+                fill="var(--accent-notebook-cover, #f9a8d4)"
                 :opacity="notebookCatFace === 'idle' ? 0.75 : 1"
               />
               <ellipse
@@ -632,7 +632,7 @@ onUnmounted(() => {
                 cy="36.5"
                 rx="2.4"
                 ry="1.4"
-                fill="#f9a8d4"
+                fill="var(--accent-notebook-cover, #f9a8d4)"
                 :opacity="notebookCatFace === 'idle' ? 0.75 : 1"
               />
 
@@ -641,14 +641,14 @@ onUnmounted(() => {
                 cx="35"
                 cy="37.6"
                 r="1.9"
-                fill="#f472b6"
-                stroke="#3b215c"
+                fill="var(--accent-primary, #f472b6)"
+                stroke="var(--accent-cassette-window, #3b215c)"
                 stroke-width="1.2"
               />
               <path
                 v-else-if="notebookCatFace === 'click-happy'"
                 d="M32 36.8 Q33.5 39 35 36.7 Q36.5 39 38 36.8"
-                stroke="#3b215c"
+                stroke="var(--accent-cassette-window, #3b215c)"
                 stroke-width="1.6"
                 stroke-linecap="round"
                 stroke-linejoin="round"
@@ -656,13 +656,13 @@ onUnmounted(() => {
               <path
                 v-else
                 d="M32.5 36.5 Q35 39.2 37.5 36.5"
-                stroke="#3b215c"
+                stroke="var(--accent-cassette-window, #3b215c)"
                 stroke-width="1.6"
                 stroke-linecap="round"
               />
 
-              <line x1="27" y1="43" x2="43" y2="43" stroke="#d8b4fe" stroke-width="2" stroke-linecap="round" />
-              <line x1="27" y1="47" x2="38" y2="47" stroke="#fbcfe8" stroke-width="2" stroke-linecap="round" />
+              <line x1="27" y1="43" x2="43" y2="43" stroke="var(--accent-notebook-spine, #d8b4fe)" stroke-width="2" stroke-linecap="round" opacity="0.65" />
+              <line x1="27" y1="47" x2="38" y2="47" stroke="var(--accent-notebook-cover, #fbcfe8)" stroke-width="2" stroke-linecap="round" opacity="0.85" />
             </svg>
           </div>
         </button>
@@ -733,7 +733,7 @@ onUnmounted(() => {
           habit.type === 'once' && habit.completed
             ? 'scale-[0.98] border-emerald-300/45 bg-emerald-400/15 opacity-75'
             : habit.completed
-              ? 'border-pink-300/30 bg-pink-300/15'
+              ? 'cozy-habit-done border-pink-300/30 bg-pink-300/15'
               : 'border-white/15 bg-white/10 hover:border-white/30 hover:bg-white/15'
         "
       >
@@ -764,15 +764,15 @@ onUnmounted(() => {
               <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none">
                 <path
                   d="M12 20.5C12 20.5 4 15.2 4 9.5C4 6.8 6.1 4.8 8.6 4.8C10.1 4.8 11.4 5.6 12 6.8C12.6 5.6 13.9 4.8 15.4 4.8C17.9 4.8 20 6.8 20 9.5C20 15.2 12 20.5 12 20.5Z"
-                  :fill="habit.completed ? '#f9a8d4' : 'rgba(255,255,255,0.08)'"
-                  :stroke="habit.completed ? '#fbcfe8' : '#e9d5ff'"
+                  :fill="habit.completed ? 'var(--accent-check-fill, #f9a8d4)' : 'rgba(255,255,255,0.08)'"
+                  :stroke="habit.completed ? 'var(--accent-check-stroke, #fbcfe8)' : 'var(--accent-check-idle-stroke, #e9d5ff)'"
                   stroke-width="1.8"
                   stroke-linejoin="round"
                 />
                 <path
                   v-if="habit.completed"
                   d="M8.8 11.8L11 14L15.3 9.7"
-                  stroke="#311042"
+                  stroke="var(--accent-check-mark, #311042)"
                   stroke-width="2.2"
                   stroke-linecap="round"
                   stroke-linejoin="round"
@@ -840,7 +840,7 @@ onUnmounted(() => {
             :class="
               habit.type === 'once'
                 ? 'border-amber-200/45 bg-amber-300/15 text-amber-100 hover:bg-amber-300/30'
-                : 'border-pink-200/35 bg-pink-300/15 text-pink-100 hover:bg-pink-300/30'
+                : 'cozy-pill-btn border-pink-200/35 bg-pink-300/15 text-pink-100'
             "
             @click.stop="toggleHabitType(habit.id)"
           >
@@ -910,8 +910,8 @@ onUnmounted(() => {
             class="btn-bouncy shrink-0 cursor-pointer rounded-full border px-2 py-0.5 text-[10px] font-bold whitespace-nowrap transition"
             :class="
               habit.alarmMode === 'repeat'
-                ? 'border-fuchsia-300/55 bg-fuchsia-400/20 text-fuchsia-100 hover:bg-fuchsia-400/35'
-                : 'border-purple-200/35 bg-purple-300/15 text-purple-100 hover:bg-purple-300/30'
+                ? 'cozy-badge border-fuchsia-300/55 bg-fuchsia-400/20 text-fuchsia-100'
+                : 'cozy-pill-btn border-purple-200/35 bg-purple-300/15 text-purple-100'
             "
             @click.stop="toggleHabitAlarmMode(habit.id)"
           >
@@ -1022,7 +1022,7 @@ onUnmounted(() => {
               class="cursor-pointer rounded-full px-2.5 py-1 font-bold transition"
               :class="
                 newAlarmMode === 'once'
-                  ? 'bg-[#c4b5fd] text-[#1e1b4b] shadow-sm'
+                  ? 'cozy-toggle-secondary bg-[#c4b5fd] text-[#1e1b4b] shadow-sm'
                   : 'text-purple-100/75 hover:bg-white/10 hover:text-white'
               "
               @click="newAlarmMode = 'once'"
@@ -1037,7 +1037,7 @@ onUnmounted(() => {
               class="cursor-pointer rounded-full px-2.5 py-1 font-bold transition"
               :class="
                 newAlarmMode === 'repeat'
-                  ? 'bg-gradient-to-r from-[#f9a8d4] to-[#e879f9] text-[#311042] shadow-sm'
+                  ? 'cozy-active-btn bg-gradient-to-r from-[#f9a8d4] to-[#e879f9] text-[#311042] shadow-sm'
                   : 'text-purple-100/75 hover:bg-white/10 hover:text-white'
               "
               @click="newAlarmMode = 'repeat'"

@@ -30,7 +30,7 @@ function clearNotes() {
         </span>
         <span
           v-if="selectedMoodInfo"
-          class="rounded-full bg-pink-300/20 px-2 py-0.5 text-[10px] font-bold text-pink-100"
+          class="cozy-badge rounded-full bg-pink-300/20 px-2 py-0.5 text-[10px] font-bold text-pink-100"
         >
           {{ selectedMoodInfo.emoji }} {{ selectedMoodInfo.label }}
         </span>
@@ -49,7 +49,7 @@ function clearNotes() {
           class="btn-bouncy flex cursor-pointer flex-col items-center justify-center rounded-xl border py-1 transition"
           :class="
             dailyMood === mood.id
-              ? 'border-pink-300/80 bg-pink-300/25 shadow-sm shadow-pink-500/20'
+              ? 'cozy-pill-btn border-pink-300/80 bg-pink-300/25 shadow-sm'
               : 'border-white/15 bg-black/20 opacity-80 hover:bg-white/15 hover:opacity-100'
           "
           @click="setDailyMood(mood.id)"
@@ -72,7 +72,7 @@ function clearNotes() {
         <button
           type="button"
           title="Buka buku catatan penuh (Kawaii Notebook)"
-          class="cursor-pointer rounded-full border border-pink-200/35 bg-pink-300/20 px-2 py-0.5 text-[10px] font-bold text-pink-100 transition hover:bg-pink-300/35"
+          class="cozy-pill-btn cursor-pointer rounded-full border border-pink-200/35 bg-pink-300/20 px-2 py-0.5 text-[10px] font-bold text-pink-100 transition"
           @click="isNotebookOpen = true"
         >
           📔 Notebook ↗
