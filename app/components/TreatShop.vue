@@ -126,7 +126,7 @@ function handleSelectCozyTheme(id: CozyThemeId) {
 
         <span
           v-if="equippedAccessory === item.id"
-          class="shrink-0 rounded-full bg-[#f9a8d4] px-2 py-0.5 text-[10px] font-bold text-[#311042]"
+          class="cozy-active-btn shrink-0 rounded-full bg-[#f9a8d4] px-2 py-0.5 text-[10px] font-bold text-[#311042]"
         >
           Dipakai
         </span>
@@ -209,7 +209,7 @@ function handleSelectCozyTheme(id: CozyThemeId) {
             <!-- Tombol Aksi: Dipakai / Pakai / Beli (X 🐟) / Terkunci Streak / Koleksi 100% Toko -->
             <span
               v-if="activeCozyTheme === themeItem.id"
-              class="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold"
+              class="cozy-active-btn shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold"
               :class="
                 themeItem.id === 'neon-night-city'
                   ? 'bg-gradient-to-r from-[#00f5d4] to-[#ff2a85] text-[#090514]'

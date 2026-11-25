@@ -44,7 +44,7 @@ export const GRAPHICS_QUALITY_OPTIONS: Record<GraphicsQuality, GraphicsQualityMe
     id: 'high',
     label: 'Tinggi',
     icon: '✨',
-    maxDpr: 4,
+    maxDpr: 2,
     targetFps: 60,
     particleScale: 1,
     enableCursorDust: true,
@@ -776,9 +776,11 @@ const LEGACY_STORAGE_KEYS = {
 interface GameDailyClaimRecord {
   date: string
   count: number
+  playCount?: number
 }
 
 export const MAX_GAME_DAILY_REWARDS = 3
+export const MAX_GAME_DAILY_PLAYS = 5
 export const CAT_AFFINITY_MAX_LEVEL = 20
 export const CAT_AFFINITY_MILESTONE_LV10 = 10
 export const CAT_AFFINITY_XP_PER_LEVEL = 10
@@ -1058,6 +1060,7 @@ export function useTwilightStorage() {
   const catKeyboardInteractSignal = useState<number>('twilights-cat-kb-signal', () => 0)
   const gameHighScore = useState<number>('twilights-game-highscore', () => 0)
   const gameDailyClaimCount = useState<number>('twilights-game-daily-claims', () => 0)
+  const gameDailyPlayCount = useState<number>('twilights-game-daily-plays', () => 0)
   const gameDailyClaimDate = useState<string>('twilights-game-daily-date', () => '')
   const notebooks = useState<NotebookEntry[]>('twilights-notebooks-list', () =>
     DEFAULT_NOTEBOOKS.map(n => ({ ...n })),
@@ -1244,6 +1247,7 @@ export function useTwilightStorage() {
       const claimRecord: GameDailyClaimRecord = {
         date: gameDailyClaimDate.value || todayStr,
         count: gameDailyClaimCount.value,
+        playCount: gameDailyPlayCount.value,
       }
       localStorage.setItem(STORAGE_KEYS.GAME_DAILY_CLAIMS, JSON.stringify(claimRecord))
 
@@ -1723,25 +1727,48 @@ export function useTwilightStorage() {
     persistAll()
   }
 
+  /** Pastikan kuota bermain & hadiah harian Break Game selalu sinkron dengan tanggal lokal perangkat (00:00) */
+  function syncMiniGameDailyQuota(): string {
+    const todayStr = getLocalTodayDate()
+    if (gameDailyClaimDate.value !== todayStr) {
+      gameDailyClaimDate.value = todayStr
+      gameDailyClaimCount.value = 0
+      gameDailyPlayCount.value = 0
+      persistAll()
+    }
+    return todayStr
+  }
+
+  /**
+   * Konsumsi 1 kuota bermain harian Break Game (maksimal 5x/hari).
+   * Mengembalikan false jika kuota 5/5 hari ini sudah penuh.
+   */
+  function consumeMiniGamePlay(): boolean {
+    syncMiniGameDailyQuota()
+    if (gameDailyPlayCount.value >= MAX_GAME_DAILY_PLAYS) {
+      return false
+    }
+    gameDailyPlayCount.value = Math.min(MAX_GAME_DAILY_PLAYS, gameDailyPlayCount.value + 1)
+    persistAll()
+    return true
+  }
+
   /**
    * Catat hasil ronde Kawaii Mini-Game ("Starlight & Fish Catcher"):
+   * - Gunakan tanggal lokal perangkat (`getLocalTodayDate()`, bukan UTC)
    * - Simpan rekor tertinggi ke localStorage (`twilights_game_highscore`)
-   * - Jika skor >= 100 dan klaim hari ini < 3: beri hadiah +2 Ikan Kering (🐟)
+   * - Validasi ketat `dailyRewardCount < 3` sebelum menambahkan hadiah +2 Ikan Kering (🐟)
    */
   function recordMiniGameResult(score: number): {
     isNewRecord: boolean
     coinsAwarded: number
     claimsUsed: number
     maxClaims: number
+    playsUsed: number
+    maxPlays: number
   } {
     const cleanScore = Math.max(0, Math.round(score))
-    const todayStr = getTodayDateString()
-
-    // Reset otomatis kuota harian jika tanggal sudah berganti
-    if (gameDailyClaimDate.value !== todayStr) {
-      gameDailyClaimDate.value = todayStr
-      gameDailyClaimCount.value = 0
-    }
+    syncMiniGameDailyQuota()
 
     let isNewRecord = false
     if (cleanScore > gameHighScore.value) {
@@ -1753,7 +1780,7 @@ export function useTwilightStorage() {
     if (cleanScore >= 100 && gameDailyClaimCount.value < MAX_GAME_DAILY_REWARDS) {
       coinsAwarded = 2
       treatCoins.value += coinsAwarded
-      gameDailyClaimCount.value += 1
+      gameDailyClaimCount.value = Math.min(MAX_GAME_DAILY_REWARDS, gameDailyClaimCount.value + 1)
       playVictoryMelody()
       showMiniToast(
         `Hore! Skor ${cleanScore} di Break Game! Hadiah +2 🐟 (${gameDailyClaimCount.value}/${MAX_GAME_DAILY_REWARDS}) ✨`,
@@ -1768,6 +1795,8 @@ export function useTwilightStorage() {
       coinsAwarded,
       claimsUsed: gameDailyClaimCount.value,
       maxClaims: MAX_GAME_DAILY_REWARDS,
+      playsUsed: gameDailyPlayCount.value,
+      maxPlays: MAX_GAME_DAILY_PLAYS,
     }
   }
 
@@ -1908,15 +1937,20 @@ export function useTwilightStorage() {
     triggerMascotReaction('happy', themeGreeting[newTheme], 2800)
   }
 
-  /** Sakelar Mode Gelap (🌙) / Mode Normal (☀️) untuk seluruh tema warna & simpan otomatis */
+  /** Sakelar Mode Gelap (🌙) / Mode Normal (☀️) — bekerja mulus untuk tema warna header maupun tema toko seperti Matcha Garden */
   function toggleDarkTheme() {
     isDarkTheme.value = !isDarkTheme.value
-    if (activeCozyTheme.value !== 'classic') {
-      activeCozyTheme.value = 'classic'
-      applyCozyThemeToDocument('classic')
-    }
     applyThemeToDocument(theme.value, isDarkTheme.value)
     persistAll()
+
+    if (activeCozyTheme.value !== 'classic') {
+      const cozyMeta = COZY_THEMES.find(t => t.id === activeCozyTheme.value)
+      const cozyName = cozyMeta?.name ?? 'Tema Toko'
+      showMiniToast(
+        `${isDarkTheme.value ? '🌙' : '☀️'} ${cozyName} (${isDarkTheme.value ? 'Mode Gelap' : 'Mode Normal'})`,
+      )
+      return
+    }
 
     const darkLabel: Record<ThemeName, string> = {
       twilight: isDarkTheme.value ? 'Deep Plum (Gelap)' : 'Twilight Normal',
@@ -2070,6 +2104,11 @@ export function useTwilightStorage() {
         twilights_alarms: alarms.value,
         selectedAlarmSound: selectedAlarmSound.value,
         twilights_game_highscore: gameHighScore.value,
+        twilights_game_daily_claims: {
+          date: gameDailyClaimDate.value || getLocalTodayDate(),
+          count: gameDailyClaimCount.value,
+          playCount: gameDailyPlayCount.value,
+        },
         isStarCursorEnabled: isStarCursorEnabled.value,
         twilights_graphics_quality: graphicsQuality.value,
         twilights_vibration_enabled: isVibrationEnabled.value,
@@ -2277,6 +2316,27 @@ export function useTwilightStorage() {
       const importedHighScore = d.twilights_game_highscore ?? d.gameHighScore
       if (typeof importedHighScore === 'number') {
         gameHighScore.value = Math.max(0, Math.round(importedHighScore))
+      }
+      const importedGameDaily = (d.twilights_game_daily_claims ?? d.gameDailyClaims) as
+        | Partial<GameDailyClaimRecord>
+        | undefined
+      if (importedGameDaily && typeof importedGameDaily === 'object') {
+        const localToday = getLocalTodayDate()
+        if (importedGameDaily.date === localToday) {
+          gameDailyClaimDate.value = localToday
+          gameDailyClaimCount.value = Math.max(
+            0,
+            Math.min(MAX_GAME_DAILY_REWARDS, Math.floor(Number(importedGameDaily.count) || 0)),
+          )
+          gameDailyPlayCount.value = Math.max(
+            0,
+            Math.min(MAX_GAME_DAILY_PLAYS, Math.floor(Number(importedGameDaily.playCount) || 0)),
+          )
+        } else {
+          gameDailyClaimDate.value = localToday
+          gameDailyClaimCount.value = 0
+          gameDailyPlayCount.value = 0
+        }
       }
       // Pulihkan durasi kustom Timer Utama (Fokus / Istirahat Singkat / Istirahat Panjang)
       const importedTimerDurations =
@@ -2979,15 +3039,21 @@ export function useTwilightStorage() {
           gameDailyClaimDate.value = todayStr
           gameDailyClaimCount.value = Math.max(
             0,
-            Math.min(MAX_GAME_DAILY_REWARDS, Number(parsedClaims.count) || 0),
+            Math.min(MAX_GAME_DAILY_REWARDS, Math.floor(Number(parsedClaims.count) || 0)),
+          )
+          gameDailyPlayCount.value = Math.max(
+            0,
+            Math.min(MAX_GAME_DAILY_PLAYS, Math.floor(Number(parsedClaims.playCount) || 0)),
           )
         } else {
           gameDailyClaimDate.value = todayStr
           gameDailyClaimCount.value = 0
+          gameDailyPlayCount.value = 0
         }
       } else {
         gameDailyClaimDate.value = todayStr
         gameDailyClaimCount.value = 0
+        gameDailyPlayCount.value = 0
       }
 
       // Cek pergantian hari lokal (YYYY-MM-DD):
@@ -3729,6 +3795,8 @@ export function useTwilightStorage() {
     catKeyboardInteractSignal,
     gameHighScore,
     gameDailyClaimCount,
+    gameDailyPlayCount,
+    gameDailyClaimDate,
     notebooks,
     alarms,
     selectedAlarmSound,
@@ -3791,6 +3859,8 @@ export function useTwilightStorage() {
     addClockAlarm,
     removeAlarm,
     setAlarmSound,
+    syncMiniGameDailyQuota,
+    consumeMiniGamePlay,
     recordMiniGameResult,
     triggerPomodoroShortcutToggle,
     triggerPomodoroReset,

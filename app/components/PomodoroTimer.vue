@@ -637,7 +637,7 @@ onUnmounted(() => {
         <div class="flex flex-wrap items-center justify-center gap-1.5">
           <button
             type="submit"
-            class="btn-bouncy cursor-pointer rounded-full bg-gradient-to-r from-[#f9a8d4] to-[#c4b5fd] px-3.5 py-1.5 text-xs font-bold text-[#1e1b4b] shadow-md shadow-pink-500/20"
+            class="cozy-active-btn btn-bouncy cursor-pointer rounded-full bg-gradient-to-r from-[#f9a8d4] to-[#c4b5fd] px-3.5 py-1.5 text-xs font-bold text-[#1e1b4b] shadow-md shadow-pink-500/20"
           >
             ✓ Terapkan
           </button>

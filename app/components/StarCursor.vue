@@ -11,9 +11,26 @@ const isHoveringClickable = ref<boolean>(false)
 const isHoveringPetCat = ref<boolean>(false)
 const isPressed = ref<boolean>(false)
 
-// Koordinat kursor mouse secara real-time
-const cursorX = ref<number>(-100)
-const cursorY = ref<number>(-100)
+// Koordinat kursor mouse (diperbarui langsung ke DOM via RAF agar nol re-render Vue per gerakan mouse!)
+const cursorElRef = ref<HTMLElement | null>(null)
+let latestMouseX = -100
+let latestMouseY = -100
+let cursorRafId: number | null = null
+let lastHoverTarget: EventTarget | null = null
+
+function flushCursorTransform() {
+  cursorRafId = null
+  const el = cursorElRef.value
+  if (!el) return
+  const scale = isPressed.value ? 0.86 : isHoveringClickable.value ? 1.28 : 1
+  el.style.transform = `translate3d(${latestMouseX - 14}px, ${latestMouseY - 14}px, 0) scale(${scale})`
+}
+
+function scheduleCursorTransform() {
+  if (cursorRafId === null) {
+    cursorRafId = requestAnimationFrame(flushCursorTransform)
+  }
+}
 
 // Daftar partikel kilau jejak kursor (Sparkle Trail)
 interface TrailParticle {
@@ -85,25 +102,30 @@ watch(isActive, syncDocumentCursorClass)
 function handleMouseMove(event: MouseEvent) {
   if (!isActive.value) return
 
-  cursorX.value = event.clientX
-  cursorY.value = event.clientY
-  isVisible.value = true
+  latestMouseX = event.clientX
+  latestMouseY = event.clientY
+  if (!isVisible.value) isVisible.value = true
 
-  // Cek apakah kursor sedang berada di atas kucing yang mendukung kursor tangan elus (headpat)
-  const target = event.target as HTMLElement | null
-  isHoveringPetCat.value = Boolean(target?.closest('[data-pet-headpat]'))
-  isHoveringClickable.value = Boolean(
-    target?.closest(
-      'a, button, input, textarea, select, label, [role="button"], [role="checkbox"], [data-clickable]',
-    ),
-  )
+  // Cache target agar tidak memanggil DOM .closest() ratusan kali/detik pada elemen yang sama
+  if (event.target !== lastHoverTarget) {
+    lastHoverTarget = event.target
+    const target = event.target as HTMLElement | null
+    isHoveringPetCat.value = Boolean(target?.closest('[data-pet-headpat]'))
+    isHoveringClickable.value = Boolean(
+      target?.closest(
+        'a, button, input, textarea, select, label, [role="button"], [role="checkbox"], [data-clickable]',
+      ),
+    )
+  }
+
+  scheduleCursorTransform()
 
   // Jejak debu bintang kursor hanya aktif di kualitas Grafik Tinggi (mati di Ringan & Sedang)
-  if (!graphicsConfig.value.enableCursorDust) return
+  if (!graphicsConfig.value.enableCursorDust || document.hidden) return
   const now = performance.now()
   const dist = Math.hypot(event.clientX - lastTrailX, event.clientY - lastTrailY)
 
-  if (now - lastTrailTime > 36 && dist > 12) {
+  if (now - lastTrailTime > 48 && dist > 14) {
     lastTrailTime = now
     lastTrailX = event.clientX
     lastTrailY = event.clientY
@@ -121,26 +143,36 @@ function handleMouseMove(event: MouseEvent) {
       color,
     }
 
-    // Simpan maksimal 16 partikel sekaligus supaya hemat memori
-    trails.value = [...trails.value.slice(-15), newParticle]
+    // Simpan maksimal 10 partikel sekaligus supaya super ringan
+    trails.value = [...trails.value.slice(-9), newParticle]
 
     setTimeout(() => {
       trails.value = trails.value.filter(p => p.id !== id)
-    }, 660)
+    }, 640)
   }
 }
 
 function handleMouseDown() {
   if (!isActive.value) return
   isPressed.value = true
+  scheduleCursorTransform()
 }
 
 function handleMouseUp() {
   isPressed.value = false
+  scheduleCursorTransform()
 }
 
 function handleMouseLeave() {
   isVisible.value = false
+  lastHoverTarget = null
+  trails.value = []
+}
+
+function handleWindowBlur() {
+  isVisible.value = false
+  lastHoverTarget = null
+  trails.value = []
 }
 
 onMounted(() => {
@@ -154,15 +186,18 @@ onMounted(() => {
   window.addEventListener('mousemove', handleMouseMove, { passive: true })
   window.addEventListener('mousedown', handleMouseDown, { passive: true })
   window.addEventListener('mouseup', handleMouseUp, { passive: true })
+  window.addEventListener('blur', handleWindowBlur)
   document.addEventListener('mouseleave', handleMouseLeave)
 })
 
 onUnmounted(() => {
+  if (cursorRafId !== null) cancelAnimationFrame(cursorRafId)
   if (import.meta.client) {
     document.documentElement.classList.remove('star-cursor-active')
     window.removeEventListener('mousemove', handleMouseMove)
     window.removeEventListener('mousedown', handleMouseDown)
     window.removeEventListener('mouseup', handleMouseUp)
+    window.removeEventListener('blur', handleWindowBlur)
     document.removeEventListener('mouseleave', handleMouseLeave)
   }
 })
@@ -195,15 +230,12 @@ onUnmounted(() => {
       />
     </svg>
 
-    <!-- 2. Ikon Utama Kursor Bintang Pastel Bercahaya (sembunyi sementara saat kursor tangan headpat aktif) -->
+    <!-- 2. Ikon Utama Kursor Bintang Pastel Bercahaya (posisi diupdate langsung via RAF tanpa Vue re-render) -->
     <div
+      ref="cursorElRef"
       v-show="isVisible && !isHoveringPetCat"
-      class="pointer-events-none fixed left-0 top-0 transition-transform duration-75 ease-out"
-      :style="{
-        transform: `translate3d(${cursorX - 14}px, ${cursorY - 14}px, 0) scale(${
-          isPressed ? 0.86 : isHoveringClickable ? 1.28 : 1
-        })`,
-      }"
+      class="pointer-events-none fixed left-0 top-0"
+      style="transform: translate3d(-100px, -100px, 0)"
     >
       <svg
         class="pointer-events-none h-7 w-7"

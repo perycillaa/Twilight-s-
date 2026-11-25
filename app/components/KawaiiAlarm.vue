@@ -121,6 +121,12 @@ function snoozeRingingAlarm() {
  * meskipun tab browser sempat tidak aktif / tidur di latar belakang.
  */
 function tickAlarmChecker() {
+  // Hemat CPU: saat tidak ada alarm aktif dan modal alarm tertutup, lewati update state reaktif tiap detik
+  if (alarms.value.length === 0 && !isAlarmOpen.value) {
+    if (activeAlarmBadge.value) activeAlarmBadge.value = ''
+    return
+  }
+
   const now = Date.now()
   nowTimestamp.value = now
 

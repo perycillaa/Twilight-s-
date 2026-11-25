@@ -232,8 +232,8 @@ onUnmounted(() => {
             class="h-full rounded-full transition-all duration-500"
             :class="
               isMaxAffinity
-                ? 'bg-gradient-to-r from-[#fde68a] via-[#f9a8d4] to-[#c084fc] shadow-[0_0_12px_rgba(249,168,212,0.85)]'
-                : 'ocean-progress-fill bg-gradient-to-r from-[#f9a8d4] via-[#e879f9] to-[#c084fc]'
+                ? 'cozy-progress-fill bg-gradient-to-r from-[#fde68a] via-[#f9a8d4] to-[#c084fc] shadow-[0_0_12px_rgba(249,168,212,0.85)]'
+                : 'cozy-progress-fill ocean-progress-fill bg-gradient-to-r from-[#f9a8d4] via-[#e879f9] to-[#c084fc]'
             "
             :style="{ width: `${affinityProgressPercent}%` }"
           />

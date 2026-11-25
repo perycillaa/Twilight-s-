@@ -358,7 +358,27 @@ function handleGlobalShortcut(event: KeyboardEvent) {
   }
 }
 
+let resumeAnimRafId: number | null = null
+
+function syncTabVisibilityPause() {
+  if (!import.meta.client) return
+  if (document.hidden) {
+    if (resumeAnimRafId !== null) {
+      cancelAnimationFrame(resumeAnimRafId)
+      resumeAnimRafId = null
+    }
+    document.documentElement.classList.add('app-tab-hidden')
+  } else {
+    // Tunggu 1 frame saat kembali dari Alt-Tab agar browser merender jendela lebih dulu tanpa freeze/stutter
+    resumeAnimRafId = requestAnimationFrame(() => {
+      resumeAnimRafId = null
+      document.documentElement.classList.remove('app-tab-hidden')
+    })
+  }
+}
+
 function handleBackgroundResumeGesture() {
+  syncTabVisibilityPause()
   resumeKeepAliveIfNeeded()
 }
 
@@ -390,7 +410,9 @@ onMounted(() => {
 
 onUnmounted(() => {
   if (clockTimer) clearInterval(clockTimer)
+  if (resumeAnimRafId !== null) cancelAnimationFrame(resumeAnimRafId)
   if (import.meta.client) {
+    document.documentElement.classList.remove('app-tab-hidden')
     window.removeEventListener('resize', updateDeviceDetection)
     coarsePointerMql?.removeEventListener?.('change', updateDeviceDetection)
     window.removeEventListener('keydown', handleGlobalShortcut)

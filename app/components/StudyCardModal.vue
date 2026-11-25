@@ -118,24 +118,28 @@ function getCardPalette(cozy: CozyThemeId, base: ThemeName): CardThemePalette {
   }
   if (cozy === 'matcha-garden') {
     return {
-      bgStops: ['#1b2e25', '#233b2f', '#2d4739'],
-      accent: '#86efac',
+      bgStops: isDarkTheme.value
+        ? ['#0d1712', '#111e18', '#15241d']
+        : ['#16261e', '#1d3228', '#253d31'],
+      accent: '#4ade80',
       accentSoft: '#bbf7d0',
-      cardFill: 'rgba(236, 253, 245, 0.09)',
-      cardStroke: 'rgba(134, 239, 172, 0.36)',
-      titleColor: '#dcfce7',
-      subColor: '#bbf7d0',
+      cardFill: isDarkTheme.value ? 'rgba(15, 29, 22, 0.92)' : 'rgba(28, 48, 38, 0.88)',
+      cardStroke: 'rgba(167, 243, 208, 0.34)',
+      titleColor: '#bbf7d0',
+      subColor: '#a7f3d0',
     }
   }
   if (cozy === 'biolum-ocean') {
     return {
-      bgStops: ['#091e2c', '#0d2b3b', '#11384a'],
-      accent: '#22d3ee',
-      accentSoft: '#67e8f9',
-      cardFill: 'rgba(207, 250, 254, 0.09)',
-      cardStroke: 'rgba(34, 211, 238, 0.4)',
-      titleColor: '#cffafe',
-      subColor: '#a5f3fc',
+      bgStops: isDarkTheme.value
+        ? ['#01090d', '#03171f', '#062630']
+        : ['#020f14', '#062833', '#0a3d4c'],
+      accent: '#2dd4bf',
+      accentSoft: '#38bdf8',
+      cardFill: 'rgba(4, 29, 38, 0.86)',
+      cardStroke: 'rgba(45, 212, 191, 0.36)',
+      titleColor: '#5eead4',
+      subColor: '#99f6e4',
     }
   }
   if (cozy === 'honey-library') {
@@ -477,6 +481,26 @@ function drawThemeDecorations(
     }
     ctx.restore()
   } else if (cozy === 'matcha-garden') {
+    // Gelombang uap hangat tipis secangkir matcha di latar Kartu Progres PNG
+    ctx.save()
+    const steamColumns = [150, 340, 560, 760, 930]
+    for (let i = 0; i < steamColumns.length; i++) {
+      const sx = steamColumns[i]!
+      const steamGrad = ctx.createLinearGradient(sx, CARD_HEIGHT - 120, sx, 380)
+      steamGrad.addColorStop(0, 'rgba(236, 253, 245, 0)')
+      steamGrad.addColorStop(0.35, 'rgba(236, 253, 245, 0.1)')
+      steamGrad.addColorStop(0.7, 'rgba(209, 250, 229, 0.08)')
+      steamGrad.addColorStop(1, 'rgba(236, 253, 245, 0)')
+      ctx.strokeStyle = steamGrad
+      ctx.lineWidth = 22
+      ctx.lineCap = 'round'
+      ctx.beginPath()
+      ctx.moveTo(sx, CARD_HEIGHT - 120)
+      ctx.bezierCurveTo(sx - 38, CARD_HEIGHT - 360, sx + 42, 660, sx - 18, 380)
+      ctx.stroke()
+    }
+    ctx.restore()
+
     const teaLeaves = [
       { x: 110, y: 240, rot: -0.5, c: '#86efac' },
       { x: 945, y: 320, rot: 0.4, c: '#4ade80' },

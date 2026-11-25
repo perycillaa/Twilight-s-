@@ -22,6 +22,8 @@ const {
   isMasterAudioMuted,
   masterAudioVolume,
   equippedAccessory,
+  activeCozyTheme,
+  graphicsQuality,
   catKeyboardInteractSignal,
   triggerMascotReaction,
   addCatAffinityXp,
@@ -529,6 +531,56 @@ onUnmounted(() => {
                   : '♫'
           }}
         </span>
+
+        <!-- Uap Hangat Tipis Rumah Teh Matcha di sekitar kucing (khusus tema 🍵 Matcha Garden) -->
+        <svg
+          v-if="activeCozyTheme === 'matcha-garden' && graphicsQuality !== 'low'"
+          aria-hidden="true"
+          class="pointer-events-none absolute -bottom-1 -left-5 h-16 w-10 opacity-45"
+          viewBox="0 0 36 60"
+          fill="none"
+        >
+          <path
+            class="animate-steam-rise"
+            style="--steam-delay: 0.1s"
+            d="M12 52 Q6 38 14 26 Q20 15 12 6"
+            stroke="#ecfdf5"
+            stroke-width="2.4"
+            stroke-linecap="round"
+          />
+          <path
+            class="animate-steam-rise"
+            style="--steam-delay: 0.9s"
+            d="M24 54 Q29 40 22 28 Q17 18 24 8"
+            stroke="#bbf7d0"
+            stroke-width="2"
+            stroke-linecap="round"
+          />
+        </svg>
+        <svg
+          v-if="activeCozyTheme === 'matcha-garden' && graphicsQuality !== 'low'"
+          aria-hidden="true"
+          class="pointer-events-none absolute -bottom-1 -right-5 h-16 w-10 opacity-40"
+          viewBox="0 0 36 60"
+          fill="none"
+        >
+          <path
+            class="animate-steam-rise"
+            style="--steam-delay: 0.45s"
+            d="M14 52 Q20 38 12 26 Q7 15 15 6"
+            stroke="#ecfdf5"
+            stroke-width="2.2"
+            stroke-linecap="round"
+          />
+          <path
+            class="animate-steam-rise"
+            style="--steam-delay: 1.25s"
+            d="M25 54 Q20 40 26 28 Q31 18 23 8"
+            stroke="#a7f3d0"
+            stroke-width="1.8"
+            stroke-linecap="round"
+          />
+        </svg>
 
         <!-- SVG Kucing Kawaii Memakai Headphone dengan 5 Ekspresi Dinamis -->
         <svg

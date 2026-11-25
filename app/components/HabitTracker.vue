@@ -673,7 +673,7 @@ onUnmounted(() => {
     <div class="mt-3 flex items-center justify-between gap-2">
       <div class="h-2 flex-1 overflow-hidden rounded-full bg-white/15">
         <div
-          class="h-full rounded-full bg-gradient-to-r from-[#f9a8d4] to-[#c084fc] transition-all duration-500"
+          class="cozy-progress-fill ocean-progress-fill h-full rounded-full bg-gradient-to-r from-[#f9a8d4] to-[#c084fc] transition-all duration-500"
           :style="{ width: `${todayCompletionRate}%` }"
         />
       </div>
@@ -955,7 +955,7 @@ onUnmounted(() => {
               class="cursor-pointer rounded-full px-2.5 py-1 font-bold transition"
               :class="
                 newHabitType === 'daily'
-                  ? 'bg-[#f9a8d4] text-[#311042] shadow-sm'
+                  ? 'cozy-active-btn bg-[#f9a8d4] text-[#311042] shadow-sm'
                   : 'text-purple-100/75 hover:bg-white/10 hover:text-white'
               "
               @click="newHabitType = 'daily'"

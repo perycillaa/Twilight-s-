@@ -1276,7 +1276,7 @@ onUnmounted(() => {
           class="cursor-pointer rounded-full px-3 py-1 font-semibold transition"
           :class="
             activeTab === 'radio'
-              ? 'bg-[#7dd3fc] text-[#0c1e3a] shadow'
+              ? 'cozy-active-btn bg-[#7dd3fc] text-[#0c1e3a] shadow'
               : 'text-purple-100/80 hover:text-white'
           "
           @click="switchTab('radio')"
@@ -1288,7 +1288,7 @@ onUnmounted(() => {
           class="cursor-pointer rounded-full px-3 py-1 font-semibold transition"
           :class="
             activeTab === 'youtube'
-              ? 'bg-[#c4b5fd] text-[#1e1b4b] shadow'
+              ? 'cozy-active-btn bg-[#c4b5fd] text-[#1e1b4b] shadow'
               : 'text-purple-100/80 hover:text-white'
           "
           @click="switchTab('youtube')"
@@ -1393,7 +1393,7 @@ onUnmounted(() => {
         <button
           type="button"
           :aria-label="isRadioPlaying ? 'Jeda Radio' : 'Putar Radio'"
-          class="btn-bouncy flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-full bg-gradient-to-br from-[#f9a8d4] to-[#c084fc] text-[#1e1b4b] shadow-lg shadow-pink-500/25"
+          class="cozy-active-btn btn-bouncy flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-full bg-gradient-to-br from-[#f9a8d4] to-[#c084fc] text-[#1e1b4b] shadow-lg shadow-pink-500/25"
           @click="toggleRadioPlay"
         >
           <span
@@ -1527,7 +1527,7 @@ onUnmounted(() => {
         >
         <button
           type="submit"
-          class="btn-bouncy shrink-0 cursor-pointer rounded-full bg-[#c4b5fd] px-3.5 py-1.5 text-xs font-bold text-[#1e1b4b]"
+          class="cozy-active-btn btn-bouncy shrink-0 cursor-pointer rounded-full bg-[#c4b5fd] px-3.5 py-1.5 text-xs font-bold text-[#1e1b4b]"
         >
           Putar
         </button>

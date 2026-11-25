@@ -169,14 +169,16 @@ const weeklyMotivation = computed<string>(() => {
                   {{ getMoodEmoji(weeklyProgress[index] ?? 0) }}
                 </span>
 
-                <!-- Batang Vertikal Warna Pink Pastel & Ungu -->
+                <!-- Batang Vertikal (otomatis menyesuaikan palet Tema Toko + warna Krem Madu saat 100%) -->
                 <div
                   class="w-full max-w-[26px] rounded-t-full transition-all duration-500 ease-out"
                   :style="{ height: getBarHeightStyle(weeklyProgress[index] ?? 0) }"
                   :class="[
-                    index % 2 === 0
-                      ? 'bg-gradient-to-t from-[#f472b6] to-[#fbcfe8]'
-                      : 'bg-gradient-to-t from-[#8b5cf6] to-[#d8b4fe]',
+                    (weeklyProgress[index] ?? 0) >= 100
+                      ? 'cozy-chart-bar-full bg-gradient-to-t from-[#f472b6] to-[#fde68a]'
+                      : index % 2 === 0
+                        ? 'cozy-chart-bar-a bg-gradient-to-t from-[#f472b6] to-[#fbcfe8]'
+                        : 'cozy-chart-bar-b bg-gradient-to-t from-[#8b5cf6] to-[#d8b4fe]',
                     index === todayIndex
                       ? 'ring-2 ring-white/80 shadow-[0_0_14px_rgba(249,168,212,0.65)]'
                       : 'opacity-85 group-hover:opacity-100',
@@ -189,7 +191,7 @@ const weeklyMotivation = computed<string>(() => {
                 class="font-display mt-1.5 flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold transition"
                 :class="
                   index === todayIndex
-                    ? 'bg-[#f9a8d4] text-[#311042] shadow'
+                    ? 'cozy-active-btn bg-[#f9a8d4] text-[#311042] shadow'
                     : 'text-purple-200/85'
                 "
               >
