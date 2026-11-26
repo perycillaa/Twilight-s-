@@ -574,8 +574,8 @@ interface FullGoalStreakRecord {
   lastRewardClaimedDate?: string
 }
 
-// --- Tipe & Kolam 18 Kartu Gacha "💌 Pesan Rahasia Kucing" (2 🐟 / tarik) ---
-export type SecretCardCategoryId = 'encourage' | 'fact' | 'dad-joke'
+// --- Tipe & Kolam 36 Kartu Gacha "💌 Pesan Rahasia Kucing" (2 🐟 / tarik + Auto-Drop Bar Kasih Sayang) ---
+export type SecretCardCategoryId = 'encourage' | 'fact' | 'dad-joke' | 'flirt'
 
 export interface SecretCardCategoryMeta {
   id: SecretCardCategoryId
@@ -598,37 +598,47 @@ export interface SecretCardDrawResult {
   card: SecretCatCard
   isNew: boolean
   bonusAffinity: number
+  bonusFish?: number
+  source?: 'gacha' | 'affinity-drop'
   drawId: number
 }
 
 export const SECRET_CARD_GACHA_COST = 2
+export const AFFINITY_DROP_DUPLICATE_FISH_BONUS = 5
 
 export const SECRET_CARD_CATEGORIES: Record<SecretCardCategoryId, SecretCardCategoryMeta> = {
   encourage: {
     id: 'encourage',
-    label: 'Kutipan Penyemangat Spesial',
+    label: 'Penyemangat',
     shortLabel: 'Penyemangat',
     icon: '💖',
-    badgeClass: 'border-pink-300/60 bg-pink-400/25 text-pink-100',
+    badgeClass: 'cozy-badge',
   },
   fact: {
     id: 'fact',
-    label: 'Fakta Lucu Kucing',
+    label: 'Fakta Kucing',
     shortLabel: 'Fakta Kucing',
     icon: '🐾',
-    badgeClass: 'border-sky-300/60 bg-sky-400/25 text-sky-100',
+    badgeClass: 'cozy-badge',
   },
   'dad-joke': {
     id: 'dad-joke',
-    label: 'Jokes Bapak-Bapak Garing',
-    shortLabel: 'Jokes Garing',
+    label: 'Jokes Bapak Kucing',
+    shortLabel: 'Jokes Bapak Kucing',
     icon: '🤣',
-    badgeClass: 'border-amber-300/60 bg-amber-400/25 text-amber-100',
+    badgeClass: 'cozy-badge',
+  },
+  flirt: {
+    id: 'flirt',
+    label: 'Gombalan Kucing',
+    shortLabel: 'Gombalan Kucing',
+    icon: '💘',
+    badgeClass: 'cozy-badge',
   },
 }
 
 export const SECRET_CAT_CARDS: SecretCatCard[] = [
-  // Kategori 1: 💖 Kutipan Penyemangat Spesial (6 Kartu)
+  // Kategori 1: 💖 Penyemangat (9 Kartu: #01–#06 + #19–#21)
   {
     id: 'card-01',
     number: 1,
@@ -678,7 +688,7 @@ export const SECRET_CAT_CARDS: SecretCatCard[] = [
     text: 'Jangan bandingkan bab 1-mu dengan bab 20 orang lain. Fokus saja sama halamanmu sekarang!',
   },
 
-  // Kategori 2: 🐾 Fakta Lucu Kucing (6 Kartu)
+  // Kategori 2: 🐾 Fakta Kucing (9 Kartu: #07–#12 + #22–#24)
   {
     id: 'card-07',
     number: 7,
@@ -698,7 +708,7 @@ export const SECRET_CAT_CARDS: SecretCatCard[] = [
   {
     id: 'card-09',
     number: 9,
-    name: 'Sidik Hidung Unik',
+    name: 'Sidik Hidung Spesial',
     category: 'fact',
     emoji: '🐱',
     text: 'Fakta Kucing: Sidik hidung setiap kucing itu unik seperti sidik jari manusia—tidak ada dua kucing dengan pola hidung sama!',
@@ -714,7 +724,7 @@ export const SECRET_CAT_CARDS: SecretCatCard[] = [
   {
     id: 'card-11',
     number: 11,
-    name: 'Frekuensi Dengkuran Penyembuh',
+    name: 'Dengkuran Menenangkan',
     category: 'fact',
     emoji: '😽',
     text: 'Fakta Kucing: Dengkuran kucing berfrekuensi 25–150 Hz, yang secara ilmiah terbukti membantu menurunkan stres dan menenangkan jantung.',
@@ -728,7 +738,7 @@ export const SECRET_CAT_CARDS: SecretCatCard[] = [
     text: 'Fakta Kucing: Kucing bisa melompat hingga 6 kali tinggi tubuhnya sendiri dalam sekali lompatan tanpa pemanasan!',
   },
 
-  // Kategori 3: 🤣 Jokes Bapak-Bapak Garing (6 Kartu)
+  // Kategori 3: 🤣 Jokes Bapak Kucing (9 Kartu: #13–#18 + #25–#27)
   {
     id: 'card-13',
     number: 13,
@@ -776,6 +786,158 @@ export const SECRET_CAT_CARDS: SecretCatCard[] = [
     category: 'dad-joke',
     emoji: '😸',
     text: 'Apa bedanya kamu sama jam dinding? ... Kalau jam dinding muter-muter di tembok, kalau kamu muter-muter di pikiran terus~',
+  },
+
+  // Tambahan Kategori 💖 Penyemangat (#19–#21)
+  {
+    id: 'card-19',
+    number: 19,
+    name: 'Tidur Siang Bukan Malas',
+    category: 'encourage',
+    emoji: '😴',
+    text: 'Meow~ Kucing saja butuh mengisi ulang energi sebelum melompat tinggi. Istirahatmu hari ini adalah bagian dari progres!',
+  },
+  {
+    id: 'card-20',
+    number: 20,
+    name: 'Fokus Tajam Mata Kucing',
+    category: 'encourage',
+    emoji: '😼',
+    text: 'Sekali mengunci target, kucing tidak akan berkedip. Kamu juga pasti bisa menuntaskan satu tugas ini sampai tuntas!',
+  },
+  {
+    id: 'card-21',
+    number: 21,
+    name: 'Cakar Kecil, Langkah Besar',
+    category: 'encourage',
+    emoji: '🐾',
+    text: 'Tidak apa-apa melangkah pelan dengan cakar kecil, yang penting arahmu tetap maju menuju impianmu, purr~',
+  },
+
+  // Tambahan Kategori 🐾 Fakta Kucing (#22–#24)
+  {
+    id: 'card-22',
+    number: 22,
+    name: 'Kumis Radar Super',
+    category: 'fact',
+    emoji: '🐱',
+    text: 'Fakta Kucing: Kumis kucing (vibrissae) terhubung langsung ke sistem saraf dan bisa mendeteksi perubahan arah angin sekecil apa pun!',
+  },
+  {
+    id: 'card-23',
+    number: 23,
+    name: 'Sidik Hidung Unik',
+    category: 'fact',
+    emoji: '👃',
+    text: 'Fakta Kucing: Pola tekstur pada hidung setiap kucing berbeda-beda dan seunik sidik jari manusia.',
+  },
+  {
+    id: 'card-24',
+    number: 24,
+    name: 'Frekuensi Dengkuran Penyembuh',
+    category: 'fact',
+    emoji: '💗',
+    text: 'Fakta Kucing: Suara dengkuran (purring) kucing berada di frekuensi 25–150 Hz yang membantu menenangkan stres dan merelaksasi otot.',
+  },
+
+  // Tambahan Kategori 🤣 Jokes Bapak Kucing (#25–#27)
+  {
+    id: 'card-25',
+    number: 25,
+    name: 'Kucing Apa yang Suka Ngitung?',
+    category: 'dad-joke',
+    emoji: '🧮',
+    text: 'Kucing apa yang jago matematika? Kucing-kalikan cintaku padamu... eh, maksudnya Kalku-meong! Purr~',
+  },
+  {
+    id: 'card-26',
+    number: 26,
+    name: 'Kucing Apa yang Bikin Kaget?',
+    category: 'dad-joke',
+    emoji: '🙀',
+    text: 'Kucing apa yang sering muncul tiba-tiba di depan pintu? Kucing-gakan napas lihat deadline! Meow~',
+  },
+  {
+    id: 'card-27',
+    number: 27,
+    name: 'Kucing Apa yang Anti Nyasar?',
+    category: 'dad-joke',
+    emoji: '🗺️',
+    text: 'Kucing apa yang nggak pernah tersesat pas jalan-jalan? Kucing-peta (GPS)! Bapak-bapak anabul approve!',
+  },
+
+  // Kategori Baru: 💘 Gombalan Kucing (#28–#36, 9 Kartu Penuh)
+  {
+    id: 'card-28',
+    number: 28,
+    name: 'Sembilan Nyawa',
+    category: 'flirt',
+    emoji: '💘',
+    text: 'Katanya kucing punya 9 nyawa, tapi kesembilan nyawaku semuanya habis cuma buat nungguin kamu fokus bareng aku, meow~',
+  },
+  {
+    id: 'card-29',
+    number: 29,
+    name: 'Lebih Manis dari Ikan',
+    category: 'flirt',
+    emoji: '😻',
+    text: 'Aku memang nggak bisa ngerasain rasa manis, tapi tiap lihat kamu nyelesaiin target harian, hatiku langsung meleleh!',
+  },
+  {
+    id: 'card-30',
+    number: 30,
+    name: 'Kotak Kardus',
+    category: 'flirt',
+    emoji: '📦',
+    text: 'Kucing memang paling suka masuk kotak kardus, tapi tempat paling nyaman buatku tetap di sudut layar nemenin kamu!',
+  },
+  {
+    id: 'card-31',
+    number: 31,
+    name: 'Gravitasi Meja',
+    category: 'flirt',
+    emoji: '😽',
+    text: 'Hobi kucing itu menjatuhkan barang dari atas meja, kalau kamu hobinya menjatuhkan hatiku setiap hari, purr~',
+  },
+  {
+    id: 'card-32',
+    number: 32,
+    name: 'Dengkuran Rindu',
+    category: 'flirt',
+    emoji: '💞',
+    text: 'Tahu nggak kenapa aku mendengkur kencang tiap kamu elus? Soalnya frekuensi detak jantungku ikut irama namamu!',
+  },
+  {
+    id: 'card-33',
+    number: 33,
+    name: 'Cakar Pencuri',
+    category: 'flirt',
+    emoji: '🐾',
+    text: 'Hati-hati sama cakar kecilku ya, soalnya diam-diam sudah berhasil mencuri perhatianmu sejak sesi fokus pertama!',
+  },
+  {
+    id: 'card-34',
+    number: 34,
+    name: 'Bulu Halus',
+    category: 'flirt',
+    emoji: '✨',
+    text: 'Boleh pegang buluku sepuasnya, asal jangan pernah lepasin semangatmu buat ngejar mimpi ya, Sayang-meong!',
+  },
+  {
+    id: 'card-35',
+    number: 35,
+    name: 'Lampu Senter Malam',
+    category: 'flirt',
+    emoji: '🌟',
+    text: 'Mata kucing bisa bersinar di tempat gelap, persis kayak senyummu yang selalu menerangi hari-hariku yang capek!',
+  },
+  {
+    id: 'card-36',
+    number: 36,
+    name: 'Majikan Sejati',
+    category: 'flirt',
+    emoji: '👑',
+    text: 'Di rumah mungkin aku yang jadi majikan, tapi di hati ini kamu pemilik satu-satunya. Semangat terus ya!',
   },
 ]
 
@@ -1043,14 +1205,23 @@ const LEGACY_STORAGE_KEYS = {
   LAST_ACTIVE_DATE: 'twilight_star_last_date_v1',
 }
 
+export type MiniGameId = 'catcher' | 'fishing'
+
 interface GameDailyClaimRecord {
   date: string
   count: number
   playCount?: number
+  catcherPlayCount?: number
+  fishingPlayCount?: number
+  catcherRewardCount?: number
+  fishingRewardCount?: number
+  fishingHighScore?: number
 }
 
 export const MAX_GAME_DAILY_REWARDS = 3
-export const MAX_GAME_DAILY_PLAYS = 5
+export const MAX_GAME_DAILY_PLAYS = 3
+export const GAME_COMPLETION_BASE_COINS = 5
+export const GAME_ROUND_DURATION_SECONDS = 50
 export const CAT_AFFINITY_MAX_LEVEL = 20
 export const CAT_AFFINITY_MILESTONE_LV10 = 10
 export const CAT_AFFINITY_XP_PER_LEVEL = 10
@@ -1355,8 +1526,13 @@ export function useTwilightStorage() {
   const bgmMuteToggleSignal = useState<number>('twilights-bgm-mute-signal', () => 0)
   const catKeyboardInteractSignal = useState<number>('twilights-cat-kb-signal', () => 0)
   const gameHighScore = useState<number>('twilights-game-highscore', () => 0)
+  const fishingHighScore = useState<number>('twilights-fishing-highscore', () => 0)
   const gameDailyClaimCount = useState<number>('twilights-game-daily-claims', () => 0)
   const gameDailyPlayCount = useState<number>('twilights-game-daily-plays', () => 0)
+  const catcherPlayCount = useState<number>('twilights-catcher-play-count', () => 0)
+  const fishingPlayCount = useState<number>('twilights-fishing-play-count', () => 0)
+  const catcherRewardCount = useState<number>('twilights-catcher-reward-count', () => 0)
+  const fishingRewardCount = useState<number>('twilights-fishing-reward-count', () => 0)
   const gameDailyClaimDate = useState<string>('twilights-game-daily-date', () => '')
   const notebooks = useState<NotebookEntry[]>('twilights-notebooks-list', () =>
     DEFAULT_NOTEBOOKS.map(n => ({ ...n })),
@@ -1554,8 +1730,13 @@ export function useTwilightStorage() {
       localStorage.setItem(STORAGE_KEYS.GAME_HIGHSCORE, String(gameHighScore.value))
       const claimRecord: GameDailyClaimRecord = {
         date: gameDailyClaimDate.value || todayStr,
-        count: gameDailyClaimCount.value,
-        playCount: gameDailyPlayCount.value,
+        count: catcherRewardCount.value,
+        playCount: catcherPlayCount.value,
+        catcherPlayCount: catcherPlayCount.value,
+        fishingPlayCount: fishingPlayCount.value,
+        catcherRewardCount: catcherRewardCount.value,
+        fishingRewardCount: fishingRewardCount.value,
+        fishingHighScore: fishingHighScore.value,
       }
       localStorage.setItem(STORAGE_KEYS.GAME_DAILY_CLAIMS, JSON.stringify(claimRecord))
 
@@ -1599,6 +1780,7 @@ export function useTwilightStorage() {
       dailyStreak: dailyStreak.value,
       streakLastDate: streakLastDate.value,
       treatCoins: treatCoins.value,
+      coins: treatCoins.value,
       ownedAccessories: ownedAccessories.value,
       equippedAccessory: equippedAccessory.value,
       ownedCats: ownedCats.value,
@@ -1613,6 +1795,8 @@ export function useTwilightStorage() {
       fullGoalStreakLastDate: fullGoalStreakLastDate.value,
       fullGoalStreakRewardClaimedDate: fullGoalStreakRewardClaimedDate.value,
       collectedSecretCards: collectedSecretCards.value,
+      unlockedCards: collectedSecretCards.value,
+      affectionPoints: catAffinityXp.value,
       catAffinity: {
         level: catAffinityLevel.value,
         xp: catAffinityXp.value,
@@ -1628,10 +1812,21 @@ export function useTwilightStorage() {
       twilights_alarms: alarms.value,
       selectedAlarmSound: selectedAlarmSound.value,
       gameHighScore: gameHighScore.value,
+      fishingHighScore: fishingHighScore.value,
+      gameDate: gameDailyClaimDate.value || getLocalTodayDate(),
+      catcherPlayCount: catcherPlayCount.value,
+      fishingPlayCount: fishingPlayCount.value,
+      catcherRewardCount: catcherRewardCount.value,
+      fishingRewardCount: fishingRewardCount.value,
       gameDailyClaims: {
         date: gameDailyClaimDate.value || getLocalTodayDate(),
-        count: gameDailyClaimCount.value,
-        playCount: gameDailyPlayCount.value,
+        count: catcherRewardCount.value,
+        playCount: catcherPlayCount.value,
+        catcherPlayCount: catcherPlayCount.value,
+        fishingPlayCount: fishingPlayCount.value,
+        catcherRewardCount: catcherRewardCount.value,
+        fishingRewardCount: fishingRewardCount.value,
+        fishingHighScore: fishingHighScore.value,
       },
       isStarCursorEnabled: isStarCursorEnabled.value,
       activeCursor: activeCursor.value,
@@ -1827,7 +2022,7 @@ export function useTwilightStorage() {
     if (typeof d.fullGoalStreakRewardClaimedDate === 'string') {
       fullGoalStreakRewardClaimedDate.value = d.fullGoalStreakRewardClaimedDate
     }
-    const cloudCards = d.twilights_secret_cards ?? d.collectedSecretCards
+    const cloudCards = d.twilights_secret_cards ?? d.unlockedCards ?? d.collectedSecretCards
     if (Array.isArray(cloudCards)) {
       collectedSecretCards.value = sanitizeCollectedSecretCards(cloudCards)
     }
@@ -1873,21 +2068,55 @@ export function useTwilightStorage() {
     if (typeof cloudHighScore === 'number') {
       gameHighScore.value = Math.max(0, Math.round(cloudHighScore))
     }
+    if (typeof d.fishingHighScore === 'number') {
+      fishingHighScore.value = Math.max(0, Math.round(d.fishingHighScore))
+    }
     const cloudGameClaims = (d.twilights_game_daily_claims ?? d.gameDailyClaims) as
       | Partial<GameDailyClaimRecord>
       | undefined
-    if (cloudGameClaims && typeof cloudGameClaims === 'object') {
+    const cloudGameDate =
+      (typeof d.gameDate === 'string' && d.gameDate) || cloudGameClaims?.date || ''
+    if (cloudGameDate || cloudGameClaims) {
       const localToday = getLocalTodayDate()
-      if (cloudGameClaims.date === localToday) {
+      if (typeof cloudGameClaims?.fishingHighScore === 'number') {
+        fishingHighScore.value = Math.max(0, Math.round(cloudGameClaims.fishingHighScore))
+      }
+      if (cloudGameDate === localToday) {
         gameDailyClaimDate.value = localToday
-        gameDailyClaimCount.value = Math.max(
+        const cReward = Math.max(
           0,
-          Math.min(MAX_GAME_DAILY_REWARDS, Math.floor(Number(cloudGameClaims.count) || 0)),
+          Math.min(
+            MAX_GAME_DAILY_REWARDS,
+            Math.floor(Number(d.catcherRewardCount ?? cloudGameClaims?.catcherRewardCount ?? cloudGameClaims?.count) || 0),
+          ),
         )
-        gameDailyPlayCount.value = Math.max(
+        const cPlay = Math.max(
           0,
-          Math.min(MAX_GAME_DAILY_PLAYS, Math.floor(Number(cloudGameClaims.playCount) || 0)),
+          Math.min(
+            MAX_GAME_DAILY_PLAYS,
+            Math.floor(Number(d.catcherPlayCount ?? cloudGameClaims?.catcherPlayCount ?? cloudGameClaims?.playCount) || 0),
+          ),
         )
+        const fReward = Math.max(
+          0,
+          Math.min(
+            MAX_GAME_DAILY_REWARDS,
+            Math.floor(Number(d.fishingRewardCount ?? cloudGameClaims?.fishingRewardCount) || 0),
+          ),
+        )
+        const fPlay = Math.max(
+          0,
+          Math.min(
+            MAX_GAME_DAILY_PLAYS,
+            Math.floor(Number(d.fishingPlayCount ?? cloudGameClaims?.fishingPlayCount) || 0),
+          ),
+        )
+        catcherRewardCount.value = cReward
+        catcherPlayCount.value = cPlay
+        fishingRewardCount.value = fReward
+        fishingPlayCount.value = fPlay
+        gameDailyClaimCount.value = cReward
+        gameDailyPlayCount.value = cPlay
       }
     }
     if (typeof d.isVibrationEnabled === 'boolean') {
@@ -2108,11 +2337,15 @@ export function useTwilightStorage() {
     persistAll()
   }
 
-  /** Pastikan kuota bermain & hadiah harian Break Game selalu sinkron dengan tanggal lokal perangkat (00:00) */
+  /** Pastikan kuota bermain & hadiah harian kedua Break Game selalu sinkron dengan tanggal lokal perangkat (00:00) */
   function syncMiniGameDailyQuota(): string {
     const todayStr = getLocalTodayDate()
     if (gameDailyClaimDate.value !== todayStr) {
       gameDailyClaimDate.value = todayStr
+      catcherPlayCount.value = 0
+      fishingPlayCount.value = 0
+      catcherRewardCount.value = 0
+      fishingRewardCount.value = 0
       gameDailyClaimCount.value = 0
       gameDailyPlayCount.value = 0
       persistAll()
@@ -2121,63 +2354,148 @@ export function useTwilightStorage() {
   }
 
   /**
-   * Konsumsi 1 kuota bermain harian Break Game (maksimal 5x/hari).
-   * Mengembalikan false jika kuota 5/5 hari ini sudah penuh.
+   * Konsumsi 1 kuota bermain harian untuk jenis game tertentu ('catcher' atau 'fishing', maks 3x/hari per game).
    */
-  function consumeMiniGamePlay(): boolean {
+  function consumeMiniGamePlayFor(gameId: MiniGameId): boolean {
     syncMiniGameDailyQuota()
-    if (gameDailyPlayCount.value >= MAX_GAME_DAILY_PLAYS) {
-      return false
+    if (gameId === 'fishing') {
+      if (fishingPlayCount.value >= MAX_GAME_DAILY_PLAYS) return false
+      fishingPlayCount.value = Math.min(MAX_GAME_DAILY_PLAYS, fishingPlayCount.value + 1)
+    } else {
+      if (catcherPlayCount.value >= MAX_GAME_DAILY_PLAYS) return false
+      catcherPlayCount.value = Math.min(MAX_GAME_DAILY_PLAYS, catcherPlayCount.value + 1)
+      gameDailyPlayCount.value = catcherPlayCount.value
     }
-    gameDailyPlayCount.value = Math.min(MAX_GAME_DAILY_PLAYS, gameDailyPlayCount.value + 1)
     persistAll()
     return true
   }
 
+  /** Alias kompatibilitas untuk game Starlight Catcher */
+  function consumeMiniGamePlay(): boolean {
+    return consumeMiniGamePlayFor('catcher')
+  }
+
   /**
-   * Catat hasil ronde Kawaii Mini-Game ("Starlight & Fish Catcher"):
-   * - Gunakan tanggal lokal perangkat (`getLocalTodayDate()`, bukan UTC)
-   * - Simpan rekor tertinggi ke localStorage (`twilights_game_highscore`)
-   * - Validasi ketat `dailyRewardCount < 3` sebelum menambahkan hadiah +2 Ikan Kering (🐟)
+   * Catat hasil ronde untuk KEDUA Mini-Game ('catcher' & 'fishing'):
+   * 1. Hadiah Penyelesaian Ronde (+5 🐟) bila kuota hadiah game tersebut < 3/3 (maks 15 🐟/game/hari).
+   * 2. Konversi Ikan Tangkapan: 1 Ikan = +1 Koin Ikan langsung ke saldo.
+   * 3. Bintang / Bintang Laut / Kerang: +1 Poin Kasih Sayang setiap 3 item terkumpul (memicu auto-drop kartu jika penuh!).
    */
-  function recordMiniGameResult(score: number): {
+  function recordMiniGameRoundResult(payload: {
+    gameId: MiniGameId
+    score: number
+    fishCaught: number
+    starsCollected: number
+  }): {
     isNewRecord: boolean
-    coinsAwarded: number
+    baseRewardCoins: number
+    fishBonusCoins: number
+    totalCoinsAwarded: number
+    affectionGained: number
     claimsUsed: number
     maxClaims: number
     playsUsed: number
     maxPlays: number
+    highScore: number
   } {
-    const cleanScore = Math.max(0, Math.round(score))
+    const cleanScore = Math.max(0, Math.round(payload.score))
+    const cleanFish = Math.max(0, Math.floor(payload.fishCaught))
+    const cleanStars = Math.max(0, Math.floor(payload.starsCollected))
     syncMiniGameDailyQuota()
 
     let isNewRecord = false
-    if (cleanScore > gameHighScore.value) {
-      gameHighScore.value = cleanScore
-      isNewRecord = true
+    let currentHigh = 0
+    if (payload.gameId === 'fishing') {
+      if (cleanScore > fishingHighScore.value) {
+        fishingHighScore.value = cleanScore
+        isNewRecord = true
+      }
+      currentHigh = fishingHighScore.value
+    } else {
+      if (cleanScore > gameHighScore.value) {
+        gameHighScore.value = cleanScore
+        isNewRecord = true
+      }
+      currentHigh = gameHighScore.value
     }
 
-    let coinsAwarded = 0
-    if (cleanScore >= 100 && gameDailyClaimCount.value < MAX_GAME_DAILY_REWARDS) {
-      coinsAwarded = 2
-      treatCoins.value += coinsAwarded
-      gameDailyClaimCount.value = Math.min(MAX_GAME_DAILY_REWARDS, gameDailyClaimCount.value + 1)
+    // 1. Hadiah dasar penyelesaian ronde (+5 🐟 selama kuota hadiah game < 3/3)
+    let baseRewardCoins = 0
+    if (payload.gameId === 'fishing') {
+      if (fishingRewardCount.value < MAX_GAME_DAILY_REWARDS) {
+        baseRewardCoins = GAME_COMPLETION_BASE_COINS
+        fishingRewardCount.value = Math.min(MAX_GAME_DAILY_REWARDS, fishingRewardCount.value + 1)
+      }
+    } else {
+      if (catcherRewardCount.value < MAX_GAME_DAILY_REWARDS) {
+        baseRewardCoins = GAME_COMPLETION_BASE_COINS
+        catcherRewardCount.value = Math.min(MAX_GAME_DAILY_REWARDS, catcherRewardCount.value + 1)
+        gameDailyClaimCount.value = catcherRewardCount.value
+      }
+    }
+
+    // 2. Konversi Ikan Tangkapan (1 Ikan = +1 Koin Ikan)
+    const fishBonusCoins = cleanFish
+    const totalCoinsAwarded = baseRewardCoins + fishBonusCoins
+    if (totalCoinsAwarded > 0) {
+      treatCoins.value += totalCoinsAwarded
       playVictoryMelody()
-      showMiniToast(
-        `Hore! Skor ${cleanScore} di Break Game! Hadiah +2 🐟 (${gameDailyClaimCount.value}/${MAX_GAME_DAILY_REWARDS}) ✨`,
+    }
+
+    // 3. Poin Kasih Sayang (+1 💖 setiap 3 bintang / bintang laut / kerang)
+    const affectionGained = Math.floor(cleanStars / 3)
+    if (affectionGained > 0) {
+      addCatAffinityXp(affectionGained, 'game')
+    }
+
+    const claimsUsed =
+      payload.gameId === 'fishing' ? fishingRewardCount.value : catcherRewardCount.value
+    const playsUsed =
+      payload.gameId === 'fishing' ? fishingPlayCount.value : catcherPlayCount.value
+
+    if (totalCoinsAwarded > 0 || affectionGained > 0) {
+      const parts: string[] = []
+      if (totalCoinsAwarded > 0) parts.push(`+${totalCoinsAwarded} 🐟`)
+      if (affectionGained > 0) parts.push(`+${affectionGained} 💖`)
+      showMiniToast(`🎮 Ronde selesai! Hadiah ${parts.join(' & ')} diterima ✨`)
+      triggerMascotReaction(
+        'happy',
+        `Seru banget mainnya! Hadiah ${parts.join(' & ')} buatmu~ 🎮💖`,
+        3200,
       )
-      triggerMascotReaction('happy', 'Seru banget mainnya! Ini +2 🐟 buatmu~ 🎮💖', 3200)
     }
 
     persistAll()
 
     return {
       isNewRecord,
-      coinsAwarded,
-      claimsUsed: gameDailyClaimCount.value,
+      baseRewardCoins,
+      fishBonusCoins,
+      totalCoinsAwarded,
+      affectionGained,
+      claimsUsed,
       maxClaims: MAX_GAME_DAILY_REWARDS,
-      playsUsed: gameDailyPlayCount.value,
+      playsUsed,
       maxPlays: MAX_GAME_DAILY_PLAYS,
+      highScore: currentHigh,
+    }
+  }
+
+  /** Alias kompatibilitas untuk fungsi lama */
+  function recordMiniGameResult(score: number) {
+    const res = recordMiniGameRoundResult({
+      gameId: 'catcher',
+      score,
+      fishCaught: 0,
+      starsCollected: 0,
+    })
+    return {
+      isNewRecord: res.isNewRecord,
+      coinsAwarded: res.totalCoinsAwarded,
+      claimsUsed: res.claimsUsed,
+      maxClaims: res.maxClaims,
+      playsUsed: res.playsUsed,
+      maxPlays: res.maxPlays,
     }
   }
 
@@ -2495,6 +2813,7 @@ export function useTwilightStorage() {
         dailyStreak: dailyStreak.value,
         streakLastDate: streakLastDate.value,
         treatCoins: treatCoins.value,
+        coins: treatCoins.value,
         ownedAccessories: ownedAccessories.value,
         equippedAccessory: equippedAccessory.value,
         ownedCats: ownedCats.value,
@@ -2513,6 +2832,8 @@ export function useTwilightStorage() {
           lastRewardClaimedDate: fullGoalStreakRewardClaimedDate.value,
         },
         twilights_secret_cards: collectedSecretCards.value,
+        unlockedCards: collectedSecretCards.value,
+        affectionPoints: catAffinityXp.value,
         twilights_cat_affinity: {
           level: catAffinityLevel.value,
           xp: catAffinityXp.value,
@@ -2527,10 +2848,21 @@ export function useTwilightStorage() {
         twilights_alarms: alarms.value,
         selectedAlarmSound: selectedAlarmSound.value,
         twilights_game_highscore: gameHighScore.value,
+        fishingHighScore: fishingHighScore.value,
+        gameDate: gameDailyClaimDate.value || getLocalTodayDate(),
+        catcherPlayCount: catcherPlayCount.value,
+        fishingPlayCount: fishingPlayCount.value,
+        catcherRewardCount: catcherRewardCount.value,
+        fishingRewardCount: fishingRewardCount.value,
         twilights_game_daily_claims: {
           date: gameDailyClaimDate.value || getLocalTodayDate(),
-          count: gameDailyClaimCount.value,
-          playCount: gameDailyPlayCount.value,
+          count: catcherRewardCount.value,
+          playCount: catcherPlayCount.value,
+          catcherPlayCount: catcherPlayCount.value,
+          fishingPlayCount: fishingPlayCount.value,
+          catcherRewardCount: catcherRewardCount.value,
+          fishingRewardCount: fishingRewardCount.value,
+          fishingHighScore: fishingHighScore.value,
         },
         isStarCursorEnabled: isStarCursorEnabled.value,
         activeCursor: activeCursor.value,
@@ -2685,7 +3017,8 @@ export function useTwilightStorage() {
         }
       }
       // Pulihkan koleksi kartu Gacha "💌 Pesan Rahasia Kucing"
-      const importedSecretCards = d.twilights_secret_cards ?? d.collectedSecretCards
+      const importedSecretCards =
+        d.twilights_secret_cards ?? d.unlockedCards ?? d.collectedSecretCards
       if (Array.isArray(importedSecretCards)) {
         collectedSecretCards.value = sanitizeCollectedSecretCards(importedSecretCards)
       }
@@ -2764,23 +3097,57 @@ export function useTwilightStorage() {
       if (typeof importedHighScore === 'number') {
         gameHighScore.value = Math.max(0, Math.round(importedHighScore))
       }
+      if (typeof d.fishingHighScore === 'number') {
+        fishingHighScore.value = Math.max(0, Math.round(d.fishingHighScore))
+      }
       const importedGameDaily = (d.twilights_game_daily_claims ?? d.gameDailyClaims) as
         | Partial<GameDailyClaimRecord>
         | undefined
-      if (importedGameDaily && typeof importedGameDaily === 'object') {
+      const importedGameDate =
+        (typeof d.gameDate === 'string' && d.gameDate) || importedGameDaily?.date || ''
+      if (importedGameDate || importedGameDaily) {
         const localToday = getLocalTodayDate()
-        if (importedGameDaily.date === localToday) {
+        if (typeof importedGameDaily?.fishingHighScore === 'number') {
+          fishingHighScore.value = Math.max(0, Math.round(importedGameDaily.fishingHighScore))
+        }
+        if (importedGameDate === localToday) {
           gameDailyClaimDate.value = localToday
-          gameDailyClaimCount.value = Math.max(
+          catcherRewardCount.value = Math.max(
             0,
-            Math.min(MAX_GAME_DAILY_REWARDS, Math.floor(Number(importedGameDaily.count) || 0)),
+            Math.min(
+              MAX_GAME_DAILY_REWARDS,
+              Math.floor(Number(d.catcherRewardCount ?? importedGameDaily?.catcherRewardCount ?? importedGameDaily?.count) || 0),
+            ),
           )
-          gameDailyPlayCount.value = Math.max(
+          catcherPlayCount.value = Math.max(
             0,
-            Math.min(MAX_GAME_DAILY_PLAYS, Math.floor(Number(importedGameDaily.playCount) || 0)),
+            Math.min(
+              MAX_GAME_DAILY_PLAYS,
+              Math.floor(Number(d.catcherPlayCount ?? importedGameDaily?.catcherPlayCount ?? importedGameDaily?.playCount) || 0),
+            ),
           )
+          fishingRewardCount.value = Math.max(
+            0,
+            Math.min(
+              MAX_GAME_DAILY_REWARDS,
+              Math.floor(Number(d.fishingRewardCount ?? importedGameDaily?.fishingRewardCount) || 0),
+            ),
+          )
+          fishingPlayCount.value = Math.max(
+            0,
+            Math.min(
+              MAX_GAME_DAILY_PLAYS,
+              Math.floor(Number(d.fishingPlayCount ?? importedGameDaily?.fishingPlayCount) || 0),
+            ),
+          )
+          gameDailyClaimCount.value = catcherRewardCount.value
+          gameDailyPlayCount.value = catcherPlayCount.value
         } else {
           gameDailyClaimDate.value = localToday
+          catcherRewardCount.value = 0
+          catcherPlayCount.value = 0
+          fishingRewardCount.value = 0
+          fishingPlayCount.value = 0
           gameDailyClaimCount.value = 0
           gameDailyPlayCount.value = 0
         }
@@ -3221,9 +3588,54 @@ export function useTwilightStorage() {
   }
 
   /**
+   * Hadiah Kartu Random Otomatis Saat Bar Kasih Sayang Penuh (Naik Level atau Peti Cinta Penuh):
+   * - Memprioritaskan kartu yang belum terbuka dari koleksi 36 kartu.
+   * - Jika seluruh 36/36 kartu sudah terbuka, berikan kartu acak + bonus +5 Koin Ikan!
+   * - Otomatis membuka pop-up animasi kartu hadiah & menyimpannya ke localStorage + Firestore.
+   */
+  function triggerAffinityRewardCardDrop(): SecretCardDrawResult {
+    const uncollected = SECRET_CAT_CARDS.filter(
+      card => !collectedSecretCards.value.includes(card.id),
+    )
+
+    let droppedCard: SecretCatCard
+    let isNew = false
+    let bonusFish = 0
+
+    if (uncollected.length > 0) {
+      droppedCard =
+        uncollected[Math.floor(Math.random() * uncollected.length)] ?? SECRET_CAT_CARDS[0]!
+      collectedSecretCards.value = [...collectedSecretCards.value, droppedCard.id]
+      isNew = true
+    } else {
+      droppedCard =
+        SECRET_CAT_CARDS[Math.floor(Math.random() * SECRET_CAT_CARDS.length)] ??
+        SECRET_CAT_CARDS[0]!
+      isNew = false
+      bonusFish = AFFINITY_DROP_DUPLICATE_FISH_BONUS
+      treatCoins.value += bonusFish
+    }
+
+    const result: SecretCardDrawResult = {
+      card: droppedCard,
+      isNew,
+      bonusAffinity: 0,
+      bonusFish,
+      source: 'affinity-drop',
+      drawId: Date.now() + Math.floor(Math.random() * 1000),
+    }
+
+    lastDrawnCardResult.value = result
+    secretCardModalMode.value = 'gacha'
+    isSecretCardModalOpen.value = true
+    persistAll()
+    return result
+  }
+
+  /**
    * Gacha Kartu "💌 Pesan Rahasia Kucing" (Biaya: 2 🐟):
-   * - Selama koleksi < 18/18: prioritaskan mengacak kartu yang belum dikoleksi (label ✨ BARU!).
-   * - Jika seluruh 18/18 kartu sudah terkoleksi: acak dari 18 kartu & beri bonus +1 💖 Kasih Sayang Kucing (label ♻️ Duplikat (+1 💖)).
+   * - Selama koleksi < 36/36: prioritaskan mengacak kartu yang belum dikoleksi (label ✨ BARU!).
+   * - Jika seluruh 36/36 kartu sudah terkoleksi: acak dari 36 kartu & beri bonus +1 💖 Kasih Sayang Kucing.
    */
   function drawSecretCatCard(): { ok: boolean; message: string; result?: SecretCardDrawResult } {
     if (treatCoins.value < SECRET_CARD_GACHA_COST) {
@@ -3254,7 +3666,7 @@ export function useTwilightStorage() {
       if (totalNow >= SECRET_CAT_CARDS.length) {
         triggerMascotReaction(
           'celebrate',
-          'Yeay! Semua 18/18 Kartu Rahasia Kucing berhasil kamu koleksi! 💌✨',
+          `Yeay! Semua ${SECRET_CAT_CARDS.length}/${SECRET_CAT_CARDS.length} Kartu Rahasia Kucing berhasil kamu koleksi! 💌✨`,
           4600,
         )
       } else {
@@ -3283,6 +3695,7 @@ export function useTwilightStorage() {
       card: drawnCard,
       isNew,
       bonusAffinity,
+      source: 'gacha',
       drawId: Date.now() + Math.floor(Math.random() * 1000),
     }
 
@@ -3635,7 +4048,7 @@ export function useTwilightStorage() {
         selectedAlarmSound.value = savedAlarmSound
       }
 
-      // 15. Muat High Score & jatah hadiah harian Kawaii Mini-Game (maks 3x/hari)
+      // 15. Muat High Score & jatah bermain/hadiah harian Break Game per game (maks 3x/hari masing-masing)
       const savedHighScore = localStorage.getItem(STORAGE_KEYS.GAME_HIGHSCORE)
       if (savedHighScore) {
         gameHighScore.value = Math.max(0, Number(savedHighScore) || 0)
@@ -3643,23 +4056,53 @@ export function useTwilightStorage() {
       const savedGameClaims = localStorage.getItem(STORAGE_KEYS.GAME_DAILY_CLAIMS)
       if (savedGameClaims) {
         const parsedClaims = JSON.parse(savedGameClaims) as Partial<GameDailyClaimRecord>
+        if (typeof parsedClaims.fishingHighScore === 'number') {
+          fishingHighScore.value = Math.max(0, Math.floor(parsedClaims.fishingHighScore))
+        }
         if (parsedClaims.date === todayStr) {
           gameDailyClaimDate.value = todayStr
-          gameDailyClaimCount.value = Math.max(
+          const cPlay =
+            typeof parsedClaims.catcherPlayCount === 'number'
+              ? parsedClaims.catcherPlayCount
+              : Number(parsedClaims.playCount) || 0
+          const fPlay =
+            typeof parsedClaims.fishingPlayCount === 'number' ? parsedClaims.fishingPlayCount : 0
+          const cRew =
+            typeof parsedClaims.catcherRewardCount === 'number'
+              ? parsedClaims.catcherRewardCount
+              : Number(parsedClaims.count) || 0
+          const fRew =
+            typeof parsedClaims.fishingRewardCount === 'number'
+              ? parsedClaims.fishingRewardCount
+              : 0
+
+          catcherPlayCount.value = Math.max(0, Math.min(MAX_GAME_DAILY_PLAYS, Math.floor(cPlay)))
+          fishingPlayCount.value = Math.max(0, Math.min(MAX_GAME_DAILY_PLAYS, Math.floor(fPlay)))
+          catcherRewardCount.value = Math.max(
             0,
-            Math.min(MAX_GAME_DAILY_REWARDS, Math.floor(Number(parsedClaims.count) || 0)),
+            Math.min(MAX_GAME_DAILY_REWARDS, Math.floor(cRew)),
           )
-          gameDailyPlayCount.value = Math.max(
+          fishingRewardCount.value = Math.max(
             0,
-            Math.min(MAX_GAME_DAILY_PLAYS, Math.floor(Number(parsedClaims.playCount) || 0)),
+            Math.min(MAX_GAME_DAILY_REWARDS, Math.floor(fRew)),
           )
+          gameDailyPlayCount.value = catcherPlayCount.value
+          gameDailyClaimCount.value = catcherRewardCount.value
         } else {
           gameDailyClaimDate.value = todayStr
+          catcherPlayCount.value = 0
+          fishingPlayCount.value = 0
+          catcherRewardCount.value = 0
+          fishingRewardCount.value = 0
           gameDailyClaimCount.value = 0
           gameDailyPlayCount.value = 0
         }
       } else {
         gameDailyClaimDate.value = todayStr
+        catcherPlayCount.value = 0
+        fishingPlayCount.value = 0
+        catcherRewardCount.value = 0
+        fishingRewardCount.value = 0
         gameDailyClaimCount.value = 0
         gameDailyPlayCount.value = 0
       }
@@ -4101,7 +4544,10 @@ export function useTwilightStorage() {
    * Milestone Lv. 20 MAX: +40 🐟 + ✨ Sayap Malaikat + gelar 👑 Soulmate MAX + bonus pasif +2 🐟/sesi.
    * Setelah Lv. 20 MAX: mengisi 💖 Peti Cinta (0/10) -> penuh memberi +3 🐟 berulang tanpa batas!
    */
-  function addCatAffinityXp(amount: number, source: 'pet' | 'click' | 'focus' | 'gacha'): boolean {
+  function addCatAffinityXp(
+    amount: number,
+    source: 'pet' | 'click' | 'focus' | 'gacha' | 'game',
+  ): boolean {
     const cleanAmount = Math.max(0, Math.floor(amount))
     if (cleanAmount <= 0) return false
 
@@ -4114,7 +4560,7 @@ export function useTwilightStorage() {
       lastCatPetXpAt = now
     }
 
-    // Jika sudah Lv. 20 (MAX ✨): jalankan siklus 💖 Peti Cinta (0/10 -> +3 🐟) tanpa batas!
+    // Jika sudah Lv. 20 (MAX ✨): jalankan siklus 💖 Peti Cinta (0/10 -> +3 🐟 + Auto-Drop Kartu Rahasia!) tanpa batas!
     if (catAffinityLevel.value >= CAT_AFFINITY_MAX_LEVEL) {
       catAffinityLevel.value = CAT_AFFINITY_MAX_LEVEL
       catAffinityXp.value = CAT_AFFINITY_HIGH_XP_PER_LEVEL
@@ -4131,7 +4577,7 @@ export function useTwilightStorage() {
       if (chestsOpened > 0) {
         const chestFish = chestsOpened * HEART_CHEST_FISH_REWARD
         treatCoins.value += chestFish
-        const chestMsg = `💖 Peti Cinta penuh! Kucingmu memberikan hadiah +${chestFish} 🐟`
+        const chestMsg = `💖 Peti Cinta penuh! Hadiah +${chestFish} 🐟 & 💌 Kartu Rahasia Kucing!`
         catAffinityLevelUpMessage.value = chestMsg
         if (catAffinityToastTimer) clearTimeout(catAffinityToastTimer)
         catAffinityToastTimer = setTimeout(() => {
@@ -4140,6 +4586,10 @@ export function useTwilightStorage() {
         playVictoryMelody()
         showMiniToast(chestMsg)
         triggerMascotReaction('celebrate', chestMsg, 4200)
+        // Hadiah kartu random otomatis saat Bar Kasih Sayang / Peti Cinta penuh!
+        if (source !== 'gacha') {
+          triggerAffinityRewardCardDrop()
+        }
       }
 
       persistAll()
@@ -4170,7 +4620,7 @@ export function useTwilightStorage() {
       const milestoneMsgs = grantPendingCatAffinityMilestones(true)
 
       if (milestoneMsgs.length === 0) {
-        const celebrationMsg = `🎉 Level Up! Lv. ${nextLevel} — Hadiah +${bonusFish} 🐟 diterima!`
+        const celebrationMsg = `🎉 Level Up! Lv. ${nextLevel} — Hadiah +${bonusFish} 🐟 & 💌 Kartu Rahasia!`
         catAffinityLevelUpMessage.value = celebrationMsg
 
         if (catAffinityToastTimer) clearTimeout(catAffinityToastTimer)
@@ -4182,9 +4632,14 @@ export function useTwilightStorage() {
         showMiniToast(celebrationMsg)
         triggerMascotReaction(
           'celebrate',
-          `Yeay! Kita naik ke Lv. ${nextLevel}! Ini +${bonusFish} 🐟 buatmu~ 💖`,
+          `Yeay! Kita naik ke Lv. ${nextLevel}! Ini +${bonusFish} 🐟 & kartu rahasia buatmu~ 💖`,
           4200,
         )
+      }
+
+      // Hadiah kartu random otomatis saat Bar Kasih Sayang penuh / naik level!
+      if (source !== 'gacha') {
+        triggerAffinityRewardCardDrop()
       }
     }
 
@@ -4422,8 +4877,13 @@ export function useTwilightStorage() {
     bgmMuteToggleSignal,
     catKeyboardInteractSignal,
     gameHighScore,
+    fishingHighScore,
     gameDailyClaimCount,
     gameDailyPlayCount,
+    catcherPlayCount,
+    fishingPlayCount,
+    catcherRewardCount,
+    fishingRewardCount,
     gameDailyClaimDate,
     notebooks,
     alarms,
@@ -4466,6 +4926,7 @@ export function useTwilightStorage() {
     buyOrEquipCatBreed,
     buyOrEquipCozyTheme,
     drawSecretCatCard,
+    triggerAffinityRewardCardDrop,
     openSecretCardGacha,
     openSecretCardAlbum,
     feedPetCat,
@@ -4500,7 +4961,9 @@ export function useTwilightStorage() {
     setAlarmSound,
     syncMiniGameDailyQuota,
     consumeMiniGamePlay,
+    consumeMiniGamePlayFor,
     recordMiniGameResult,
+    recordMiniGameRoundResult,
     triggerPomodoroShortcutToggle,
     triggerPomodoroReset,
     triggerPomodoroModeSwitch,

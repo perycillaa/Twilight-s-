@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onUnmounted, ref, watch } from 'vue'
 import {
+  AFFINITY_DROP_DUPLICATE_FISH_BONUS,
   SECRET_CARD_CATEGORIES,
   SECRET_CARD_GACHA_COST,
   SECRET_CAT_CARDS,
@@ -15,10 +16,12 @@ const {
   isSecretCardModalOpen,
   secretCardModalMode,
   lastDrawnCardResult,
+  activeCozyTheme,
   drawSecretCatCard,
+  showMiniToast,
 } = useTwilightStorage()
 
-// State animasi 3D flip card reveal & kilau bintang
+// State animasi 3D flip card reveal & kilau partikel bertema
 const isCardFlipped = ref<boolean>(false)
 const showRevealSparks = ref<boolean>(false)
 const activeAlbumFilter = ref<'all' | SecretCardCategoryId>('all')
@@ -35,21 +38,72 @@ const collectionPercent = computed<number>(() =>
   Math.round((collectedCount.value / totalCardsCount) * 100),
 )
 
+const isAffinityAutoDrop = computed<boolean>(
+  () => lastDrawnCardResult.value?.source === 'affinity-drop',
+)
+
+const categoryTotalCounts = computed<Record<SecretCardCategoryId, number>>(() => {
+  const counts: Record<SecretCardCategoryId, number> = {
+    encourage: 0,
+    fact: 0,
+    'dad-joke': 0,
+    flirt: 0,
+  }
+  for (const card of SECRET_CAT_CARDS) {
+    counts[card.category] += 1
+  }
+  return counts
+})
+
 const filteredAlbumCards = computed<SecretCatCard[]>(() => {
   if (activeAlbumFilter.value === 'all') return SECRET_CAT_CARDS
   return SECRET_CAT_CARDS.filter(card => card.category === activeAlbumFilter.value)
 })
 
-const revealSparkOffsets = [
-  { tx: '-110px', ty: '-85px', symbol: '✨' },
-  { tx: '115px', ty: '-78px', symbol: '⭐' },
-  { tx: '-125px', ty: '15px', symbol: '💖' },
-  { tx: '128px', ty: '22px', symbol: '✦' },
-  { tx: '-88px', ty: '96px', symbol: '⭐' },
-  { tx: '92px', ty: '90px', symbol: '✨' },
-  { tx: '0px', ty: '-115px', symbol: '💌' },
-  { tx: '0px', ty: '112px', symbol: '💖' },
-]
+const themeSparkSymbols = computed<string[]>(() => {
+  switch (activeCozyTheme.value) {
+    case 'midnight-rain':
+      return ['💧', '🌧️', '✨', '💙', '⭐', '💌', '✦', '💧']
+    case 'autumn-cafe':
+      return ['🍂', '🍁', '☕', '✨', '🧡', '💌', '⭐', '🍂']
+    case 'matcha-garden':
+      return ['🍃', '🍵', '✨', '💚', '🌿', '💌', '✦', '🍃']
+    case 'sakura-lantern':
+      return ['🌸', '🏮', '✨', '💖', '🌸', '💌', '⭐', '🌸']
+    case 'biolum-ocean':
+      return ['🫧', '🪼', '✨', '🩵', '🌊', '💌', '✦', '🫧']
+    case 'honey-library':
+      return ['🍯', '📖', '✨', '💛', '⭐', '💌', '✦', '🍯']
+    case 'pastel-cloudland':
+      return ['☁️', '🌈', '✨', '💖', '⭐', '💌', '✦', '☁️']
+    case 'winter-frost':
+      return ['❄️', '🧊', '✨', '🩵', '⭐', '💌', '✦', '❄️']
+    case 'astral-palace':
+      return ['💎', '👑', '✨', '🌌', '⭐', '💌', '✦', '💎']
+    case 'neon-night-city':
+      return ['⚡', '🌃', '✨', '💜', '🩵', '💌', '✦', '⚡']
+    default:
+      return ['✨', '⭐', '💖', '✦', '⭐', '✨', '💌', '💖']
+  }
+})
+
+const revealSparkOffsets = computed(() => {
+  const syms = themeSparkSymbols.value
+  const coords = [
+    { tx: '-112px', ty: '-84px' },
+    { tx: '116px', ty: '-78px' },
+    { tx: '-128px', ty: '14px' },
+    { tx: '128px', ty: '22px' },
+    { tx: '-90px', ty: '96px' },
+    { tx: '94px', ty: '90px' },
+    { tx: '0px', ty: '-116px' },
+    { tx: '0px', ty: '112px' },
+  ]
+  return coords.map((coord, idx) => ({
+    ...coord,
+    symbol: syms[idx % syms.length] ?? '✨',
+  }))
+})
 
 function formatCardNumber(num: number): string {
   return `#${String(num).padStart(2, '0')}`
@@ -71,7 +125,7 @@ function triggerFlipAnimation() {
     showRevealSparks.value = true
     sparkHideTimer = setTimeout(() => {
       showRevealSparks.value = false
-    }, 900)
+    }, 950)
   }, 260)
 }
 
@@ -89,6 +143,16 @@ function handleDrawAgain() {
   secretCardModalMode.value = 'gacha'
   inspectingAlbumCard.value = null
   triggerFlipAnimation()
+}
+
+function handleSaveToAlbum() {
+  const currentCard = lastDrawnCardResult.value?.card
+  if (currentCard) {
+    activeAlbumFilter.value = 'all'
+    inspectingAlbumCard.value = currentCard
+    showMiniToast(`Kartu ${formatCardNumber(currentCard.number)} "${currentCard.name}" tersimpan di Album! 💌`)
+  }
+  secretCardModalMode.value = 'album'
 }
 
 function openAlbumCardDetail(card: SecretCatCard) {
@@ -133,21 +197,45 @@ onUnmounted(() => {
       role="dialog"
       aria-modal="true"
       aria-label="Gacha & Album Kartu Pesan Rahasia Kucing"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-[#0d071c]/75 p-4 backdrop-blur-md"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-4 backdrop-blur-md"
       @click.self="closeModal"
     >
       <div
-        class="relative flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-3xl border border-pink-300/40 bg-gradient-to-br from-[#231340]/98 via-[#2d184f]/98 to-[#1c1033]/98 shadow-2xl shadow-pink-500/20"
+        class="relative flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-3xl border-[1.5px] shadow-2xl backdrop-blur-xl"
+        style="
+          background: var(--card-bg-solid);
+          border-color: var(--border-strong);
+          color: var(--text-primary);
+          box-shadow: 0 24px 60px -12px var(--twilight-glow);
+        "
       >
+        <!-- Nuansa partikel lembut selaras tema aktif -->
+        <div
+          aria-hidden="true"
+          class="pointer-events-none absolute -right-12 -top-12 h-40 w-40 rounded-full opacity-25 blur-3xl"
+          style="background: var(--accent-primary)"
+        />
+        <div
+          aria-hidden="true"
+          class="pointer-events-none absolute -bottom-14 -left-14 h-44 w-44 rounded-full opacity-20 blur-3xl"
+          style="background: var(--accent-secondary)"
+        />
+
         <!-- Header Modal -->
-        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-white/15 px-5 py-3.5">
-          <div class="flex items-center gap-2">
+        <div
+          class="relative z-10 flex flex-wrap items-center justify-between gap-2 border-b px-5 py-3.5"
+          style="border-color: var(--border-subtle); background: var(--surface-subtle)"
+        >
+          <div class="flex items-center gap-2.5">
             <span class="text-xl">💌</span>
             <div>
-              <h2 class="font-display text-base font-bold text-pink-100 sm:text-lg">
+              <h2
+                class="font-display text-base font-bold sm:text-lg"
+                style="color: var(--title-color)"
+              >
                 Pesan Rahasia Kucing
               </h2>
-              <p class="text-[11px] font-medium text-purple-200/80">
+              <p class="text-[11px] font-semibold" style="color: var(--text-secondary)">
                 Koleksi {{ collectedCount }}/{{ totalCardsCount }} kartu • Saldo 🐟 {{ treatCoins }}
               </p>
             </div>
@@ -155,15 +243,14 @@ onUnmounted(() => {
 
           <div class="flex items-center gap-2">
             <!-- Switcher Tab Gacha / Album -->
-            <div class="flex rounded-full border border-white/15 bg-black/25 p-0.5 text-[11px] font-semibold">
+            <div
+              class="flex rounded-full border p-0.5 text-[11px] font-bold"
+              style="border-color: var(--border-subtle); background: var(--surface-subtle)"
+            >
               <button
                 type="button"
                 class="cursor-pointer rounded-full px-3 py-1 transition"
-                :class="
-                  secretCardModalMode === 'gacha'
-                    ? 'bg-[#f9a8d4] text-[#311042] shadow'
-                    : 'text-purple-100/80 hover:text-white'
-                "
+                :class="secretCardModalMode === 'gacha' ? 'cozy-active-btn shadow-sm' : 'cozy-tab-inactive'"
                 @click="secretCardModalMode = 'gacha'"
               >
                 🎴 Gacha
@@ -171,11 +258,7 @@ onUnmounted(() => {
               <button
                 type="button"
                 class="cursor-pointer rounded-full px-3 py-1 transition"
-                :class="
-                  secretCardModalMode === 'album'
-                    ? 'bg-[#c4b5fd] text-[#1e1b4b] shadow'
-                    : 'text-purple-100/80 hover:text-white'
-                "
+                :class="secretCardModalMode === 'album' ? 'cozy-active-btn shadow-sm' : 'cozy-tab-inactive'"
                 @click="secretCardModalMode = 'album'; inspectingAlbumCard = null"
               >
                 📖 Album ({{ collectedCount }}/{{ totalCardsCount }})
@@ -185,7 +268,7 @@ onUnmounted(() => {
             <button
               type="button"
               aria-label="Tutup jendela Pesan Rahasia Kucing"
-              class="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border border-white/20 bg-white/10 text-xs font-bold text-pink-100 transition hover:bg-pink-400 hover:text-[#1e1b4b]"
+              class="cozy-secondary-btn flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-xs font-bold transition"
               @click="closeModal"
             >
               ✕
@@ -193,22 +276,44 @@ onUnmounted(() => {
           </div>
         </div>
 
-        <!-- KONTEN 1: MODE GACHA (3D Flip Card Reveal) -->
+        <!-- KONTEN 1: MODE GACHA / HADIAH AUTO-DROP KASIH SAYANG -->
         <div
           v-if="secretCardModalMode === 'gacha'"
-          class="flex flex-col items-center justify-center overflow-y-auto px-5 py-6"
+          class="relative z-10 flex flex-col items-center justify-center overflow-y-auto px-5 py-5"
         >
           <div v-if="lastDrawnCardResult" class="relative flex w-full flex-col items-center">
-            <!-- Kilau Bintang Lembut saat Kartu Terbuka -->
+            <!-- Banner Perayaan Khusus Hadiah Otomatis Bar Kasih Sayang Penuh -->
+            <div
+              v-if="isAffinityAutoDrop"
+              class="mb-3.5 w-full max-w-[360px] rounded-2xl border-[1.5px] px-4 py-2 text-center shadow-sm"
+              style="
+                background: var(--accent-soft);
+                border-color: var(--border-strong);
+                color: var(--text-primary);
+              "
+            >
+              <p class="font-display text-xs font-extrabold tracking-wide" style="color: var(--accent-primary)">
+                🎉 HADIAH BAR KASIH SAYANG PENUH! 🎉
+              </p>
+              <p class="mt-0.5 text-[11px] font-semibold" style="color: var(--text-secondary)">
+                {{
+                  lastDrawnCardResult.isNew
+                    ? 'Kartu rahasia acak terbuka gratis & langsung tersimpan ke Albummu~'
+                    : `Seluruh ${totalCardsCount}/${totalCardsCount} kartu sudah terkoleksi! Kamu dapat bonus +${lastDrawnCardResult.bonusFish ?? AFFINITY_DROP_DUPLICATE_FISH_BONUS} 🐟!`
+                }}
+              </p>
+            </div>
+
+            <!-- Kilau Partikel Bertema saat Kartu Terbuka -->
             <div
               v-if="showRevealSparks"
               aria-hidden="true"
-              class="pointer-events-none absolute left-1/2 top-40 z-20"
+              class="pointer-events-none absolute left-1/2 top-44 z-20"
             >
               <span
                 v-for="(spark, idx) in revealSparkOffsets"
                 :key="`gacha-spark-${idx}`"
-                class="animate-spark-pop absolute text-lg drop-shadow-[0_0_8px_rgba(253,224,71,0.9)]"
+                class="animate-spark-pop absolute text-lg"
                 :style="{ '--tx': spark.tx, '--ty': spark.ty }"
               >
                 {{ spark.symbol }}
@@ -217,7 +322,7 @@ onUnmounted(() => {
 
             <!-- Kartu 3D Flip Container -->
             <div
-              class="gacha-card-scene relative h-[320px] w-full max-w-[330px] cursor-pointer select-none sm:h-[340px]"
+              class="gacha-card-scene relative h-[320px] w-full max-w-[340px] cursor-pointer select-none sm:h-[340px]"
               title="Klik kartu untuk membalik ulang"
               @click="isCardFlipped = !isCardFlipped"
             >
@@ -225,47 +330,75 @@ onUnmounted(() => {
                 class="gacha-card-inner relative h-full w-full"
                 :class="{ 'is-flipped': isCardFlipped }"
               >
-                <!-- Sisi Belakang Kartu (Amplop Rahasia Kucing) -->
+                <!-- Sisi Belakang Kartu (Amplop Rahasia Kucing — Sinkron Tema) -->
                 <div
-                  class="gacha-card-face flex flex-col items-center justify-center rounded-3xl border-2 border-pink-300/60 bg-gradient-to-br from-[#3b1c6e] via-[#5b2189] to-[#83286c] p-6 text-center shadow-xl shadow-purple-950/60"
+                  class="gacha-card-face flex flex-col items-center justify-center rounded-3xl border-2 p-6 text-center shadow-xl"
+                  style="
+                    background: var(--accent-gradient);
+                    border-color: var(--border-strong);
+                    color: var(--accent-on-primary);
+                  "
                 >
-                  <div class="mb-3 flex h-20 w-20 items-center justify-center rounded-full border border-pink-200/50 bg-white/15 text-4xl shadow-inner">
+                  <div
+                    class="mb-3 flex h-20 w-20 items-center justify-center rounded-full border-2 text-4xl shadow-inner"
+                    style="
+                      background: rgba(255, 255, 255, 0.25);
+                      border-color: rgba(255, 255, 255, 0.45);
+                    "
+                  >
                     💌
                   </div>
-                  <p class="font-display text-lg font-bold text-pink-100">
+                  <p class="font-display text-lg font-bold">
                     Pesan Rahasia Kucing
                   </p>
-                  <p class="mt-1 text-xs font-medium text-purple-100/80">
-                    ✦ Membuka amplop bintang... ✦
+                  <p class="mt-1 text-xs font-bold opacity-85">
+                    {{ themeSparkSymbols[0] }} Membuka amplop kejutan... {{ themeSparkSymbols[1] }}
                   </p>
                 </div>
 
-                <!-- Sisi Depan Kartu (Hasil Gacha) -->
+                <!-- Sisi Depan Kartu (Hasil Gacha / Auto-Drop — Sinkron Tema & Mode Terang/Gelap) -->
                 <div
                   class="gacha-card-face gacha-card-back flex flex-col justify-between rounded-3xl border-2 p-5 text-center shadow-2xl"
-                  :class="
-                    lastDrawnCardResult.isNew
-                      ? 'border-amber-200/80 bg-gradient-to-br from-[#2f1757] via-[#451d68] to-[#2c1545] shadow-amber-300/20'
-                      : 'border-pink-300/65 bg-gradient-to-br from-[#28164a] via-[#3a1f5e] to-[#261340] shadow-pink-500/20'
+                  style="
+                    background: var(--card-bg-solid);
+                    border-color: var(--accent-primary);
+                    color: var(--text-primary);
+                    box-shadow: 0 18px 42px -12px var(--twilight-glow);
                   "
                 >
-                  <!-- Baris Atas: Nomor Kartu + Badge BARU! / Duplikat (+1 💖) -->
+                  <!-- Baris Atas: Nomor Kartu + Badge BARU! / Bonus -->
                   <div class="flex items-center justify-between gap-2">
                     <span
-                      class="rounded-full border border-white/20 bg-black/25 px-2.5 py-0.5 text-[11px] font-bold text-purple-100"
+                      class="rounded-full border px-2.5 py-0.5 text-[11px] font-bold"
+                      style="
+                        background: var(--surface-subtle);
+                        border-color: var(--border-subtle);
+                        color: var(--text-secondary);
+                      "
                     >
                       {{ formatCardNumber(lastDrawnCardResult.card.number) }} / {{ totalCardsCount }}
                     </span>
 
                     <span
                       v-if="lastDrawnCardResult.isNew"
-                      class="animate-pulse rounded-full border border-amber-200/80 bg-gradient-to-r from-amber-300 to-pink-300 px-2.5 py-0.5 text-[10px] font-extrabold text-[#2a103d] shadow-sm"
+                      class="cozy-active-btn animate-pulse rounded-full px-2.5 py-0.5 text-[10px] font-extrabold shadow-sm"
                     >
                       ✨ BARU!
                     </span>
                     <span
+                      v-else-if="isAffinityAutoDrop && (lastDrawnCardResult.bonusFish ?? 0) > 0"
+                      class="cozy-active-btn rounded-full px-2.5 py-0.5 text-[10px] font-extrabold shadow-sm"
+                    >
+                      🐟 Bonus +{{ lastDrawnCardResult.bonusFish }} Koin Ikan!
+                    </span>
+                    <span
                       v-else
-                      class="rounded-full border border-pink-200/55 bg-pink-400/25 px-2.5 py-0.5 text-[10px] font-bold text-pink-100"
+                      class="rounded-full border px-2.5 py-0.5 text-[10px] font-bold"
+                      style="
+                        background: var(--accent-soft);
+                        border-color: var(--border-strong);
+                        color: var(--text-primary);
+                      "
                     >
                       ♻️ Duplikat (+1 💖)
                     </span>
@@ -274,18 +407,29 @@ onUnmounted(() => {
                   <!-- Tengah: Emoji Kucing Besar, Nama Kartu & Badge Kategori -->
                   <div class="my-1 flex flex-col items-center">
                     <div
-                      class="mb-2 flex h-16 w-16 items-center justify-center rounded-full border border-pink-200/40 bg-white/10 text-4xl shadow-[0_0_24px_rgba(249,168,212,0.35)]"
+                      class="mb-2 flex h-16 w-16 items-center justify-center rounded-full border-2 text-4xl shadow-md"
+                      style="
+                        background: var(--accent-soft);
+                        border-color: var(--border-strong);
+                      "
                     >
                       {{ lastDrawnCardResult.card.emoji }}
                     </div>
 
-                    <h3 class="font-display text-base font-bold text-white">
+                    <h3
+                      class="font-display text-base font-bold"
+                      style="color: var(--text-primary)"
+                    >
                       {{ lastDrawnCardResult.card.name }}
                     </h3>
 
                     <span
                       class="mt-1 inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[10px] font-bold"
-                      :class="SECRET_CARD_CATEGORIES[lastDrawnCardResult.card.category].badgeClass"
+                      style="
+                        background: var(--accent-badge-bg);
+                        border-color: var(--accent-badge-border);
+                        color: var(--accent-badge-text);
+                      "
                     >
                       <span>{{ SECRET_CARD_CATEGORIES[lastDrawnCardResult.card.category].icon }}</span>
                       <span>{{ SECRET_CARD_CATEGORIES[lastDrawnCardResult.card.category].label }}</span>
@@ -294,7 +438,12 @@ onUnmounted(() => {
 
                   <!-- Isi Teks Kartu -->
                   <div
-                    class="rounded-2xl border border-white/15 bg-black/25 px-3.5 py-3 text-xs font-semibold leading-relaxed text-pink-50"
+                    class="rounded-2xl border px-3.5 py-3 text-xs font-semibold leading-relaxed"
+                    style="
+                      background: var(--surface-subtle);
+                      border-color: var(--border-subtle);
+                      color: var(--text-primary);
+                    "
                   >
                     "{{ lastDrawnCardResult.card.text }}"
                   </div>
@@ -305,56 +454,85 @@ onUnmounted(() => {
             <!-- Pesan jika koin kurang saat klik Tarik Lagi -->
             <p
               v-if="gachaErrorText"
-              class="mt-3 rounded-full border border-amber-200/40 bg-amber-400/15 px-3 py-1 text-xs font-semibold text-amber-100"
+              class="mt-3 rounded-full border px-3.5 py-1 text-xs font-bold"
+              style="
+                background: var(--accent-soft);
+                border-color: var(--border-strong);
+                color: var(--text-primary);
+              "
             >
               {{ gachaErrorText }}
             </p>
 
             <!-- Tombol Aksi di Bawah Kartu -->
             <div class="mt-5 flex flex-wrap items-center justify-center gap-2.5">
-              <button
-                type="button"
-                class="btn-bouncy inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-4 py-2 text-xs font-bold shadow-lg transition"
-                :class="
-                  treatCoins >= SECRET_CARD_GACHA_COST
-                    ? 'border-pink-200/70 bg-gradient-to-r from-[#f9a8d4] to-[#c084fc] text-[#2a103d] hover:brightness-105'
-                    : 'border-white/15 bg-white/10 text-purple-200/65'
-                "
-                @click="handleDrawAgain"
-              >
-                <span>🎴</span>
-                <span>Tarik Lagi ({{ SECRET_CARD_GACHA_COST }} 🐟)</span>
-              </button>
+              <!-- Jika kartu berasal dari Hadiah Bar Kasih Sayang Penuh -->
+              <template v-if="isAffinityAutoDrop">
+                <button
+                  type="button"
+                  class="cozy-active-btn btn-bouncy inline-flex cursor-pointer items-center gap-1.5 rounded-full px-5 py-2 text-xs font-bold shadow-md transition"
+                  @click="handleSaveToAlbum"
+                >
+                  <span>💾</span>
+                  <span>Simpan ke Album ({{ collectedCount }}/{{ totalCardsCount }})</span>
+                </button>
 
-              <button
-                type="button"
-                class="btn-bouncy inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-purple-200/35 bg-white/10 px-4 py-2 text-xs font-semibold text-purple-100 hover:bg-white/20"
-                @click="secretCardModalMode = 'album'"
-              >
-                <span>📖</span>
-                <span>Lihat Koleksi ({{ collectedCount }}/{{ totalCardsCount }})</span>
-              </button>
+                <button
+                  type="button"
+                  class="cozy-secondary-btn btn-bouncy inline-flex cursor-pointer items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold transition"
+                  @click="closeModal"
+                >
+                  <span>Tutup</span>
+                </button>
+              </template>
+
+              <!-- Jika kartu berasal dari Gacha biasa -->
+              <template v-else>
+                <button
+                  type="button"
+                  class="btn-bouncy inline-flex cursor-pointer items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold shadow-md transition"
+                  :class="treatCoins >= SECRET_CARD_GACHA_COST ? 'cozy-active-btn' : 'cozy-secondary-btn opacity-75'"
+                  @click="handleDrawAgain"
+                >
+                  <span>🎴</span>
+                  <span>Tarik Lagi ({{ SECRET_CARD_GACHA_COST }} 🐟)</span>
+                </button>
+
+                <button
+                  type="button"
+                  class="cozy-secondary-btn btn-bouncy inline-flex cursor-pointer items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold transition"
+                  @click="secretCardModalMode = 'album'"
+                >
+                  <span>📖</span>
+                  <span>Lihat Koleksi ({{ collectedCount }}/{{ totalCardsCount }})</span>
+                </button>
+              </template>
             </div>
           </div>
 
           <!-- Kondisi jika user membuka tab Gacha tanpa kartu yang baru ditarik -->
           <div v-else class="flex flex-col items-center py-8 text-center">
             <div class="mb-3 text-5xl">💌</div>
-            <p class="font-display text-base font-bold text-pink-100">
+            <p class="font-display text-base font-bold" style="color: var(--text-primary)">
               Siap menarik Pesan Rahasia Kucing?
             </p>
-            <p class="mt-1 max-w-sm text-xs text-purple-200/80">
-              Kumpulkan 18 kartu kawaii berisi kutipan penyemangat, fakta lucu kucing, dan jokes bapak-bapak garing!
+            <p class="mt-1 max-w-sm text-xs font-medium" style="color: var(--text-secondary)">
+              Kumpulkan {{ totalCardsCount }} kartu kawaii berisi kutipan penyemangat, fakta unik kucing, jokes bapak kucing, dan gombalan manis kucing!
             </p>
             <p
               v-if="gachaErrorText"
-              class="mt-3 rounded-full border border-amber-200/40 bg-amber-400/15 px-3 py-1 text-xs font-semibold text-amber-100"
+              class="mt-3 rounded-full border px-3.5 py-1 text-xs font-bold"
+              style="
+                background: var(--accent-soft);
+                border-color: var(--border-strong);
+                color: var(--text-primary);
+              "
             >
               {{ gachaErrorText }}
             </p>
             <button
               type="button"
-              class="btn-bouncy mt-4 inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-pink-200/70 bg-gradient-to-r from-[#f9a8d4] to-[#c084fc] px-5 py-2 text-xs font-bold text-[#2a103d] shadow-lg"
+              class="cozy-active-btn btn-bouncy mt-4 inline-flex cursor-pointer items-center gap-1.5 rounded-full px-5 py-2 text-xs font-bold shadow-md"
               @click="handleDrawAgain"
             >
               <span>🎴</span>
@@ -363,33 +541,33 @@ onUnmounted(() => {
           </div>
         </div>
 
-        <!-- KONTEN 2: MODE ALBUM KOLEKSI KARTU (X/18) -->
-        <div v-else class="flex flex-1 flex-col overflow-hidden px-5 py-4">
-          <!-- Bilah Progres Koleksi + Filter Kategori -->
+        <!-- KONTEN 2: MODE ALBUM KOLEKSI KARTU (X/36) -->
+        <div v-else class="relative z-10 flex flex-1 flex-col overflow-hidden px-5 py-4">
+          <!-- Bilah Progres Koleksi + 4 Filter Kategori -->
           <div class="mb-3 flex flex-col gap-2.5">
             <div class="flex items-center justify-between gap-2 text-xs font-bold">
-              <span class="text-pink-100">
+              <span style="color: var(--text-primary)">
                 ✨ Progres Koleksi: {{ collectedCount }}/{{ totalCardsCount }} Kartu
               </span>
-              <span class="text-amber-200">{{ collectionPercent }}%</span>
+              <span style="color: var(--accent-primary)">{{ collectionPercent }}%</span>
             </div>
-            <div class="h-2 w-full overflow-hidden rounded-full bg-black/30">
+            <div
+              class="h-2.5 w-full overflow-hidden rounded-full border"
+              style="background: var(--surface-subtle); border-color: var(--border-subtle)"
+            >
               <div
-                class="h-full rounded-full bg-gradient-to-r from-[#f9a8d4] via-[#c084fc] to-[#fde68a] transition-all duration-500"
+                class="h-full rounded-full transition-all duration-500"
+                style="background: var(--accent-gradient)"
                 :style="{ width: `${collectionPercent}%` }"
               />
             </div>
 
-            <!-- Filter Kategori -->
-            <div class="flex flex-wrap items-center gap-1.5 text-[11px] font-semibold">
+            <!-- 4 Filter Kategori + Semua -->
+            <div class="flex flex-wrap items-center gap-1.5 text-[11px] font-bold">
               <button
                 type="button"
                 class="cursor-pointer rounded-full border px-2.5 py-1 transition"
-                :class="
-                  activeAlbumFilter === 'all'
-                    ? 'border-pink-200/80 bg-pink-300/25 text-white'
-                    : 'border-white/15 bg-white/5 text-purple-200/80 hover:bg-white/15'
-                "
+                :class="activeAlbumFilter === 'all' ? 'cozy-active-btn border-transparent shadow-sm' : 'cozy-tab-inactive'"
                 @click="activeAlbumFilter = 'all'"
               >
                 Semua ({{ totalCardsCount }})
@@ -399,14 +577,10 @@ onUnmounted(() => {
                 :key="cat.id"
                 type="button"
                 class="cursor-pointer rounded-full border px-2.5 py-1 transition"
-                :class="
-                  activeAlbumFilter === cat.id
-                    ? cat.badgeClass
-                    : 'border-white/15 bg-white/5 text-purple-200/80 hover:bg-white/15'
-                "
+                :class="activeAlbumFilter === cat.id ? 'cozy-active-btn border-transparent shadow-sm' : 'cozy-tab-inactive'"
                 @click="activeAlbumFilter = cat.id"
               >
-                {{ cat.icon }} {{ cat.shortLabel }}
+                {{ cat.icon }} {{ cat.shortLabel }} ({{ categoryTotalCounts[cat.id] }})
               </button>
             </div>
           </div>
@@ -414,25 +588,37 @@ onUnmounted(() => {
           <!-- Pratinjau Detail Kartu Terpilih dari Album -->
           <div
             v-if="inspectingAlbumCard"
-            class="mb-3 rounded-2xl border border-pink-300/55 bg-gradient-to-r from-pink-500/20 via-purple-500/20 to-indigo-500/20 p-3.5 text-left shadow-inner"
+            class="mb-3 rounded-2xl border-[1.5px] p-3.5 text-left shadow-sm"
+            style="
+              background: var(--accent-soft);
+              border-color: var(--border-strong);
+              color: var(--text-primary);
+            "
           >
             <div class="flex items-start justify-between gap-2">
               <div class="flex items-center gap-2.5">
-                <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-white/25 bg-white/10 text-2xl">
+                <span
+                  class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border text-2xl"
+                  style="background: var(--card-bg-solid); border-color: var(--border-subtle)"
+                >
                   {{ inspectingAlbumCard.emoji }}
                 </span>
                 <div>
                   <div class="flex flex-wrap items-center gap-1.5">
-                    <span class="text-[10px] font-bold text-pink-200">
+                    <span class="text-[10px] font-extrabold" style="color: var(--accent-primary)">
                       {{ formatCardNumber(inspectingAlbumCard.number) }}
                     </span>
-                    <span class="font-display text-sm font-bold text-white">
+                    <span class="font-display text-sm font-bold" style="color: var(--text-primary)">
                       {{ inspectingAlbumCard.name }}
                     </span>
                   </div>
                   <span
                     class="mt-0.5 inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[9.5px] font-bold"
-                    :class="SECRET_CARD_CATEGORIES[inspectingAlbumCard.category].badgeClass"
+                    style="
+                      background: var(--accent-badge-bg);
+                      border-color: var(--accent-badge-border);
+                      color: var(--accent-badge-text);
+                    "
                   >
                     {{ SECRET_CARD_CATEGORIES[inspectingAlbumCard.category].icon }}
                     {{ SECRET_CARD_CATEGORIES[inspectingAlbumCard.category].label }}
@@ -441,18 +627,25 @@ onUnmounted(() => {
               </div>
               <button
                 type="button"
-                class="cursor-pointer rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-bold text-purple-100 hover:bg-white/20"
+                class="cozy-secondary-btn cursor-pointer rounded-full px-2 py-0.5 text-[10px] font-bold"
                 @click="inspectingAlbumCard = null"
               >
                 ✕
               </button>
             </div>
-            <p class="mt-2.5 rounded-xl bg-black/25 px-3 py-2 text-xs font-semibold leading-relaxed text-pink-50">
+            <p
+              class="mt-2.5 rounded-xl border px-3 py-2 text-xs font-semibold leading-relaxed"
+              style="
+                background: var(--card-bg-solid);
+                border-color: var(--border-subtle);
+                color: var(--text-primary);
+              "
+            >
               "{{ inspectingAlbumCard.text }}"
             </p>
           </div>
 
-          <!-- Grid 18 Kartu Koleksi -->
+          <!-- Grid 36 Kartu Koleksi -->
           <div class="grid flex-1 grid-cols-1 gap-2 overflow-y-auto pr-1 sm:grid-cols-2">
             <button
               v-for="card in filteredAlbumCards"
@@ -460,13 +653,26 @@ onUnmounted(() => {
               type="button"
               :disabled="!isCardCollected(card.id)"
               class="flex flex-col justify-between rounded-2xl border p-3 text-left transition"
-              :class="
+              :style="
                 isCardCollected(card.id)
                   ? inspectingAlbumCard?.id === card.id
-                    ? 'cursor-pointer border-pink-300/85 bg-pink-300/20 shadow-md'
-                    : 'cursor-pointer border-white/20 bg-white/10 hover:border-pink-200/50 hover:bg-white/15'
-                  : 'cursor-default border-white/10 bg-black/30 opacity-70'
+                    ? {
+                        background: 'var(--accent-soft)',
+                        borderColor: 'var(--accent-primary)',
+                        color: 'var(--text-primary)',
+                      }
+                    : {
+                        background: 'var(--accent-surface)',
+                        borderColor: 'var(--border-subtle)',
+                        color: 'var(--text-primary)',
+                      }
+                  : {
+                      background: 'var(--surface-subtle)',
+                      borderColor: 'var(--border-subtle)',
+                      color: 'var(--text-muted)',
+                    }
               "
+              :class="isCardCollected(card.id) ? 'cursor-pointer hover:brightness-105' : 'cursor-default opacity-80'"
               @click="openAlbumCardDetail(card)"
             >
               <!-- Kartu Sudah Terkoleksi -->
@@ -475,19 +681,26 @@ onUnmounted(() => {
                   <div class="flex min-w-0 items-center gap-2">
                     <span class="text-xl leading-none">{{ card.emoji }}</span>
                     <div class="min-w-0">
-                      <p class="truncate text-xs font-bold text-white">
+                      <p class="truncate text-xs font-bold" style="color: var(--text-primary)">
                         {{ formatCardNumber(card.number) }} {{ card.name }}
                       </p>
                       <span
-                        class="mt-0.5 inline-block rounded-full border px-1.5 py-0.2 text-[9px] font-semibold"
-                        :class="SECRET_CARD_CATEGORIES[card.category].badgeClass"
+                        class="mt-0.5 inline-block rounded-full border px-1.5 py-0.2 text-[9px] font-bold"
+                        style="
+                          background: var(--accent-badge-bg);
+                          border-color: var(--accent-badge-border);
+                          color: var(--accent-badge-text);
+                        "
                       >
                         {{ SECRET_CARD_CATEGORIES[card.category].icon }} {{ SECRET_CARD_CATEGORIES[card.category].shortLabel }}
                       </span>
                     </div>
                   </div>
                 </div>
-                <p class="mt-2 line-clamp-2 text-[11px] leading-snug text-pink-50/90">
+                <p
+                  class="mt-2 line-clamp-2 text-[11px] font-medium leading-snug"
+                  style="color: var(--text-secondary)"
+                >
                   "{{ card.text }}"
                 </p>
               </template>
@@ -495,39 +708,47 @@ onUnmounted(() => {
               <!-- Kartu Belum Didapat: Siluet Misteri 🔒 ??? -->
               <template v-else>
                 <div class="flex items-center justify-between gap-2">
-                  <span class="text-[10px] font-bold text-purple-300/70">
+                  <span class="text-[10px] font-bold" style="color: var(--text-secondary)">
                     {{ formatCardNumber(card.number) }}
                   </span>
                   <span
-                    class="rounded-full border border-white/15 bg-white/5 px-1.5 py-0.5 text-[9px] font-semibold text-purple-200/70"
+                    class="rounded-full border px-1.5 py-0.5 text-[9px] font-semibold"
+                    style="
+                      background: var(--card-bg-solid);
+                      border-color: var(--border-subtle);
+                      color: var(--text-secondary);
+                    "
                   >
                     {{ SECRET_CARD_CATEGORIES[card.category].icon }} {{ SECRET_CARD_CATEGORIES[card.category].shortLabel }}
                   </span>
                 </div>
                 <div class="my-2 flex items-center justify-center gap-1.5 py-1 text-center">
-                  <span class="font-display text-sm font-bold tracking-wider text-purple-200/65">
+                  <span class="font-display text-sm font-bold tracking-wider" style="color: var(--text-secondary)">
                     🔒 ???
                   </span>
                 </div>
-                <p class="text-center text-[10px] text-purple-300/55">
-                  Tarik Gacha (2 🐟) untuk membuka
+                <p class="text-center text-[10px] font-medium" style="color: var(--text-muted)">
+                  Tarik Gacha ({{ SECRET_CARD_GACHA_COST }} 🐟) atau penuhi Bar Kasih Sayang 💖
                 </p>
               </template>
             </button>
           </div>
 
           <!-- Footer Album: tombol cepat tarik gacha -->
-          <div class="mt-3 flex items-center justify-between gap-2 border-t border-white/15 pt-3">
-            <span class="text-[11px] font-medium text-purple-200/80">
+          <div
+            class="mt-3 flex flex-wrap items-center justify-between gap-2 border-t pt-3"
+            style="border-color: var(--border-subtle)"
+          >
+            <span class="text-[11px] font-semibold" style="color: var(--text-secondary)">
               {{
                 collectedCount >= totalCardsCount
-                  ? '🌟 Koleksi 18/18 lengkap! Tarikan berikutnya beri +1 💖'
-                  : 'Kartu baru diprioritaskan hingga 18/18 lengkap~'
+                  ? `🌟 Koleksi ${totalCardsCount}/${totalCardsCount} lengkap! Gacha beri +1 💖 • Auto-drop beri +${AFFINITY_DROP_DUPLICATE_FISH_BONUS} 🐟`
+                  : `Kartu baru diprioritaskan hingga ${totalCardsCount}/${totalCardsCount} lengkap~`
               }}
             </span>
             <button
               type="button"
-              class="btn-bouncy shrink-0 cursor-pointer rounded-full border border-pink-200/70 bg-gradient-to-r from-[#f9a8d4] to-[#c084fc] px-3.5 py-1.5 text-[11px] font-bold text-[#2a103d] shadow"
+              class="cozy-active-btn btn-bouncy shrink-0 cursor-pointer rounded-full px-3.5 py-1.5 text-[11px] font-bold shadow"
               @click="handleDrawAgain"
             >
               🎴 Tarik ({{ SECRET_CARD_GACHA_COST }} 🐟)

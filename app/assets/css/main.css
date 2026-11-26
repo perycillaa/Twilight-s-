@@ -1311,6 +1311,191 @@ html[data-theme="ocean"][data-theme-mode="light"] {
   --slider-thumb-grad: linear-gradient(135deg, #38bdf8 0%, #0369a1 100%);
 }
 
+/* ============================================================================
+ * VARIABEL WARNA KURSOR KUSTOM DINAMIS (--cursor-fill, --cursor-stroke, --cursor-secondary, --cursor-glow)
+ * Mengikuti Tema Aktif, 3 Palet Default Twilight (Ungu / Pink Berry / Biru), & Mode Gelap/Terang
+ * ============================================================================ */
+
+/* Default Twilight — Palet Ungu (🌙 Vibe Gelap) */
+:root,
+html[data-theme="twilight"] {
+  --cursor-fill: #a78bfa;
+  --cursor-secondary: #c4b5fd;
+  --cursor-stroke: #f5f3ff;
+  --cursor-glow: rgba(167, 139, 250, 0.8);
+}
+
+/* Default Twilight — Palet Ungu (☀️ Vibe Terang) */
+html[data-theme="twilight"][data-theme-mode="light"] {
+  --cursor-fill: #8b5cf6;
+  --cursor-secondary: #a78bfa;
+  --cursor-stroke: #5b21b6;
+  --cursor-glow: rgba(91, 33, 182, 0.35);
+}
+
+/* Default Twilight — Palet Pink Berry (🌙 Vibe Gelap) */
+html[data-theme="sakura"] {
+  --cursor-fill: #f472b6;
+  --cursor-secondary: #fbcfe8;
+  --cursor-stroke: #fff1f2;
+  --cursor-glow: rgba(244, 114, 182, 0.82);
+}
+
+/* Default Twilight — Palet Pink Berry (☀️ Vibe Terang) */
+html[data-theme="sakura"][data-theme-mode="light"] {
+  --cursor-fill: #ec4899;
+  --cursor-secondary: #f472b6;
+  --cursor-stroke: #be185d;
+  --cursor-glow: rgba(190, 24, 93, 0.35);
+}
+
+/* Default Twilight — Palet Biru (🌙 Vibe Gelap) */
+html[data-theme="ocean"] {
+  --cursor-fill: #38bdf8;
+  --cursor-secondary: #7dd3fc;
+  --cursor-stroke: #f0f9ff;
+  --cursor-glow: rgba(56, 189, 248, 0.84);
+}
+
+/* Default Twilight — Palet Biru (☀️ Vibe Terang) */
+html[data-theme="ocean"][data-theme-mode="light"] {
+  --cursor-fill: #0284c7;
+  --cursor-secondary: #38bdf8;
+  --cursor-stroke: #0369a1;
+  --cursor-glow: rgba(3, 105, 161, 0.36);
+}
+
+/* Tema Toko & Milestone (🌙 Vibe Gelap & ☀️ Vibe Terang) */
+html[data-cozy-theme="matcha-garden"] {
+  --cursor-fill: #4ade80;
+  --cursor-secondary: #86efac;
+  --cursor-stroke: #ecfdf5;
+  --cursor-glow: rgba(74, 222, 128, 0.82);
+}
+html[data-cozy-theme="matcha-garden"][data-theme-mode="light"] {
+  --cursor-fill: #16a34a;
+  --cursor-secondary: #4ade80;
+  --cursor-stroke: #14532d;
+  --cursor-glow: rgba(20, 83, 45, 0.36);
+}
+
+html[data-cozy-theme="autumn-cafe"] {
+  --cursor-fill: #fb923c;
+  --cursor-secondary: #fbbf24;
+  --cursor-stroke: #fef3c7;
+  --cursor-glow: rgba(251, 146, 60, 0.84);
+}
+html[data-cozy-theme="autumn-cafe"][data-theme-mode="light"] {
+  --cursor-fill: #ea580c;
+  --cursor-secondary: #f59e0b;
+  --cursor-stroke: #7c2d12;
+  --cursor-glow: rgba(124, 45, 18, 0.36);
+}
+
+html[data-cozy-theme="honey-library"] {
+  --cursor-fill: #fcd34d;
+  --cursor-secondary: #fde68a;
+  --cursor-stroke: #fffbeb;
+  --cursor-glow: rgba(252, 211, 77, 0.84);
+}
+html[data-cozy-theme="honey-library"][data-theme-mode="light"] {
+  --cursor-fill: #d97706;
+  --cursor-secondary: #f59e0b;
+  --cursor-stroke: #78350f;
+  --cursor-glow: rgba(120, 53, 15, 0.36);
+}
+
+html[data-cozy-theme="sakura-lantern"] {
+  --cursor-fill: #f472b6;
+  --cursor-secondary: #fda4af;
+  --cursor-stroke: #fff1f2;
+  --cursor-glow: rgba(244, 114, 182, 0.84);
+}
+html[data-cozy-theme="sakura-lantern"][data-theme-mode="light"] {
+  --cursor-fill: #e11d48;
+  --cursor-secondary: #f472b6;
+  --cursor-stroke: #881337;
+  --cursor-glow: rgba(136, 19, 55, 0.36);
+}
+
+html[data-cozy-theme="midnight-rain"] {
+  --cursor-fill: #60a5fa;
+  --cursor-secondary: #93c5fd;
+  --cursor-stroke: #eff6ff;
+  --cursor-glow: rgba(96, 165, 250, 0.84);
+}
+html[data-cozy-theme="midnight-rain"][data-theme-mode="light"] {
+  --cursor-fill: #2563eb;
+  --cursor-secondary: #60a5fa;
+  --cursor-stroke: #1e3a8a;
+  --cursor-glow: rgba(30, 58, 138, 0.36);
+}
+
+html[data-cozy-theme="biolum-ocean"] {
+  --cursor-fill: #00f5d4;
+  --cursor-secondary: #22d3ee;
+  --cursor-stroke: #ecfeff;
+  --cursor-glow: rgba(0, 245, 212, 0.88);
+}
+html[data-cozy-theme="biolum-ocean"][data-theme-mode="light"] {
+  --cursor-fill: #0d9488;
+  --cursor-secondary: #14b8a6;
+  --cursor-stroke: #115e59;
+  --cursor-glow: rgba(17, 94, 89, 0.38);
+}
+
+html[data-cozy-theme="winter-frost"] {
+  --cursor-fill: #7dd3fc;
+  --cursor-secondary: #bae6fd;
+  --cursor-stroke: #ffffff;
+  --cursor-glow: rgba(125, 211, 252, 0.86);
+}
+html[data-cozy-theme="winter-frost"][data-theme-mode="light"] {
+  --cursor-fill: #0284c7;
+  --cursor-secondary: #38bdf8;
+  --cursor-stroke: #075985;
+  --cursor-glow: rgba(7, 89, 133, 0.36);
+}
+
+html[data-cozy-theme="pastel-cloudland"] {
+  --cursor-fill: #93c5fd;
+  --cursor-secondary: #c4b5fd;
+  --cursor-stroke: #ffffff;
+  --cursor-glow: rgba(147, 197, 253, 0.84);
+}
+html[data-cozy-theme="pastel-cloudland"][data-theme-mode="light"] {
+  --cursor-fill: #3b82f6;
+  --cursor-secondary: #8b5cf6;
+  --cursor-stroke: #1d4ed8;
+  --cursor-glow: rgba(29, 78, 216, 0.36);
+}
+
+html[data-cozy-theme="astral-palace"] {
+  --cursor-fill: #34d399;
+  --cursor-secondary: #fde047;
+  --cursor-stroke: #fef9c3;
+  --cursor-glow: rgba(52, 211, 153, 0.88);
+}
+html[data-cozy-theme="astral-palace"][data-theme-mode="light"] {
+  --cursor-fill: #059669;
+  --cursor-secondary: #7c3aed;
+  --cursor-stroke: #064e3b;
+  --cursor-glow: rgba(6, 78, 59, 0.36);
+}
+
+html[data-cozy-theme="neon-night-city"] {
+  --cursor-fill: #00f5d4;
+  --cursor-secondary: #ff2a85;
+  --cursor-stroke: #f0fdfa;
+  --cursor-glow: rgba(0, 245, 212, 0.9);
+}
+html[data-cozy-theme="neon-night-city"][data-theme-mode="light"] {
+  --cursor-fill: #db2777;
+  --cursor-secondary: #0891b2;
+  --cursor-stroke: #831843;
+  --cursor-glow: rgba(131, 24, 67, 0.38);
+}
+
 /* 1. 🍵 MATCHA GARDEN (☀️ Mode Terang Pastel) */
 html[data-cozy-theme="matcha-garden"][data-theme-mode="light"] {
   --twilight-bg-base: #dcfce7;

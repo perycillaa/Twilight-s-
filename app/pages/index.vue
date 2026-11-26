@@ -797,12 +797,12 @@ onUnmounted(() => {
                 class="btn-bouncy inline-flex cursor-pointer items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-semibold"
                 :class="
                   activeCursor !== 'off'
-                    ? 'cozy-pill-btn border-pink-200/45 bg-pink-300/20 text-pink-100 shadow-sm'
-                    : 'border-white/15 bg-white/5 text-purple-200/70 hover:bg-white/15 hover:text-white'
+                    ? 'cozy-pill-btn shadow-sm'
+                    : 'cozy-tab-inactive'
                 "
                 @click="isCursorMenuOpen = !isCursorMenuOpen"
               >
-                <span>{{ activeCursorMeta.icon }}</span>
+                <span :style="{ color: 'var(--cursor-fill, var(--accent-primary))' }">{{ activeCursorMeta.icon }}</span>
                 <span>Kursor</span>
                 <span class="text-[9px] opacity-75">▾</span>
               </button>
@@ -821,13 +821,13 @@ onUnmounted(() => {
                   aria-label="Menu pilihan kursor bertema"
                   class="cozy-popover-menu absolute right-0 top-full z-50 mt-2.5 w-72 overflow-hidden rounded-2xl border shadow-2xl backdrop-blur-xl sm:w-80"
                 >
-                  <div class="flex items-center justify-between border-b border-white/15 px-3.5 py-2.5">
+                  <div class="flex items-center justify-between border-b px-3.5 py-2.5" style="border-color: var(--border-subtle)">
                     <div>
-                      <p class="font-display text-xs font-bold text-pink-100">
+                      <p class="font-display text-xs font-bold" style="color: var(--text-primary)">
                         ✨ Pilihan Kursor Bertema
                       </p>
-                      <p class="text-[10px] font-medium text-purple-200/75">
-                        Terbuka otomatis saat tema dimiliki • Tap ripple di HP
+                      <p class="text-[10px] font-medium" style="color: var(--text-secondary)">
+                        Warna otomatis ikuti tema &amp; mode • Tap ripple di HP
                       </p>
                     </div>
                     <span class="cozy-badge rounded-full border px-2 py-0.5 text-[10px] font-bold">
@@ -845,35 +845,43 @@ onUnmounted(() => {
                       class="flex w-full items-center justify-between gap-2 rounded-xl border px-2.5 py-2 text-left transition"
                       :class="
                         activeCursor === cursorOpt.id
-                          ? 'cozy-pill-btn cursor-pointer border-pink-300/60 shadow-sm'
+                          ? 'cozy-pill-btn cursor-pointer shadow-sm'
                           : isCursorUnlocked(cursorOpt.id)
-                            ? 'cursor-pointer border-transparent bg-white/5 hover:border-white/20 hover:bg-white/15'
-                            : 'cursor-not-allowed border-transparent bg-black/10 opacity-60 hover:opacity-75'
+                            ? 'cursor-pointer border-transparent hover:brightness-105'
+                            : 'cursor-not-allowed border-transparent opacity-60 hover:opacity-75'
+                      "
+                      :style="
+                        activeCursor !== cursorOpt.id
+                          ? { background: isCursorUnlocked(cursorOpt.id) ? 'var(--accent-surface)' : 'var(--surface-subtle)' }
+                          : undefined
                       "
                       @click="handleSelectCursorOption(cursorOpt.id)"
                     >
                       <div class="flex min-w-0 items-center gap-2">
                         <span
-                          class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-white/25 text-sm shadow-inner"
+                          class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-[1.5px] text-sm shadow-inner"
                           :style="{
-                            background: `linear-gradient(135deg, ${cursorOpt.accentColor}33, ${cursorOpt.secondaryColor}33)`,
+                            background: 'var(--accent-soft)',
+                            borderColor: 'var(--cursor-stroke, var(--border-strong))',
                           }"
                         >
                           {{ cursorOpt.icon }}
                         </span>
                         <div class="min-w-0">
-                          <p class="truncate text-[11px] font-bold text-white">
+                          <p class="truncate text-[11px] font-bold" style="color: var(--text-primary)">
                             {{ cursorOpt.name }}
                           </p>
                           <p
                             v-if="!isCursorUnlocked(cursorOpt.id)"
-                            class="truncate text-[9.5px] font-semibold text-amber-200/90"
+                            class="truncate text-[9.5px] font-semibold"
+                            style="color: var(--accent-primary)"
                           >
                             🔒 Buka tema {{ cursorOpt.requiredThemeName }}
                           </p>
                           <p
                             v-else
-                            class="truncate text-[9.5px] text-purple-200/75"
+                            class="truncate text-[9.5px]"
+                            style="color: var(--text-secondary)"
                           >
                             {{ cursorOpt.description }}
                           </p>
