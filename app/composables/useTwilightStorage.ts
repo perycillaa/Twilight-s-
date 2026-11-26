@@ -1,5 +1,9 @@
 import { computed, onMounted, watch } from 'vue'
 import { useBackgroundResilience } from '~/composables/useBackgroundResilience'
+import {
+  type FirebaseProfileUser,
+  useFirebaseCloudSync,
+} from '~/composables/useFirebaseCloudSync'
 import { type AlarmSoundId, useSoundEffects } from '~/composables/useSoundEffects'
 
 // Tipe tema warna website (disimpan di localStorage)
@@ -1086,6 +1090,20 @@ export function useTwilightStorage() {
     startTabTitleBlink,
     stopTabTitleBlink,
   } = useBackgroundResilience()
+  const {
+    firebaseUser,
+    isFirebaseAuthReady,
+    isFirebaseAuthBusy,
+    firebaseSyncStatus,
+    firebaseLastSyncedAt,
+    firebaseErrorMessage,
+    isBrowserOnline,
+    initFirebaseSync,
+    signInWithGoogle,
+    signOutGoogle,
+    scheduleFirestoreSync,
+    syncNowWithFirebase,
+  } = useFirebaseCloudSync()
 
   // --- Data tersimpan di localStorage ---
   const theme = useState<ThemeName>('twilights-theme', () => 'twilight')
@@ -1439,19 +1457,21 @@ export function useTwilightStorage() {
       console.warn('Gagal menyimpan data ke localStorage:', err)
     }
 
-    // Jadwalkan sinkronisasi otomatis (debounce 700ms) ke TiDB Cloud di latar belakang
+    // Jadwalkan sinkronisasi otomatis ke Firebase Firestore (jika login Google) & TiDB Cloud di latar belakang
     if (syncCloud && isHydrated.value) {
       scheduleCloudSync()
+      scheduleFirestoreSync(() => buildStateSnapshot())
     }
   }
 
-  /** Kumpulkan snapshot seluruh data untuk dikirim ke TiDB Cloud */
+  /** Kumpulkan snapshot seluruh data pengguna untuk Cloud Sync (Firebase Firestore & TiDB Cloud) */
   function buildStateSnapshot() {
     return {
       userName: userName.value,
       theme: theme.value,
       isDarkTheme: isDarkTheme.value,
       habits: habits.value,
+      customTimerDurations: customTimerDurations.value,
       weeklyProgress: weeklyProgress.value,
       todayFocusSessions: todayFocusSessions.value,
       totalFocusSessions: totalFocusSessions.value,
@@ -1481,11 +1501,18 @@ export function useTwilightStorage() {
       twilights_notebooks: notebooks.value,
       twilights_alarms: alarms.value,
       selectedAlarmSound: selectedAlarmSound.value,
+      gameHighScore: gameHighScore.value,
+      gameDailyClaims: {
+        date: gameDailyClaimDate.value || getLocalTodayDate(),
+        count: gameDailyClaimCount.value,
+        playCount: gameDailyPlayCount.value,
+      },
       isStarCursorEnabled: isStarCursorEnabled.value,
       activeCursor: activeCursor.value,
       graphicsQuality: graphicsQuality.value,
+      isVibrationEnabled: isVibrationEnabled.value,
       isBatterySaverMode: isBatterySaverMode.value,
-      lastActiveDate: getTodayDateString(),
+      lastActiveDate: getLocalTodayDate(),
     }
   }
 
@@ -1580,10 +1607,16 @@ export function useTwilightStorage() {
     }
   }
 
-  /** Helper internal untuk menerapkan payload dari TiDB Cloud ke state lokal */
-  function applyImportedDataSilently(d: Record<string, unknown>) {
+  /** Helper internal untuk menerapkan payload dari Cloud Sync (Firebase Firestore / TiDB) ke state lokal */
+  function applyImportedDataSilently(
+    d: Record<string, unknown>,
+    remoteUser?: FirebaseProfileUser,
+  ) {
     if (typeof d.userName === 'string' && d.userName.trim()) {
       userName.value = d.userName.trim()
+    } else if (remoteUser && userName.value === 'Teman Twilight') {
+      const firstName = remoteUser.displayName.split(' ')[0] || remoteUser.displayName
+      if (firstName) userName.value = firstName
     }
     if (typeof d.isDarkTheme === 'boolean') {
       isDarkTheme.value = d.isDarkTheme
@@ -1591,11 +1624,19 @@ export function useTwilightStorage() {
     if (d.theme === 'twilight' || d.theme === 'sakura' || d.theme === 'ocean') {
       theme.value = d.theme
       applyThemeToDocument(d.theme, isDarkTheme.value)
+    } else {
+      applyThemeToDocument(theme.value, isDarkTheme.value)
     }
     if (Array.isArray(d.habits)) {
       habits.value = d.habits
         .filter((item): item is HabitItem => Boolean(item) && typeof item === 'object' && typeof (item as HabitItem).title === 'string')
         .map((item, idx) => normalizeHabitItem(item, `cloud-h-${idx}`))
+      hadLocalHabits.value = true
+    }
+    const cloudTimerDurations = d.twilights_timer_durations ?? d.customTimerDurations
+    if (cloudTimerDurations && typeof cloudTimerDurations === 'object') {
+      customTimerDurations.value = sanitizeTimerDurations(cloudTimerDurations)
+      timerDurationsVersion.value += 1
     }
     if (Array.isArray(d.weeklyProgress) && d.weeklyProgress.length === 7) {
       weeklyProgress.value = d.weeklyProgress.map(n => Math.max(0, Math.min(100, Number(n) || 0)))
@@ -1679,7 +1720,37 @@ export function useTwilightStorage() {
     ) {
       selectedAlarmSound.value = d.selectedAlarmSound
     }
-    if (typeof d.isStarCursorEnabled === 'boolean') isStarCursorEnabled.value = d.isStarCursorEnabled
+    const cloudHighScore = d.twilights_game_highscore ?? d.gameHighScore
+    if (typeof cloudHighScore === 'number') {
+      gameHighScore.value = Math.max(0, Math.round(cloudHighScore))
+    }
+    const cloudGameClaims = (d.twilights_game_daily_claims ?? d.gameDailyClaims) as
+      | Partial<GameDailyClaimRecord>
+      | undefined
+    if (cloudGameClaims && typeof cloudGameClaims === 'object') {
+      const localToday = getLocalTodayDate()
+      if (cloudGameClaims.date === localToday) {
+        gameDailyClaimDate.value = localToday
+        gameDailyClaimCount.value = Math.max(
+          0,
+          Math.min(MAX_GAME_DAILY_REWARDS, Math.floor(Number(cloudGameClaims.count) || 0)),
+        )
+        gameDailyPlayCount.value = Math.max(
+          0,
+          Math.min(MAX_GAME_DAILY_PLAYS, Math.floor(Number(cloudGameClaims.playCount) || 0)),
+        )
+      }
+    }
+    if (typeof d.isVibrationEnabled === 'boolean') {
+      isVibrationEnabled.value = d.isVibrationEnabled
+    }
+    if (isValidCursorId(d.activeCursor)) {
+      activeCursor.value = isCursorUnlocked(d.activeCursor) ? d.activeCursor : 'starlight-wand'
+      isStarCursorEnabled.value = activeCursor.value !== 'off'
+    } else if (typeof d.isStarCursorEnabled === 'boolean') {
+      isStarCursorEnabled.value = d.isStarCursorEnabled
+      activeCursor.value = d.isStarCursorEnabled ? 'starlight-wand' : 'off'
+    }
     if (isValidGraphicsQuality(d.graphicsQuality)) {
       graphicsQuality.value = d.graphicsQuality
       isBatterySaverMode.value = d.graphicsQuality === 'low'
@@ -1690,19 +1761,9 @@ export function useTwilightStorage() {
       applyGraphicsQualityToDocument(graphicsQuality.value)
     }
 
-    try {
-      localStorage.setItem(STORAGE_KEYS.HABITS, JSON.stringify(habits.value))
-      localStorage.setItem(STORAGE_KEYS.WEEKLY_PROGRESS, JSON.stringify(weeklyProgress.value))
-      localStorage.setItem(STORAGE_KEYS.NOTEBOOKS, JSON.stringify(notebooks.value))
-      localStorage.setItem(STORAGE_KEYS.ALARMS, JSON.stringify(alarms.value))
-      localStorage.setItem(STORAGE_KEYS.USER_NAME, userName.value)
-      localStorage.setItem(STORAGE_KEYS.THEME, theme.value)
-      if (typeof d.lastActiveDate === 'string' && d.lastActiveDate) {
-        localStorage.setItem(STORAGE_KEYS.LAST_ACTIVE_DATE, d.lastActiveDate)
-      }
-    } catch {
-      // Abaikan jika localStorage terbatas
-    }
+    habitResetVersion.value += 1
+    // Simpan seluruh perubahan dari Cloud ke localStorage secara senyap tanpa memicu tulis balik ke Firestore
+    persistAll(false)
   }
 
   /** Memicu ekspresi & gelembung ucapan sementara pada maskot kucing */
@@ -3940,9 +4001,16 @@ export function useTwilightStorage() {
     applyCozyThemeToDocument(val)
   })
 
-  // Muat data localStorage secara aman lalu sinkronkan dengan TiDB Cloud
+  // Muat data localStorage secara aman lalu aktifkan Firebase Auth/Firestore Offline Sync & TiDB Cloud
   onMounted(() => {
     loadFromStorage()
+    initFirebaseSync({
+      getLocalSnapshot: buildStateSnapshot,
+      applyRemoteSnapshot: (remoteData, remoteUser) => {
+        applyImportedDataSilently(remoteData, remoteUser)
+      },
+      onToast: showMiniToast,
+    })
     hydrateFromCloud()
   })
 
@@ -4033,6 +4101,13 @@ export function useTwilightStorage() {
     activeAlarmBadge,
     cloudSyncStatus,
     cloudLastSyncedAt,
+    firebaseUser,
+    isFirebaseAuthReady,
+    isFirebaseAuthBusy,
+    firebaseSyncStatus,
+    firebaseLastSyncedAt,
+    firebaseErrorMessage,
+    isBrowserOnline,
     currentMascotMood,
     mascotSpeech,
     celebrationCount,
@@ -4102,5 +4177,8 @@ export function useTwilightStorage() {
     triggerCatKeyboardInteract,
     showMiniToast,
     pushStateToCloud,
+    signInWithGoogle,
+    signOutGoogle,
+    syncNowWithFirebase,
   }
 }

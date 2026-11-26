@@ -33,6 +33,11 @@ const {
   isSecretCardModalOpen,
   activeAlarmBadge,
   cloudSyncStatus,
+  firebaseUser,
+  isFirebaseAuthBusy,
+  firebaseSyncStatus,
+  firebaseLastSyncedAt,
+  isBrowserOnline,
   setTheme,
   toggleDarkTheme,
   setUserName,
@@ -52,6 +57,9 @@ const {
   exportBackupData,
   importBackupData,
   pushStateToCloud,
+  signInWithGoogle,
+  signOutGoogle,
+  syncNowWithFirebase,
 } = useTwilightStorage()
 
 const {
@@ -103,6 +111,39 @@ const restoreInputRef = ref<HTMLInputElement | null>(null)
 const isCursorMenuOpen = ref<boolean>(false)
 const cursorMenuWrapRef = ref<HTMLElement | null>(null)
 
+// Popover Akun Google & Status Cloud Sync (Firebase Auth + Firestore Offline Persistence)
+const isAccountMenuOpen = ref<boolean>(false)
+const accountMenuWrapRef = ref<HTMLElement | null>(null)
+
+const googleFirstName = computed<string>(() => {
+  const full = firebaseUser.value?.displayName || ''
+  return full.split(' ')[0] || 'Akun'
+})
+
+const formattedFirebaseLastSync = computed<string>(() => {
+  if (!firebaseLastSyncedAt.value) return 'Menunggu sinkronisasi...'
+  try {
+    const d = new Date(firebaseLastSyncedAt.value)
+    return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+  } catch {
+    return 'Baru saja'
+  }
+})
+
+async function handleGoogleLoginClick() {
+  isCursorMenuOpen.value = false
+  await signInWithGoogle()
+}
+
+async function handleGoogleLogoutClick() {
+  isAccountMenuOpen.value = false
+  await signOutGoogle()
+}
+
+async function handleManualFirebaseSync() {
+  await syncNowWithFirebase()
+}
+
 const activeCursorMeta = computed(() => {
   return CURSOR_OPTIONS.find(c => c.id === activeCursor.value) ?? CURSOR_OPTIONS[1]!
 })
@@ -121,10 +162,22 @@ function handleSelectCursorOption(cursorId: CursorStyleId) {
 }
 
 function handleDocumentPointerDown(event: PointerEvent) {
-  if (!isCursorMenuOpen.value) return
   const target = event.target as Node | null
-  if (cursorMenuWrapRef.value && target && !cursorMenuWrapRef.value.contains(target)) {
+  if (
+    isCursorMenuOpen.value &&
+    cursorMenuWrapRef.value &&
+    target &&
+    !cursorMenuWrapRef.value.contains(target)
+  ) {
     isCursorMenuOpen.value = false
+  }
+  if (
+    isAccountMenuOpen.value &&
+    accountMenuWrapRef.value &&
+    target &&
+    !accountMenuWrapRef.value.contains(target)
+  ) {
+    isAccountMenuOpen.value = false
   }
 }
 
@@ -233,7 +286,10 @@ function handleGlobalShortcut(event: KeyboardEvent) {
   // 1. Tombol [Esc]: tutup modal/popup yang terbuka, atau keluar dari Twilight Focus & Starlight Focus
   if (event.key === 'Escape') {
     let handled = false
-    if (isCursorMenuOpen.value) {
+    if (isAccountMenuOpen.value) {
+      isAccountMenuOpen.value = false
+      handled = true
+    } else if (isCursorMenuOpen.value) {
       isCursorMenuOpen.value = false
       handled = true
     } else if (isShortcutsModalOpen.value) {
@@ -891,6 +947,152 @@ onUnmounted(() => {
                 {{ isDarkTheme ? '🌙' : '☀️' }}
               </button>
             </div>
+
+            <!-- Login dengan Google & Status Cloud Sync Otomatis (Firebase Auth + Firestore Offline Persistence) -->
+            <div ref="accountMenuWrapRef" class="relative inline-flex">
+              <!-- Belum Login: Tombol Masuk dengan Google -->
+              <button
+                v-if="!firebaseUser"
+                type="button"
+                :disabled="isFirebaseAuthBusy"
+                title="Login dengan Google agar progres tersinkron otomatis antara PC & HP (tetap aman saat offline)"
+                class="cozy-pill-btn btn-bouncy inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-bold shadow-sm transition disabled:opacity-60"
+                @click="handleGoogleLoginClick"
+              >
+                <svg class="h-3.5 w-3.5 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
+                  <path
+                    fill="#EA4335"
+                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                  />
+                  <path
+                    fill="#4285F4"
+                    d="M23.49 12.27c0-.79-.07-1.54-.19-2.27H12v4.51h6.47c-.29 1.48-1.14 2.73-2.4 3.58v3h3.86c2.26-2.09 3.56-5.17 3.56-8.82z"
+                  />
+                  <path
+                    fill="#FBBC05"
+                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"
+                  />
+                  <path
+                    fill="#34A853"
+                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.86-3c-1.08.72-2.45 1.16-3.42 1.16-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                  />
+                </svg>
+                <span>{{ isFirebaseAuthBusy ? 'Masuk...' : 'Masuk Google' }}</span>
+              </button>
+
+              <!-- Sudah Login: Pil Profil Google + Titik Status Cloud Sync -->
+              <button
+                v-else
+                type="button"
+                :aria-expanded="isAccountMenuOpen"
+                aria-haspopup="menu"
+                :title="`Akun Google: ${firebaseUser.displayName} (${firebaseUser.email}) — Klik untuk detail Cloud Sync`"
+                class="cozy-pill-btn btn-bouncy inline-flex cursor-pointer items-center gap-1.5 rounded-full border py-0.5 pl-1 pr-2.5 text-[11px] font-bold shadow-sm transition"
+                @click="isAccountMenuOpen = !isAccountMenuOpen"
+              >
+                <span class="relative flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/40 bg-black/20 text-[10px] font-bold">
+                  <img
+                    v-if="firebaseUser.photoURL"
+                    :src="firebaseUser.photoURL"
+                    :alt="firebaseUser.displayName"
+                    referrerpolicy="no-referrer"
+                    class="h-full w-full object-cover"
+                  >
+                  <span v-else>{{ googleFirstName.slice(0, 1).toUpperCase() }}</span>
+                </span>
+                <span class="max-w-[72px] truncate">{{ googleFirstName }}</span>
+                <span
+                  class="h-2 w-2 shrink-0 rounded-full"
+                  :class="
+                    firebaseSyncStatus === 'synced'
+                      ? 'bg-emerald-400 shadow-[0_0_6px_#34d399]'
+                      : firebaseSyncStatus === 'syncing'
+                        ? 'animate-ping bg-amber-300'
+                        : firebaseSyncStatus === 'offline'
+                          ? 'bg-sky-300'
+                          : 'bg-rose-400'
+                  "
+                />
+              </button>
+
+              <!-- Popover Detail Akun Google & Cloud Sync -->
+              <Transition
+                enter-active-class="transition duration-150 ease-out"
+                enter-from-class="translate-y-1 opacity-0 scale-95"
+                enter-to-class="translate-y-0 opacity-100 scale-100"
+                leave-active-class="transition duration-120 ease-in"
+                leave-from-class="opacity-100 scale-100"
+                leave-to-class="translate-y-1 opacity-0 scale-95"
+              >
+                <div
+                  v-if="isAccountMenuOpen && firebaseUser"
+                  role="menu"
+                  aria-label="Menu akun Google & Cloud Sync"
+                  class="cozy-popover-menu absolute right-0 top-full z-50 mt-2.5 w-72 overflow-hidden rounded-2xl border p-3.5 text-left shadow-2xl backdrop-blur-xl"
+                >
+                  <div class="flex items-center gap-2.5 border-b border-white/15 pb-3">
+                    <div class="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/30 bg-black/20 font-bold">
+                      <img
+                        v-if="firebaseUser.photoURL"
+                        :src="firebaseUser.photoURL"
+                        :alt="firebaseUser.displayName"
+                        referrerpolicy="no-referrer"
+                        class="h-full w-full object-cover"
+                      >
+                      <span v-else>{{ googleFirstName.slice(0, 1).toUpperCase() }}</span>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                      <p class="truncate text-xs font-bold text-white">
+                        {{ firebaseUser.displayName }}
+                      </p>
+                      <p class="truncate text-[10px] text-purple-200/75">
+                        {{ firebaseUser.email }}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div class="mt-2.5 rounded-xl border border-white/15 bg-black/20 px-3 py-2 text-[11px]">
+                    <div class="flex items-center justify-between gap-2 font-bold">
+                      <span>
+                        {{
+                          !isBrowserOnline || firebaseSyncStatus === 'offline'
+                            ? '📡 Mode Offline (Cache Lokal)'
+                            : firebaseSyncStatus === 'syncing'
+                              ? '🔄 Menyimpan ke Cloud...'
+                              : firebaseSyncStatus === 'error'
+                                ? '⚠️ Sinkronisasi Tertunda'
+                                : '☁️ Cloud Sync Aktif'
+                        }}
+                      </span>
+                      <span class="text-[10px] font-semibold opacity-75">
+                        {{ formattedFirebaseLastSync }}
+                      </span>
+                    </div>
+                    <p class="mt-1 text-[10px] leading-relaxed text-purple-200/75">
+                      Progres koin, habit, tema, kursor &amp; catatan otomatis tersimpan di perangkat saat offline dan sinkron real-time antara PC &amp; HP.
+                    </p>
+                  </div>
+
+                  <div class="mt-3 flex items-center gap-2">
+                    <button
+                      type="button"
+                      class="cozy-active-btn btn-bouncy flex-1 cursor-pointer rounded-xl px-3 py-1.5 text-[11px] font-bold shadow-sm"
+                      @click="handleManualFirebaseSync"
+                    >
+                      ☁️ Sinkronkan
+                    </button>
+                    <button
+                      type="button"
+                      :disabled="isFirebaseAuthBusy"
+                      class="cozy-pill-btn btn-bouncy cursor-pointer rounded-xl border px-3 py-1.5 text-[11px] font-bold"
+                      @click="handleGoogleLogoutClick"
+                    >
+                      🚪 Keluar
+                    </button>
+                  </div>
+                </div>
+              </Transition>
+            </div>
           </div>
         </div>
       </header>
@@ -937,37 +1139,52 @@ onUnmounted(() => {
             • Tip: [Spasi] Timer • [T] Twilight Focus • [Z] Starlight Focus • [?] Pintasan
           </span>
           <button
+            v-if="firebaseUser"
             type="button"
-            title="Klik untuk sinkronisasi manual ke TiDB Cloud"
-            class="btn-bouncy inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold"
-            :class="
-              cloudSyncStatus === 'synced'
-                ? 'border-emerald-300/40 bg-emerald-400/15 text-emerald-100'
-                : cloudSyncStatus === 'syncing'
-                  ? 'border-amber-300/40 bg-amber-400/15 text-amber-100'
-                  : 'border-white/20 bg-white/10 text-purple-200'
-            "
-            @click="pushStateToCloud(false)"
+            title="Klik untuk sinkronisasi manual ke Firebase Cloud Firestore"
+            class="cozy-pill-btn btn-bouncy inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold"
+            @click="handleManualFirebaseSync"
+          >
+            <span
+              class="h-1.5 w-1.5 rounded-full"
+              :class="
+                firebaseSyncStatus === 'synced'
+                  ? 'bg-emerald-400'
+                  : firebaseSyncStatus === 'syncing'
+                    ? 'animate-ping bg-amber-300'
+                    : firebaseSyncStatus === 'offline'
+                      ? 'bg-sky-400'
+                      : 'bg-rose-400'
+              "
+            />
+            <span>
+              {{
+                !isBrowserOnline || firebaseSyncStatus === 'offline'
+                  ? '📡 Offline (Auto-Sync Saat Online)'
+                  : firebaseSyncStatus === 'syncing'
+                    ? '☁️ Menyimpan ke Firebase...'
+                    : firebaseSyncStatus === 'error'
+                      ? '⚠️ Coba Sinkronkan Ulang'
+                      : '☁️ Google Cloud Tersinkron'
+              }}
+            </span>
+          </button>
+          <button
+            v-else
+            type="button"
+            title="Login dengan Google untuk Cloud Sync otomatis PC & HP (tetap aman saat offline)"
+            class="cozy-pill-btn btn-bouncy inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold"
+            @click="handleGoogleLoginClick"
           >
             <span
               class="h-1.5 w-1.5 rounded-full"
               :class="
                 cloudSyncStatus === 'synced'
-                  ? 'bg-emerald-300'
-                  : cloudSyncStatus === 'syncing'
-                    ? 'animate-ping bg-amber-300'
-                    : 'bg-purple-300/60'
+                  ? 'bg-emerald-400'
+                  : 'bg-amber-300/80'
               "
             />
-            <span>
-              {{
-                cloudSyncStatus === 'synced'
-                  ? '☁️ TiDB Cloud Terhubung'
-                  : cloudSyncStatus === 'syncing'
-                    ? '☁️ Menyimpan...'
-                    : '☁️ Sinkronkan TiDB'
-              }}
-            </span>
+            <span>☁️ Login Google (Cloud Sync PC ↔ HP)</span>
           </button>
         </div>
 
