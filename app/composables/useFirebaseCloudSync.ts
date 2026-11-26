@@ -15,6 +15,7 @@ import {
 import {
   doc,
   getDoc,
+  getDocFromServer,
   getFirestore,
   initializeFirestore,
   onSnapshot,
@@ -22,6 +23,8 @@ import {
   persistentMultipleTabManager,
   serverTimestamp,
   setDoc,
+  type DocumentReference,
+  type DocumentSnapshot,
   type Firestore,
   type Unsubscribe,
 } from 'firebase/firestore'
@@ -51,16 +54,26 @@ interface RemoteSyncCallbacks {
   onToast?: (msg: string) => void
 }
 
+interface FirestoreStateEnvelope {
+  data?: Record<string, unknown>
+  updatedAtMs?: number
+  updatedAt?: { toMillis?: () => number }
+  updatedBySession?: string
+}
+
 // --- Singleton module instances (hanya diinisialisasi sekali di sisi client) ---
 let firebaseApp: FirebaseApp | null = null
 let firebaseAuth: Auth | null = null
 let firebaseDb: Firestore | null = null
 let authListenerUnsub: Unsubscribe | null = null
 let docSnapshotUnsub: Unsubscribe | null = null
-let onlineListenersAttached = false
+let lifecycleListenersAttached = false
 let syncDebounceTimer: ReturnType<typeof setTimeout> | null = null
 let registeredCallbacks: RemoteSyncCallbacks | null = null
 let lastAppliedRemoteTimestamp = 0
+let isInitialCloudSyncReady = false
+let isInitialPullInFlight = false
+let lastVisibilityPullMs = 0
 
 // ID sesi perangkat unik agar onSnapshot tidak menimpa balik perubahan yang baru ditulis oleh tab ini sendiri
 const CLIENT_SESSION_ID = `sess_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`
@@ -92,6 +105,180 @@ function stripUndefinedDeep<T>(value: T): T {
     }
   }
   return result as T
+}
+
+function extractEnvelopeTimestampMs(raw?: FirestoreStateEnvelope): number {
+  if (!raw) return 0
+  const numericMs = typeof raw.updatedAtMs === 'number' && Number.isFinite(raw.updatedAtMs) ? raw.updatedAtMs : 0
+  const serverMs =
+    typeof raw.updatedAt?.toMillis === 'function' ? Number(raw.updatedAt.toMillis()) || 0 : 0
+  return Math.max(numericMs, serverMs)
+}
+
+function toStringArray(val: unknown): string[] {
+  if (!Array.isArray(val)) return []
+  return val.filter((item): item is string => typeof item === 'string' && item.length > 0)
+}
+
+function toSafeNum(val: unknown, fallback = 0): number {
+  const n = Number(val)
+  return Number.isFinite(n) ? Math.max(0, n) : fallback
+}
+
+/** Cek apakah data lokal perangkat ini masih kondisi bawaan kosong (belum pernah dipakai) */
+function isBrandNewLocalSnapshot(local: Record<string, unknown>): boolean {
+  const habits = Array.isArray(local.habits) ? local.habits : []
+  const cards = toStringArray(local.collectedSecretCards ?? local.unlockedCards)
+  const accessories = toStringArray(local.ownedAccessories)
+  const cats = toStringArray(local.ownedCats)
+  const themes = toStringArray(local.ownedCozyThemes)
+  const coins = toSafeNum(local.treatCoins ?? local.coins, 0)
+  const totalSessions = toSafeNum(local.totalFocusSessions, 0)
+  const streak = toSafeNum(local.dailyStreak, 0)
+  const highScore = toSafeNum(local.gameHighScore, 0)
+  const fishHighScore = toSafeNum(local.fishingHighScore, 0)
+  const affinity = (local.catAffinity ?? {}) as { level?: unknown; xp?: unknown; heartChestXp?: unknown }
+  const level = toSafeNum(affinity.level, 1)
+  const xp = toSafeNum(affinity.xp, 0)
+  const chestXp = toSafeNum(affinity.heartChestXp, 0)
+  const notes = typeof local.quickNotes === 'string' ? local.quickNotes.trim() : ''
+
+  return (
+    habits.length === 0 &&
+    cards.length === 0 &&
+    accessories.length === 0 &&
+    cats.length <= 2 &&
+    themes.length <= 1 &&
+    coins <= 5 &&
+    totalSessions === 0 &&
+    streak === 0 &&
+    highScore === 0 &&
+    fishHighScore === 0 &&
+    level <= 1 &&
+    xp === 0 &&
+    chestXp === 0 &&
+    notes.length === 0
+  )
+}
+
+/**
+ * Smart Merge Cloud + Lokal saat initial login:
+ * - Jika perangkat baru masih kosong -> gunakan 100% data Cloud (tanpa menulis balik!).
+ * - Jika perangkat lokal punya progres offline -> gabungkan tanpa menghilangkan progres mana pun:
+ *   • Koin, sesi fokus, streak, high score, & level/XP kasih sayang -> ambil nilai maksimum.
+ *   • Kartu rahasia terbuka, aksesoris, koleksi kucing, & tema toko -> gabungkan himpunan (Set union).
+ *   • Preferensi UI, daftar habit, catatan, alarm -> prioritaskan data Cloud (fallback lokal bila Cloud kosong).
+ */
+function smartMergeCloudWithLocal(
+  cloudData: Record<string, unknown>,
+  localData: Record<string, unknown>,
+): { merged: Record<string, unknown>; localContributedNewProgress: boolean } {
+  if (isBrandNewLocalSnapshot(localData)) {
+    return { merged: cloudData, localContributedNewProgress: false }
+  }
+
+  const merged: Record<string, unknown> = { ...cloudData }
+  let localAdded = false
+
+  // 1. Nilai progres numerik -> ambil maksimum agar tidak pernah turun/hilang
+  const cloudCoins = toSafeNum(cloudData.treatCoins ?? cloudData.coins, 0)
+  const localCoins = toSafeNum(localData.treatCoins ?? localData.coins, 0)
+  const maxCoins = Math.max(cloudCoins, localCoins)
+  if (maxCoins > cloudCoins) localAdded = true
+  merged.treatCoins = maxCoins
+  merged.coins = maxCoins
+
+  const numericMaxFields = [
+    'todayFocusSessions',
+    'totalFocusSessions',
+    'todayFocusSeconds',
+    'dailyStreak',
+    'fullGoalStreak',
+    'gameHighScore',
+    'fishingHighScore',
+  ] as const
+  for (const field of numericMaxFields) {
+    const cVal = toSafeNum(cloudData[field], 0)
+    const lVal = toSafeNum(localData[field], 0)
+    const best = Math.max(cVal, lVal)
+    if (best > cVal) localAdded = true
+    merged[field] = best
+  }
+
+  // 2. Kasih Sayang Kucing (Level, XP, Peti Cinta, & Milestone) -> pilih progres lebih tinggi + OR milestone
+  const cAff = (cloudData.catAffinity ?? {}) as Record<string, unknown>
+  const lAff = (localData.catAffinity ?? {}) as Record<string, unknown>
+  const cLv = toSafeNum(cAff.level, 1)
+  const lLv = toSafeNum(lAff.level, 1)
+  const cXp = toSafeNum(cAff.xp, 0)
+  const lXp = toSafeNum(lAff.xp, 0)
+  const cChest = toSafeNum(cAff.heartChestXp, 0)
+  const lChest = toSafeNum(lAff.heartChestXp, 0)
+
+  const localHigherAffinity =
+    lLv > cLv || (lLv === cLv && lXp > cXp) || (lLv === cLv && lXp === cXp && lChest > cChest)
+  if (localHigherAffinity) localAdded = true
+
+  const claimed10 = Boolean(cAff.claimedLv10Reward) || Boolean(lAff.claimedLv10Reward)
+  const claimed20 = Boolean(cAff.claimedLv20Reward) || Boolean(lAff.claimedLv20Reward)
+  if (claimed10 !== Boolean(cAff.claimedLv10Reward) || claimed20 !== Boolean(cAff.claimedLv20Reward)) {
+    localAdded = true
+  }
+
+  const bestAffinity = {
+    level: localHigherAffinity ? lLv : cLv,
+    xp: localHigherAffinity ? lXp : cXp,
+    heartChestXp: localHigherAffinity ? lChest : cChest,
+    claimedLv10Reward: claimed10,
+    claimedLv20Reward: claimed20,
+  }
+  merged.catAffinity = bestAffinity
+  merged.affectionPoints = bestAffinity.xp
+
+  // 3. Koleksi terbuka (Kartu Rahasia, Aksesoris, Kucing, Tema) -> Set Union agar semua item tetap aman
+  const unionField = (cloudRaw: unknown, localRaw: unknown): string[] => {
+    const cArr = toStringArray(cloudRaw)
+    const lArr = toStringArray(localRaw)
+    const set = new Set<string>([...cArr, ...lArr])
+    if (set.size > cArr.length) localAdded = true
+    return Array.from(set)
+  }
+
+  const mergedCards = unionField(
+    cloudData.collectedSecretCards ?? cloudData.unlockedCards,
+    localData.collectedSecretCards ?? localData.unlockedCards,
+  )
+  merged.collectedSecretCards = mergedCards
+  merged.unlockedCards = mergedCards
+
+  merged.ownedAccessories = unionField(cloudData.ownedAccessories, localData.ownedAccessories)
+  merged.ownedCats = unionField(cloudData.ownedCats, localData.ownedCats)
+  merged.ownedCozyThemes = unionField(cloudData.ownedCozyThemes, localData.ownedCozyThemes)
+
+  // 4. Jika cloud belum punya habits namun lokal punya, pertahankan habits lokal
+  const cloudHabits = Array.isArray(cloudData.habits) ? cloudData.habits : []
+  const localHabits = Array.isArray(localData.habits) ? localData.habits : []
+  if (cloudHabits.length === 0 && localHabits.length > 0) {
+    merged.habits = localHabits
+    localAdded = true
+  }
+
+  return { merged, localContributedNewProgress: localAdded }
+}
+
+/** Baca dokumen terbaru dari server Firestore (fallback cache IndexedDB bila sedang offline) */
+async function readDocPreferServer(ref: DocumentReference): Promise<DocumentSnapshot> {
+  if (navigator.onLine) {
+    try {
+      return await getDocFromServer(ref)
+    } catch (serverErr) {
+      const code = (serverErr as { code?: string })?.code ?? ''
+      // Jika error izin Firestore, lempar langsung agar tercatat jelas
+      if (code === 'permission-denied') throw serverErr
+      // Selain itu fallback ke getDoc (cache offline)
+    }
+  }
+  return await getDoc(ref)
 }
 
 /** Inisialisasi Firebase App, Auth (browserLocalPersistence) & Firestore (IndexedDB Offline Multi-Tab Cache) */
@@ -128,14 +315,16 @@ function ensureFirebaseClient(): { app: FirebaseApp; auth: Auth; db: Firestore }
 
 /**
  * Composable Firebase Auth (Login Google) & Cloud Firestore Auto-Sync + Offline Persistence:
- * - Login 1 klik dengan akun Google (popup + fallback redirect untuk browser HP ketat)
- * - Penyimpanan offline otomatis berbasis IndexedDB (perubahan saat offline otomatis terunggah saat online lagi)
- * - Sinkronisasi real-time antar PC & HP lewat Firestore `onSnapshot` pada dokumen `users/{uid}`
+ * - Cloud-First Pull on Auth: selalu `getDoc(users/{uid})` terlebih dahulu sebelum mengizinkan auto-save `setDoc`
+ * - Smart Merge aman saat login di perangkat baru agar data Cloud tidak pernah tertimpa data lokal kosong
+ * - Guard `isInitialCloudSyncDone`: memblokir seluruh auto-save sampai initial pull selesai sukses
+ * - Real-time `onSnapshot` + re-sync otomatis saat `visibilitychange` (pindah HP <-> Laptop)
  */
 export function useFirebaseCloudSync() {
   const firebaseUser = useState<FirebaseProfileUser | null>('twilights-fb-user', () => null)
   const isFirebaseAuthReady = useState<boolean>('twilights-fb-auth-ready', () => false)
   const isFirebaseAuthBusy = useState<boolean>('twilights-fb-auth-busy', () => false)
+  const isInitialCloudSyncDone = useState<boolean>('twilights-fb-initial-sync-done', () => false)
   const firebaseSyncStatus = useState<FirebaseSyncState>('twilights-fb-sync-status', () => 'guest')
   const firebaseLastSyncedAt = useState<string>('twilights-fb-last-synced', () => '')
   const firebaseErrorMessage = useState<string>('twilights-fb-error', () => '')
@@ -155,6 +344,13 @@ export function useFirebaseCloudSync() {
     return doc(client.db, 'users', uid, 'twilights', 'state')
   }
 
+  function clearPendingSyncTimer() {
+    if (syncDebounceTimer) {
+      clearTimeout(syncDebounceTimer)
+      syncDebounceTimer = null
+    }
+  }
+
   function detachDocListener() {
     if (docSnapshotUnsub) {
       docSnapshotUnsub()
@@ -162,14 +358,25 @@ export function useFirebaseCloudSync() {
     }
   }
 
-  /** Tulis snapshot state saat ini ke Cloud Firestore (tetap berhasil masuk antrean offline IndexedDB!) */
+  function setInitialSyncFlag(done: boolean) {
+    isInitialCloudSyncReady = done
+    isInitialCloudSyncDone.value = done
+  }
+
+  /** Tulis snapshot state saat ini ke Cloud Firestore (hanya diizinkan setelah initial pull selesai!) */
   async function writeSnapshotToFirestore(
     snapshot: Record<string, unknown>,
     manualTrigger = false,
+    allowInitialBootstrap = false,
   ): Promise<boolean> {
     if (!import.meta.client) return false
     const user = firebaseUser.value
     if (!user) return false
+
+    // KUNCI ANTI-TIMPA: blokir seluruh penulisan sebelum initial pull (`getDoc`) selesai!
+    if (!isInitialCloudSyncReady && !allowInitialBootstrap) {
+      return false
+    }
 
     const ref = getUserStateDocRef(user.uid)
     if (!ref) return false
@@ -194,6 +401,7 @@ export function useFirebaseCloudSync() {
         { merge: true },
       )
 
+      lastAppliedRemoteTimestamp = Math.max(lastAppliedRemoteTimestamp, nowMs)
       firebaseLastSyncedAt.value = new Date(nowMs).toISOString()
       firebaseSyncStatus.value = navigator.onLine ? 'synced' : 'offline'
       if (manualTrigger) {
@@ -229,12 +437,13 @@ export function useFirebaseCloudSync() {
     }
   }
 
-  /** Jadwalkan auto-sync (debounce 650ms) setiap kali pengguna mengubah progres saat sudah login Google */
+  /** Jadwalkan auto-sync (debounce 650ms) — HANYA berjalan jika `isInitialCloudSyncDone === true` */
   function scheduleFirestoreSync(snapshotProvider?: () => Record<string, unknown>) {
-    if (!import.meta.client || !firebaseUser.value) return
-    if (syncDebounceTimer) clearTimeout(syncDebounceTimer)
+    if (!import.meta.client || !firebaseUser.value || !isInitialCloudSyncReady) return
+    clearPendingSyncTimer()
     syncDebounceTimer = setTimeout(() => {
       syncDebounceTimer = null
+      if (!isInitialCloudSyncReady || !firebaseUser.value) return
       const snapshot = snapshotProvider?.() ?? registeredCallbacks?.getLocalSnapshot()
       if (snapshot) {
         void writeSnapshotToFirestore(snapshot, false)
@@ -242,45 +451,124 @@ export function useFirebaseCloudSync() {
     }, 650)
   }
 
-  /** Mulai sinkronisasi awal & listener real-time PC <-> HP untuk akun Google yang aktif */
-  async function startUserCloudSync(profile: FirebaseProfileUser) {
-    detachDocListener()
+  /** Tarik pembaruan terbaru dari Cloud saat tab kembali aktif (`visibilitychange`) berdasarkan `updatedAt` */
+  async function pullLatestFromCloudIfNewer(profile: FirebaseProfileUser) {
+    if (!import.meta.client || !navigator.onLine) return
+    const now = Date.now()
+    if (now - lastVisibilityPullMs < 2500) return
+    lastVisibilityPullMs = now
+
+    if (!isInitialCloudSyncReady) {
+      await startUserCloudSync(profile)
+      return
+    }
+
     const ref = getUserStateDocRef(profile.uid)
     if (!ref) return
 
+    try {
+      const snap = await readDocPreferServer(ref)
+      if (!snap.exists()) return
+      const raw = snap.data() as FirestoreStateEnvelope
+      const remoteTs = extractEnvelopeTimestampMs(raw)
+
+      if (
+        raw?.data &&
+        typeof raw.data === 'object' &&
+        raw.updatedBySession !== CLIENT_SESSION_ID &&
+        remoteTs > lastAppliedRemoteTimestamp
+      ) {
+        lastAppliedRemoteTimestamp = remoteTs
+        registeredCallbacks?.applyRemoteSnapshot(raw.data, profile)
+        firebaseLastSyncedAt.value = new Date(remoteTs).toISOString()
+      }
+      firebaseSyncStatus.value = 'synced'
+    } catch (err) {
+      const code = (err as { code?: string })?.code ?? ''
+      console.warn('[Twilight Firebase Sync] Re-sync saat tab aktif gagal:', code, err)
+    }
+  }
+
+  /**
+   * Cloud-First Initial Pull & Real-Time Listener (`users/{uid}`):
+   * 1. Blokir seluruh auto-save (`isInitialCloudSyncDone = false`) dan batalkan timer pending.
+   * 2. Jalankan `getDoc` terlebih dahulu:
+   *    - Jika dokumen cloud ADA -> terapkan ke aplikasi + `localStorage` (dengan Smart Merge aman).
+   *    - Jika dokumen cloud BELUM ADA -> barulah unggah data lokal saat ini sebagai data awal.
+   * 3. Tandai `isInitialCloudSyncDone = true` setelah pull berhasil, lalu pasang `onSnapshot`.
+   */
+  async function startUserCloudSync(profile: FirebaseProfileUser): Promise<boolean> {
+    if (isInitialPullInFlight) return false
+    isInitialPullInFlight = true
+
+    clearPendingSyncTimer()
+    detachDocListener()
+    setInitialSyncFlag(false)
+
+    const ref = getUserStateDocRef(profile.uid)
+    if (!ref) {
+      isInitialPullInFlight = false
+      return false
+    }
+
     firebaseSyncStatus.value = navigator.onLine ? 'syncing' : 'offline'
 
-    // 1. Cek dokumen awal di `users/{uid}` (dengan migrasi halus dari path lama bila ada)
+    let pullSucceeded = false
     try {
-      const initialSnap = await getDoc(ref)
+      const initialSnap = await readDocPreferServer(ref)
+
       if (initialSnap.exists()) {
-        const raw = initialSnap.data() as {
-          data?: Record<string, unknown>
-          updatedAtMs?: number
-        }
+        const raw = initialSnap.data() as FirestoreStateEnvelope
         if (raw?.data && typeof raw.data === 'object') {
-          lastAppliedRemoteTimestamp = Number(raw.updatedAtMs) || Date.now()
-          registeredCallbacks?.applyRemoteSnapshot(raw.data, profile)
-          firebaseLastSyncedAt.value = new Date(lastAppliedRemoteTimestamp).toISOString()
-          firebaseSyncStatus.value = navigator.onLine ? 'synced' : 'offline'
+          const remoteTs = extractEnvelopeTimestampMs(raw) || Date.now()
+          const localSnap = registeredCallbacks?.getLocalSnapshot() ?? {}
+          const { merged, localContributedNewProgress } = smartMergeCloudWithLocal(
+            raw.data,
+            localSnap,
+          )
+
+          lastAppliedRemoteTimestamp = remoteTs
+          registeredCallbacks?.applyRemoteSnapshot(merged, profile)
+          firebaseLastSyncedAt.value = new Date(remoteTs).toISOString()
+          setInitialSyncFlag(true)
+          pullSucceeded = true
+
+          // Hanya tulis balik ke Cloud jika perangkat lokal benar-benar punya progres tambahan (offline)
+          if (localContributedNewProgress) {
+            await writeSnapshotToFirestore(merged, false)
+          } else {
+            firebaseSyncStatus.value = navigator.onLine ? 'synced' : 'offline'
+          }
+        } else {
+          // Dokumen ada tapi belum memiliki field `data` -> unggah snapshot lokal sebagai inisialisasi
+          const localSnap = registeredCallbacks?.getLocalSnapshot()
+          if (localSnap) {
+            const wrote = await writeSnapshotToFirestore(localSnap, false, true)
+            if (wrote) {
+              setInitialSyncFlag(true)
+              pullSucceeded = true
+            }
+          }
         }
       } else {
-        // Coba cek dokumen legacy `users/{uid}/twilights/state` secara aman sebelum unggah progres lokal
+        // Cek dokumen legacy `users/{uid}/twilights/state` secara aman sebelum menganggap akun baru
         let migratedFromLegacy = false
         try {
           const legacyRef = getLegacyUserStateDocRef(profile.uid)
           if (legacyRef) {
-            const legacySnap = await getDoc(legacyRef)
+            const legacySnap = await readDocPreferServer(legacyRef)
             if (legacySnap.exists()) {
-              const legacyRaw = legacySnap.data() as {
-                data?: Record<string, unknown>
-                updatedAtMs?: number
-              }
+              const legacyRaw = legacySnap.data() as FirestoreStateEnvelope
               if (legacyRaw?.data && typeof legacyRaw.data === 'object') {
-                lastAppliedRemoteTimestamp = Number(legacyRaw.updatedAtMs) || Date.now()
-                registeredCallbacks?.applyRemoteSnapshot(legacyRaw.data, profile)
-                await writeSnapshotToFirestore(legacyRaw.data, false)
+                const remoteTs = extractEnvelopeTimestampMs(legacyRaw) || Date.now()
+                const localSnap = registeredCallbacks?.getLocalSnapshot() ?? {}
+                const { merged } = smartMergeCloudWithLocal(legacyRaw.data, localSnap)
+                lastAppliedRemoteTimestamp = remoteTs
+                registeredCallbacks?.applyRemoteSnapshot(merged, profile)
+                await writeSnapshotToFirestore(merged, false, true)
+                setInitialSyncFlag(true)
                 migratedFromLegacy = true
+                pullSucceeded = true
               }
             }
           }
@@ -289,23 +577,29 @@ export function useFirebaseCloudSync() {
         }
 
         if (!migratedFromLegacy) {
-          // Akun Google pertama kali masuk -> langsung unggah progres lokal agar tidak ada data hilang
+          // Dokumen Cloud benar-benar belum ada -> barulah unggah localStorage saat ini sebagai data awal!
           const localSnap = registeredCallbacks?.getLocalSnapshot()
           if (localSnap) {
-            await writeSnapshotToFirestore(localSnap, false)
+            const wrote = await writeSnapshotToFirestore(localSnap, false, true)
+            if (wrote) {
+              setInitialSyncFlag(true)
+              pullSucceeded = true
+            }
           }
         }
       }
     } catch (err) {
       const code = (err as { code?: string })?.code ?? ''
       const msg = err instanceof Error ? err.message : String(err)
-      console.warn('[Twilight Firebase Sync] Gagal memuat dokumen awal:', code, msg)
+      console.warn('[Twilight Firebase Sync] Initial pull gagal — auto-save tetap dikunci:', code, msg)
       firebaseErrorMessage.value = code ? `${code}: ${msg}` : msg
-      // Tetap lanjutkan pasang onSnapshot agar langsung sinkron saat koneksi pulih
       firebaseSyncStatus.value = navigator.onLine ? 'error' : 'offline'
+      // TETAP biarkan `isInitialCloudSyncDone = false` agar tidak pernah menimpa Cloud secara buta!
+    } finally {
+      isInitialPullInFlight = false
     }
 
-    // 2. Pasang listener real-time Firestore (otomatis menarik perubahan terbaru dari HP/PC lain!)
+    // Pasang listener real-time Firestore (otomatis menarik perubahan terbaru dari HP/PC lain!)
     docSnapshotUnsub = onSnapshot(
       ref,
       { includeMetadataChanges: true },
@@ -319,23 +613,32 @@ export function useFirebaseCloudSync() {
           return
         }
 
-        firebaseSyncStatus.value = fromCache && !navigator.onLine ? 'offline' : 'synced'
+        const raw = snap.data() as FirestoreStateEnvelope
+        const remoteTs = extractEnvelopeTimestampMs(raw)
 
-        const raw = snap.data() as {
-          data?: Record<string, unknown>
-          updatedAtMs?: number
-          updatedBySession?: string
+        // Jika sebelumnya initial pull sempat tertunda offline lalu snapshot server masuk, buka kunci aman!
+        if (!isInitialCloudSyncReady && raw?.data && typeof raw.data === 'object') {
+          const localSnap = registeredCallbacks?.getLocalSnapshot() ?? {}
+          const { merged } = smartMergeCloudWithLocal(raw.data, localSnap)
+          lastAppliedRemoteTimestamp = remoteTs || Date.now()
+          registeredCallbacks?.applyRemoteSnapshot(merged, profile)
+          firebaseLastSyncedAt.value = new Date(lastAppliedRemoteTimestamp).toISOString()
+          setInitialSyncFlag(true)
+          firebaseSyncStatus.value = fromCache && !navigator.onLine ? 'offline' : 'synced'
+          return
         }
+
+        firebaseSyncStatus.value = fromCache && !navigator.onLine ? 'offline' : 'synced'
 
         // Abaikan echo dari tab ini sendiri
         if (raw.updatedBySession === CLIENT_SESSION_ID) {
-          if (raw.updatedAtMs) {
-            firebaseLastSyncedAt.value = new Date(raw.updatedAtMs).toISOString()
+          if (remoteTs > 0) {
+            lastAppliedRemoteTimestamp = Math.max(lastAppliedRemoteTimestamp, remoteTs)
+            firebaseLastSyncedAt.value = new Date(remoteTs).toISOString()
           }
           return
         }
 
-        const remoteTs = Number(raw.updatedAtMs) || 0
         if (raw.data && typeof raw.data === 'object' && remoteTs > lastAppliedRemoteTimestamp) {
           lastAppliedRemoteTimestamp = remoteTs
           registeredCallbacks?.applyRemoteSnapshot(raw.data, profile)
@@ -347,6 +650,8 @@ export function useFirebaseCloudSync() {
         firebaseSyncStatus.value = navigator.onLine ? 'error' : 'offline'
       },
     )
+
+    return pullSucceeded
   }
 
   /** Daftarkan callback penyimpanan & mulai memantau status Login Google (idempoten, aman dipanggil berulang) */
@@ -355,19 +660,28 @@ export function useFirebaseCloudSync() {
     if (!import.meta.client) return
 
     isBrowserOnline.value = navigator.onLine
-    if (!onlineListenersAttached) {
-      onlineListenersAttached = true
+    if (!lifecycleListenersAttached) {
+      lifecycleListenersAttached = true
       window.addEventListener('online', () => {
         isBrowserOnline.value = true
-        if (firebaseUser.value) {
-          firebaseSyncStatus.value = 'syncing'
-          scheduleFirestoreSync()
+        const currentUser = firebaseUser.value
+        if (!currentUser) return
+        if (!isInitialCloudSyncReady) {
+          void startUserCloudSync(currentUser)
+        } else {
+          void pullLatestFromCloudIfNewer(currentUser)
         }
       })
       window.addEventListener('offline', () => {
         isBrowserOnline.value = false
         if (firebaseUser.value) {
           firebaseSyncStatus.value = 'offline'
+        }
+      })
+      // Saat user berpindah dari HP kembali ke Laptop (tab aktif lagi), tarik snapshot terbaru jika `updatedAt` lebih baru
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible' && firebaseUser.value) {
+          void pullLatestFromCloudIfNewer(firebaseUser.value)
         }
       })
     }
@@ -387,11 +701,14 @@ export function useFirebaseCloudSync() {
       isFirebaseAuthReady.value = true
 
       if (mapped) {
-        if (mapped.uid !== prevUid) {
+        if (mapped.uid !== prevUid || !isInitialCloudSyncReady) {
+          // PENTING: JANGAN pernah langsung setDoc — selalu tarik Cloud dulu via startUserCloudSync!
           void startUserCloudSync(mapped)
         }
       } else {
+        clearPendingSyncTimer()
         detachDocListener()
+        setInitialSyncFlag(false)
         lastAppliedRemoteTimestamp = 0
         firebaseSyncStatus.value = 'guest'
         firebaseLastSyncedAt.value = ''
@@ -415,9 +732,13 @@ export function useFirebaseCloudSync() {
       const result = await signInWithPopup(client.auth, provider)
       const mapped = mapFirebaseUser(result.user)
       if (mapped) {
+        // Kunci auto-save sebelum `onAuthStateChanged` / `startUserCloudSync` menyelesaikan Cloud-First Pull
+        clearPendingSyncTimer()
+        setInitialSyncFlag(false)
         firebaseUser.value = mapped
+        void startUserCloudSync(mapped)
         registeredCallbacks?.onToast?.(
-          `Halo ${mapped.displayName}! Cloud Sync Google aktif ✨☁️`,
+          `Halo ${mapped.displayName}! Mengambil data Cloud Google-mu... ☁️✨`,
         )
       }
       return true
@@ -435,7 +756,6 @@ export function useFirebaseCloudSync() {
             redirErr instanceof Error ? redirErr.message : 'Gagal login redirect Google'
         }
       } else if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') {
-        // Pengguna menutup popup sendiri — jangan tampilkan pesan error yang mengganggu
         return false
       } else if (code === 'auth/unauthorized-domain') {
         const msg =
@@ -462,11 +782,10 @@ export function useFirebaseCloudSync() {
 
     isFirebaseAuthBusy.value = true
     try {
-      if (syncDebounceTimer) {
-        clearTimeout(syncDebounceTimer)
-        syncDebounceTimer = null
-      }
+      clearPendingSyncTimer()
       detachDocListener()
+      setInitialSyncFlag(false)
+      lastAppliedRemoteTimestamp = 0
       await signOut(client.auth)
       firebaseUser.value = null
       firebaseSyncStatus.value = 'guest'
@@ -479,9 +798,19 @@ export function useFirebaseCloudSync() {
     }
   }
 
-  /** Paksa sinkronisasi manual sekarang juga */
+  /** Paksa sinkronisasi manual — jika initial pull belum selesai, tarik Cloud dulu agar tidak menimpa data! */
   async function syncNowWithFirebase(): Promise<boolean> {
-    if (!firebaseUser.value) return false
+    const user = firebaseUser.value
+    if (!user) return false
+
+    if (!isInitialCloudSyncReady) {
+      const pulled = await startUserCloudSync(user)
+      if (pulled) {
+        registeredCallbacks?.onToast?.('☁️ Data Cloud berhasil dimuat & disinkronkan!')
+      }
+      return pulled
+    }
+
     const snapshot = registeredCallbacks?.getLocalSnapshot()
     if (!snapshot) return false
     return await writeSnapshotToFirestore(snapshot, true)
@@ -491,6 +820,7 @@ export function useFirebaseCloudSync() {
     firebaseUser,
     isFirebaseAuthReady,
     isFirebaseAuthBusy,
+    isInitialCloudSyncDone,
     firebaseSyncStatus,
     firebaseLastSyncedAt,
     firebaseErrorMessage,
