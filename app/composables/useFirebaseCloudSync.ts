@@ -816,6 +816,18 @@ export function useFirebaseCloudSync() {
     return await writeSnapshotToFirestore(snapshot, true)
   }
 
+  /** Paksa unggah snapshot tertentu langsung ke `users/{uid}` (digunakan tombol pemulihan progres sementara) */
+  async function forceUploadSnapshotToFirestore(
+    snapshot: Record<string, unknown>,
+  ): Promise<boolean> {
+    if (!import.meta.client) return false
+    const user = firebaseUser.value
+    if (!user) return false
+    clearPendingSyncTimer()
+    setInitialSyncFlag(true)
+    return await writeSnapshotToFirestore(snapshot, false, true)
+  }
+
   return {
     firebaseUser,
     isFirebaseAuthReady,
@@ -830,5 +842,6 @@ export function useFirebaseCloudSync() {
     signOutGoogle,
     scheduleFirestoreSync,
     syncNowWithFirebase,
+    forceUploadSnapshotToFirestore,
   }
 }

@@ -1613,6 +1613,7 @@ export function useTwilightStorage() {
     signOutGoogle,
     scheduleFirestoreSync,
     syncNowWithFirebase,
+    forceUploadSnapshotToFirestore,
   } = useFirebaseCloudSync()
 
   // --- Data tersimpan di localStorage ---
@@ -5079,6 +5080,107 @@ export function useTwilightStorage() {
     hydrateFromCloud()
   })
 
+  /**
+   * TEMPORARY RECOVERY HELPER:
+   * Pulihkan progres akun pengguna secara 1-klik ke localStorage & paksa unggah ke Cloud Firestore (`users/{uid}`).
+   */
+  async function restoreMyAccountProgress(): Promise<{ ok: boolean; syncedToCloud: boolean }> {
+    const todayStr = getLocalTodayDate()
+
+    // 1. Koin Ikan: 500
+    treatCoins.value = 500
+
+    // 2. Level & XP Kucing: Level 15 (tandai Lv.10 sudah diklaim agar tidak auto-unlock aksesoris lain)
+    catAffinityLevel.value = 15
+    catAffinityXp.value = 0
+    catHeartChestXp.value = 0
+    claimedLv10Reward.value = true
+    claimedLv20Reward.value = false
+
+    // 3. Streak Fokus: 2 hari
+    dailyStreak.value = 2
+    streakLastDate.value = todayStr
+    fullGoalStreak.value = 2
+    fullGoalStreakLastDate.value = todayStr
+
+    // 4. Kartu Pesan Rahasia Terbuka: 9 kartu pertama (#01–#09)
+    collectedSecretCards.value = SECRET_CAT_CARDS.slice(0, 9).map(card => card.id)
+
+    // 5. Tema Terbuka: urutan atas s/d Honey Library (tema setelah Honey Library tetap terkunci)
+    const restoredThemes: CozyThemeId[] = [
+      'classic',
+      'midnight-rain',
+      'autumn-cafe',
+      'matcha-garden',
+      'sakura-lantern',
+      'biolum-ocean',
+      'honey-library',
+    ]
+    ownedCozyThemes.value = restoredThemes
+    if (!restoredThemes.includes(activeCozyTheme.value)) {
+      activeCozyTheme.value = 'honey-library'
+      applyCozyThemeToDocument('honey-library')
+    }
+
+    // 6. Aksesori Terbuka: hanya Pita Pink ('pink-bow') & Buku Terbuka/Terbang ('open-book')
+    const restoredAccessories: Exclude<MascotAccessoryId, 'none'>[] = ['open-book', 'pink-bow']
+    ownedAccessories.value = restoredAccessories
+    if (
+      equippedAccessory.value !== 'none' &&
+      !restoredAccessories.includes(equippedAccessory.value)
+    ) {
+      equippedAccessory.value = 'open-book'
+    }
+    if (
+      mainCatAccessory.value !== 'none' &&
+      !restoredAccessories.includes(mainCatAccessory.value)
+    ) {
+      mainCatAccessory.value = 'open-book'
+    }
+    if (
+      miniCatAccessory.value !== 'none' &&
+      !restoredAccessories.includes(miniCatAccessory.value)
+    ) {
+      miniCatAccessory.value = syncCatAccessories.value ? mainCatAccessory.value : 'pink-bow'
+    }
+
+    // 7. Karakter Kucing: hanya 2 kucing bawaan awal
+    ownedCats.value = ['snowy-white', 'misty-tabby']
+    mainCatType.value = 'snowy-white'
+    miniCatType.value = 'misty-tabby'
+
+    // Validasi kursor aktif sesuai tema yang terbuka
+    if (!isCursorUnlocked(activeCursor.value)) {
+      activeCursor.value = 'starlight-wand'
+      isStarCursorEnabled.value = true
+    }
+
+    // Simpan segera ke localStorage
+    persistAll(false)
+
+    // Paksa unggah langsung ke Cloud Firestore (`users/{uid}`) jika sedang login Google
+    let syncedToCloud = false
+    if (firebaseUser.value) {
+      syncedToCloud = await forceUploadSnapshotToFirestore(buildStateSnapshot())
+    }
+
+    playVictoryMelody()
+    triggerMascotReaction(
+      'celebrate',
+      'Progresmu berhasil dipulihkan! 500 🐟, Lv. 15, 9 Kartu & Tema s/d Honey Library siap kembali~ 💖✨',
+      5000,
+    )
+    showMiniToast(
+      syncedToCloud
+        ? '✅ Progres berhasil dipulihkan & langsung tersimpan ke Cloud Firestore (users/{uid})! ☁️✨'
+        : firebaseUser.value
+          ? '✅ Progres dipulihkan ke lokal! Klik Sinkronkan jika cloud masih tertunda.'
+          : '✅ Progres dipulihkan ke localStorage! Login Google agar langsung tersinkron ke Cloud.',
+    )
+
+    return { ok: true, syncedToCloud }
+  }
+
   return {
     // State utama
     theme,
@@ -5261,5 +5363,6 @@ export function useTwilightStorage() {
     signInWithGoogle,
     signOutGoogle,
     syncNowWithFirebase,
+    restoreMyAccountProgress,
   }
 }
