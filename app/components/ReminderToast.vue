@@ -25,11 +25,11 @@ const {
     <div
       v-if="activeReminder"
       role="alert"
-      class="fixed left-1/2 top-5 z-50 w-[calc(100vw-2rem)] max-w-md -translate-x-1/2 rounded-3xl border bg-[#261447]/95 p-4 shadow-2xl backdrop-blur-lg sm:left-auto sm:right-5 sm:translate-x-0"
+      class="cozy-popover-menu fixed left-1/2 top-5 z-50 w-[calc(100vw-2rem)] max-w-md -translate-x-1/2 rounded-3xl border bg-[#261447]/95 p-4 shadow-2xl backdrop-blur-lg sm:left-auto sm:right-5 sm:translate-x-0"
       :class="
         activeReminder.alarmMode === 'repeat'
-          ? 'border-pink-300/75 shadow-pink-500/35 ring-2 ring-pink-300/40'
-          : 'border-pink-200/45 shadow-pink-500/20'
+          ? 'ring-2 ring-amber-300/60'
+          : ''
       "
     >
       <div class="flex items-start gap-3">
@@ -70,7 +70,7 @@ const {
 
             <button
               type="button"
-              class="btn-bouncy cursor-pointer rounded-full bg-gradient-to-r from-[#f9a8d4] to-[#c4b5fd] px-3.5 py-1.5 text-xs font-bold text-[#311042] shadow-md shadow-pink-500/20"
+              class="cozy-active-btn btn-bouncy cursor-pointer rounded-full bg-gradient-to-r from-[#f9a8d4] to-[#c4b5fd] px-3.5 py-1.5 text-xs font-bold text-[#311042] shadow-md"
               @click="completeActiveReminder"
             >
               ✓ Tandai Selesai
@@ -101,7 +101,7 @@ const {
     <div
       v-if="dailyRewardCardMessage"
       role="status"
-      class="fixed left-1/2 top-5 z-50 w-[calc(100vw-2rem)] max-w-md -translate-x-1/2 rounded-3xl border-2 border-amber-200/70 bg-gradient-to-r from-[#3b1557]/95 via-[#4c1d95]/95 to-[#6d285c]/95 px-4 py-3.5 shadow-2xl shadow-pink-500/30 backdrop-blur-lg"
+      class="cozy-popover-menu fixed left-1/2 top-5 z-50 w-[calc(100vw-2rem)] max-w-md -translate-x-1/2 rounded-3xl border-2 border-amber-300/70 px-4 py-3.5 shadow-2xl backdrop-blur-lg"
     >
       <div class="flex items-center gap-3">
         <span class="flex h-11 w-11 shrink-0 animate-bounce items-center justify-center rounded-2xl bg-amber-300/25 text-2xl">
@@ -141,7 +141,7 @@ const {
     <div
       v-if="miniToastMessage && !dailyRewardCardMessage"
       role="status"
-      class="pointer-events-none fixed left-1/2 top-5 z-40 -translate-x-1/2 rounded-full border border-pink-200/40 bg-[#2b184f]/95 px-4 py-2 text-xs font-bold text-pink-100 shadow-lg shadow-pink-500/20 backdrop-blur-md sm:text-sm"
+      class="cozy-popover-menu pointer-events-none fixed left-1/2 top-5 z-40 -translate-x-1/2 rounded-full border px-4 py-2 text-xs font-bold shadow-lg backdrop-blur-md sm:text-sm"
     >
       {{ miniToastMessage }}
     </div>

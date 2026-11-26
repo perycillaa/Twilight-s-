@@ -45,6 +45,14 @@
   --title-glow: rgba(249, 168, 212, 0.48);
   --text-primary: #fdf2f8;
   --text-secondary: #fbcfe8;
+  --text-muted: rgba(233, 213, 255, 0.72);
+  --card-bg: rgba(34, 22, 62, 0.76);
+  --card-bg-solid: rgba(30, 20, 56, 0.96);
+  --card-border: rgba(255, 255, 255, 0.2);
+  --input-bg: rgba(255, 255, 255, 0.1);
+  --input-border: rgba(255, 255, 255, 0.2);
+  --surface-subtle: rgba(0, 0, 0, 0.22);
+  --btn-active-text: #27103b;
 }
 
 /* Tema 2: Pastel Berry / Cotton Candy Sunset (gradasi pink pastel lembut ke peach-rose, tanpa sakura) */
@@ -915,6 +923,542 @@ html[data-cozy-theme="biolum-ocean"] header {
 
 .cozy-sparkle-alt {
   color: var(--accent-secondary) !important;
+}
+
+.cozy-popover-menu {
+  background-color: var(--card-bg-solid, rgba(28, 20, 54, 0.96)) !important;
+  border-color: var(--card-border, rgba(255, 255, 255, 0.22)) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Efek Tap Ripple Bertema (bekerja mulus saat disentuh di HP maupun klik di PC) */
+@keyframes tapRipple {
+  0% {
+    opacity: 0.92;
+    transform: scale(0.32);
+  }
+  70% {
+    opacity: 0.45;
+    transform: scale(1.38);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.75);
+  }
+}
+
+.animate-tap-ripple {
+  animation: tapRipple 0.56s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* ============================================================================
+   SISTEM MODE TERANG PASTEL (☀️ DAYLIGHT / PASTEL VIBE) UNIVERSAL — SEMUA TEMA
+   Bebas latar putih silau & menjamin kontras font gelap tajam di atas kartu terang
+   serta teks putih di atas tombol aksen pekat!
+   ============================================================================ */
+
+/* Default / Twilight Classic (☀️) */
+html[data-theme-mode="light"] {
+  --twilight-bg-base: #f3e8ff;
+  --accent-primary: #7c3aed;
+  --accent-secondary: #db2777;
+  --accent-btn-grad: linear-gradient(135deg, #7c3aed 0%, #9333ea 100%);
+  --accent-btn-text: #ffffff;
+  --btn-active-text: #ffffff;
+  --accent-btn-shadow: rgba(124, 58, 237, 0.28);
+  --accent-surface: #5b21b6;
+  --accent-surface-hover: #4c1d95;
+  --accent-pill-bg: rgba(124, 58, 237, 0.12);
+  --accent-pill-bg-hover: rgba(124, 58, 237, 0.22);
+  --accent-pill-border: rgba(124, 58, 237, 0.34);
+  --accent-pill-text: #3b0764;
+  --accent-badge-bg: rgba(124, 58, 237, 0.12);
+  --accent-badge-border: rgba(124, 58, 237, 0.3);
+  --accent-badge-text: #4c1d95;
+  --accent-check-fill: #7c3aed;
+  --accent-check-stroke: #c4b5fd;
+  --accent-check-idle-stroke: #7c3aed;
+  --accent-check-mark: #ffffff;
+  --title-color: #4c1d95;
+  --title-glow: rgba(168, 85, 247, 0.22);
+  --text-primary: #2e1065;
+  --text-secondary: #5b21b6;
+  --text-muted: #6b21a8;
+  --card-bg: rgba(255, 255, 255, 0.84);
+  --card-bg-solid: rgba(255, 255, 255, 0.96);
+  --card-border: rgba(124, 58, 237, 0.22);
+  --input-bg: rgba(255, 255, 255, 0.88);
+  --input-border: rgba(124, 58, 237, 0.28);
+  --surface-subtle: rgba(124, 58, 237, 0.08);
+  --slider-thumb-grad: linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%);
+  --slider-thumb-shadow: rgba(124, 58, 237, 0.4);
+}
+
+/* Base Theme: Pastel Berry (☀️) */
+html[data-theme="sakura"][data-theme-mode="light"] {
+  --twilight-bg-base: #ffe4e6;
+  --accent-primary: #be123c;
+  --accent-secondary: #ea580c;
+  --accent-btn-grad: linear-gradient(135deg, #e11d48 0%, #be123c 100%);
+  --accent-btn-text: #ffffff;
+  --btn-active-text: #ffffff;
+  --accent-btn-shadow: rgba(190, 18, 60, 0.28);
+  --accent-surface: #9f1239;
+  --accent-surface-hover: #881337;
+  --accent-pill-bg: rgba(190, 18, 60, 0.11);
+  --accent-pill-bg-hover: rgba(190, 18, 60, 0.2);
+  --accent-pill-border: rgba(190, 18, 60, 0.32);
+  --accent-pill-text: #4c0519;
+  --accent-badge-bg: rgba(234, 88, 12, 0.12);
+  --accent-badge-border: rgba(234, 88, 12, 0.32);
+  --accent-badge-text: #7c2d12;
+  --accent-check-fill: #be123c;
+  --accent-check-stroke: #fda4af;
+  --accent-check-idle-stroke: #be123c;
+  --accent-check-mark: #ffffff;
+  --title-color: #881337;
+  --title-glow: rgba(244, 63, 94, 0.2);
+  --text-primary: #4c0519;
+  --text-secondary: #9f1239;
+  --text-muted: #881337;
+  --card-bg: rgba(255, 250, 246, 0.85);
+  --card-bg-solid: rgba(255, 252, 249, 0.96);
+  --card-border: rgba(190, 18, 60, 0.22);
+  --input-bg: rgba(255, 255, 255, 0.9);
+  --input-border: rgba(190, 18, 60, 0.28);
+  --surface-subtle: rgba(190, 18, 60, 0.08);
+  --slider-thumb-grad: linear-gradient(135deg, #fb7185 0%, #be123c 100%);
+}
+
+/* Base Theme: Ocean Night (☀️) */
+html[data-theme="ocean"][data-theme-mode="light"] {
+  --twilight-bg-base: #e0f2fe;
+  --accent-primary: #0369a1;
+  --accent-secondary: #0284c7;
+  --accent-btn-grad: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+  --accent-btn-text: #ffffff;
+  --btn-active-text: #ffffff;
+  --accent-btn-shadow: rgba(2, 132, 199, 0.3);
+  --accent-surface: #075985;
+  --accent-surface-hover: #0c4a6e;
+  --accent-pill-bg: rgba(2, 132, 199, 0.12);
+  --accent-pill-bg-hover: rgba(2, 132, 199, 0.22);
+  --accent-pill-border: rgba(2, 132, 199, 0.32);
+  --accent-pill-text: #0c4a6e;
+  --accent-badge-bg: rgba(2, 132, 199, 0.12);
+  --accent-badge-border: rgba(2, 132, 199, 0.32);
+  --accent-badge-text: #075985;
+  --accent-check-fill: #0284c7;
+  --accent-check-stroke: #7dd3fc;
+  --accent-check-idle-stroke: #0284c7;
+  --accent-check-mark: #ffffff;
+  --title-color: #0c4a6e;
+  --title-glow: rgba(14, 165, 233, 0.22);
+  --text-primary: #0f172a;
+  --text-secondary: #0369a1;
+  --text-muted: #334155;
+  --card-bg: rgba(255, 255, 255, 0.85);
+  --card-bg-solid: rgba(255, 255, 255, 0.96);
+  --card-border: rgba(2, 132, 199, 0.22);
+  --input-bg: rgba(255, 255, 255, 0.9);
+  --input-border: rgba(2, 132, 199, 0.28);
+  --surface-subtle: rgba(2, 132, 199, 0.08);
+  --slider-thumb-grad: linear-gradient(135deg, #38bdf8 0%, #0369a1 100%);
+}
+
+/* 1. 🍵 MATCHA GARDEN (☀️ Mode Terang Pastel) */
+html[data-cozy-theme="matcha-garden"][data-theme-mode="light"] {
+  --twilight-bg-base: #dcfce7;
+  --accent-primary: #15803d;
+  --accent-secondary: #16a34a;
+  --accent-btn-grad: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+  --accent-btn-text: #ffffff;
+  --btn-active-text: #ffffff;
+  --accent-btn-shadow: rgba(21, 128, 61, 0.3);
+  --accent-surface: #166534;
+  --accent-surface-hover: #14532d;
+  --accent-pill-bg: rgba(21, 128, 61, 0.12);
+  --accent-pill-bg-hover: rgba(21, 128, 61, 0.22);
+  --accent-pill-border: rgba(21, 128, 61, 0.34);
+  --accent-pill-text: #064e3b;
+  --accent-badge-bg: rgba(22, 163, 74, 0.14);
+  --accent-badge-border: rgba(21, 128, 61, 0.34);
+  --accent-badge-text: #065f46;
+  --accent-check-fill: #15803d;
+  --accent-check-stroke: #86efac;
+  --accent-check-idle-stroke: #15803d;
+  --accent-check-mark: #ffffff;
+  --title-color: #064e3b;
+  --title-glow: rgba(22, 163, 74, 0.2);
+  --text-primary: #064e3b;
+  --text-secondary: #047857;
+  --text-muted: #166534;
+  --card-bg: rgba(255, 255, 255, 0.82);
+  --card-bg-solid: rgba(248, 255, 250, 0.96);
+  --card-border: rgba(21, 128, 61, 0.24);
+  --input-bg: rgba(255, 255, 255, 0.9);
+  --input-border: rgba(21, 128, 61, 0.3);
+  --surface-subtle: rgba(21, 128, 61, 0.08);
+  --chart-bar-a: linear-gradient(to top, #15803d, #4ade80);
+  --chart-bar-b: linear-gradient(to top, #047857, #34d399);
+  --chart-bar-full: linear-gradient(to top, #b45309, #f59e0b);
+  --slider-thumb-grad: linear-gradient(135deg, #4ade80 0%, #15803d 100%);
+  --slider-thumb-shadow: rgba(21, 128, 61, 0.42);
+}
+
+/* 2. 🌊 BIOLUMINESCENT OCEAN (☀️ Mode Terang Pastel Lagoon) */
+html[data-cozy-theme="biolum-ocean"][data-theme-mode="light"] {
+  --twilight-bg-base: #cffafe;
+  --accent-primary: #0e7490;
+  --accent-secondary: #0d9488;
+  --accent-btn-grad: linear-gradient(135deg, #0d9488 0%, #0e7490 100%);
+  --accent-btn-text: #ffffff;
+  --btn-active-text: #ffffff;
+  --accent-btn-shadow: rgba(14, 116, 144, 0.3);
+  --accent-surface: #155e75;
+  --accent-surface-hover: #164e63;
+  --accent-pill-bg: rgba(14, 116, 144, 0.12);
+  --accent-pill-bg-hover: rgba(14, 116, 144, 0.22);
+  --accent-pill-border: rgba(14, 116, 144, 0.34);
+  --accent-pill-text: #083344;
+  --accent-badge-bg: rgba(13, 148, 136, 0.14);
+  --accent-badge-border: rgba(14, 116, 144, 0.34);
+  --accent-badge-text: #083344;
+  --accent-check-fill: #0e7490;
+  --accent-check-stroke: #67e8f9;
+  --accent-check-idle-stroke: #0e7490;
+  --accent-check-mark: #ffffff;
+  --title-color: #083344;
+  --title-glow: rgba(14, 116, 144, 0.22);
+  --text-primary: #083344;
+  --text-secondary: #0e7490;
+  --text-muted: #155e75;
+  --card-bg: rgba(255, 255, 255, 0.82);
+  --card-bg-solid: rgba(246, 254, 255, 0.96);
+  --card-border: rgba(14, 116, 144, 0.25);
+  --input-bg: rgba(255, 255, 255, 0.9);
+  --input-border: rgba(14, 116, 144, 0.3);
+  --surface-subtle: rgba(14, 116, 144, 0.08);
+  --chart-bar-a: linear-gradient(to top, #0e7490, #22d3ee);
+  --chart-bar-b: linear-gradient(to top, #0f766e, #2dd4bf);
+  --chart-bar-full: linear-gradient(to top, #0284c7, #38bdf8);
+  --slider-thumb-grad: linear-gradient(135deg, #22d3ee 0%, #0e7490 100%);
+  --slider-thumb-shadow: rgba(14, 116, 144, 0.42);
+}
+
+/* 3. 🌸 SAKURA LANTERN (☀️ Mode Terang Pastel Sakura) */
+html[data-cozy-theme="sakura-lantern"][data-theme-mode="light"] {
+  --twilight-bg-base: #fce7f3;
+  --accent-primary: #be185d;
+  --accent-secondary: #db2777;
+  --accent-btn-grad: linear-gradient(135deg, #db2777 0%, #be185d 100%);
+  --accent-btn-text: #ffffff;
+  --btn-active-text: #ffffff;
+  --accent-btn-shadow: rgba(190, 24, 93, 0.3);
+  --accent-surface: #9d174d;
+  --accent-surface-hover: #831843;
+  --accent-pill-bg: rgba(190, 24, 93, 0.11);
+  --accent-pill-bg-hover: rgba(190, 24, 93, 0.21);
+  --accent-pill-border: rgba(190, 24, 93, 0.32);
+  --accent-pill-text: #500724;
+  --accent-badge-bg: rgba(219, 39, 119, 0.13);
+  --accent-badge-border: rgba(190, 24, 93, 0.34);
+  --accent-badge-text: #831843;
+  --accent-check-fill: #be185d;
+  --accent-check-stroke: #f9a8d4;
+  --accent-check-idle-stroke: #be185d;
+  --accent-check-mark: #ffffff;
+  --title-color: #831843;
+  --title-glow: rgba(219, 39, 119, 0.2);
+  --text-primary: #500724;
+  --text-secondary: #9d174d;
+  --text-muted: #831843;
+  --card-bg: rgba(255, 255, 255, 0.84);
+  --card-bg-solid: rgba(255, 249, 252, 0.96);
+  --card-border: rgba(190, 24, 93, 0.22);
+  --input-bg: rgba(255, 255, 255, 0.9);
+  --input-border: rgba(190, 24, 93, 0.28);
+  --surface-subtle: rgba(190, 24, 93, 0.08);
+  --chart-bar-a: linear-gradient(to top, #be185d, #f472b6);
+  --chart-bar-b: linear-gradient(to top, #9d174d, #fb7185);
+  --chart-bar-full: linear-gradient(to top, #d97706, #fbbf24);
+  --slider-thumb-grad: linear-gradient(135deg, #f472b6 0%, #be185d 100%);
+  --slider-thumb-shadow: rgba(190, 24, 93, 0.42);
+}
+
+/* 4. 🍂 COZY AUTUMN CAFE & 🍯 HONEY LIBRARY (☀️ Mode Terang Krem Latte & Madu) */
+html[data-cozy-theme="autumn-cafe"][data-theme-mode="light"],
+html[data-cozy-theme="honey-library"][data-theme-mode="light"] {
+  --twilight-bg-base: #fef3c7;
+  --accent-primary: #b45309;
+  --accent-secondary: #d97706;
+  --accent-btn-grad: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+  --accent-btn-text: #ffffff;
+  --btn-active-text: #ffffff;
+  --accent-btn-shadow: rgba(180, 83, 9, 0.3);
+  --accent-surface: #92400e;
+  --accent-surface-hover: #78350f;
+  --accent-pill-bg: rgba(180, 83, 9, 0.12);
+  --accent-pill-bg-hover: rgba(180, 83, 9, 0.22);
+  --accent-pill-border: rgba(180, 83, 9, 0.34);
+  --accent-pill-text: #451a03;
+  --accent-badge-bg: rgba(217, 119, 6, 0.14);
+  --accent-badge-border: rgba(180, 83, 9, 0.34);
+  --accent-badge-text: #78350f;
+  --accent-check-fill: #b45309;
+  --accent-check-stroke: #fcd34d;
+  --accent-check-idle-stroke: #b45309;
+  --accent-check-mark: #ffffff;
+  --title-color: #78350f;
+  --title-glow: rgba(217, 119, 6, 0.22);
+  --text-primary: #451a03;
+  --text-secondary: #92400e;
+  --text-muted: #78350f;
+  --card-bg: rgba(255, 251, 235, 0.85);
+  --card-bg-solid: rgba(255, 252, 240, 0.96);
+  --card-border: rgba(180, 83, 9, 0.24);
+  --input-bg: rgba(255, 255, 255, 0.9);
+  --input-border: rgba(180, 83, 9, 0.3);
+  --surface-subtle: rgba(180, 83, 9, 0.08);
+  --chart-bar-a: linear-gradient(to top, #b45309, #fbbf24);
+  --chart-bar-b: linear-gradient(to top, #c2410c, #fb923c);
+  --chart-bar-full: linear-gradient(to top, #15803d, #4ade80);
+  --slider-thumb-grad: linear-gradient(135deg, #fbbf24 0%, #b45309 100%);
+  --slider-thumb-shadow: rgba(180, 83, 9, 0.42);
+}
+
+/* 5. ☁️ PASTEL CLOUDLAND, ❄️ WINTER FROST & 🌧️ MIDNIGHT RAIN (☀️ Mode Terang Biru Pagi & Salju) */
+html[data-cozy-theme="pastel-cloudland"][data-theme-mode="light"],
+html[data-cozy-theme="winter-frost"][data-theme-mode="light"],
+html[data-cozy-theme="midnight-rain"][data-theme-mode="light"] {
+  --twilight-bg-base: #e0f2fe;
+  --accent-primary: #1d4ed8;
+  --accent-secondary: #2563eb;
+  --accent-btn-grad: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  --accent-btn-text: #ffffff;
+  --btn-active-text: #ffffff;
+  --accent-btn-shadow: rgba(29, 78, 216, 0.28);
+  --accent-surface: #1e40af;
+  --accent-surface-hover: #1e3a8a;
+  --accent-pill-bg: rgba(29, 78, 216, 0.11);
+  --accent-pill-bg-hover: rgba(29, 78, 216, 0.21);
+  --accent-pill-border: rgba(29, 78, 216, 0.32);
+  --accent-pill-text: #0f172a;
+  --accent-badge-bg: rgba(37, 99, 235, 0.12);
+  --accent-badge-border: rgba(29, 78, 216, 0.32);
+  --accent-badge-text: #1e3a8a;
+  --accent-check-fill: #1d4ed8;
+  --accent-check-stroke: #93c5fd;
+  --accent-check-idle-stroke: #1d4ed8;
+  --accent-check-mark: #ffffff;
+  --title-color: #1e3a8a;
+  --title-glow: rgba(37, 99, 235, 0.2);
+  --text-primary: #0f172a;
+  --text-secondary: #1e40af;
+  --text-muted: #334155;
+  --card-bg: rgba(255, 255, 255, 0.85);
+  --card-bg-solid: rgba(248, 252, 255, 0.96);
+  --card-border: rgba(29, 78, 216, 0.22);
+  --input-bg: rgba(255, 255, 255, 0.92);
+  --input-border: rgba(29, 78, 216, 0.28);
+  --surface-subtle: rgba(29, 78, 216, 0.08);
+  --chart-bar-a: linear-gradient(to top, #1d4ed8, #60a5fa);
+  --chart-bar-b: linear-gradient(to top, #0284c7, #38bdf8);
+  --chart-bar-full: linear-gradient(to top, #047857, #34d399);
+  --slider-thumb-grad: linear-gradient(135deg, #60a5fa 0%, #1d4ed8 100%);
+  --slider-thumb-shadow: rgba(29, 78, 216, 0.42);
+}
+
+/* 6. 👑 ASTRAL CRYSTAL & 🌃 NEON NIGHT CITY (☀️ Mode Terang Pastel Holographic / Neo-Tokyo Day) */
+html[data-cozy-theme="astral-palace"][data-theme-mode="light"],
+html[data-cozy-theme="neon-night-city"][data-theme-mode="light"] {
+  --twilight-bg-base: #ede9fe;
+  --accent-primary: #7e22ce;
+  --accent-secondary: #db2777;
+  --accent-btn-grad: linear-gradient(135deg, #7e22ce 0%, #db2777 100%);
+  --accent-btn-text: #ffffff;
+  --btn-active-text: #ffffff;
+  --accent-btn-shadow: rgba(126, 34, 206, 0.32);
+  --accent-surface: #6b21a8;
+  --accent-surface-hover: #581c87;
+  --accent-pill-bg: rgba(126, 34, 206, 0.12);
+  --accent-pill-bg-hover: rgba(126, 34, 206, 0.22);
+  --accent-pill-border: rgba(126, 34, 206, 0.34);
+  --accent-pill-text: #1e1b4b;
+  --accent-badge-bg: rgba(219, 39, 119, 0.12);
+  --accent-badge-border: rgba(126, 34, 206, 0.34);
+  --accent-badge-text: #581c87;
+  --accent-check-fill: #7e22ce;
+  --accent-check-stroke: #c4b5fd;
+  --accent-check-idle-stroke: #7e22ce;
+  --accent-check-mark: #ffffff;
+  --title-color: #3b0764;
+  --title-glow: rgba(126, 34, 206, 0.22);
+  --text-primary: #1e1b4b;
+  --text-secondary: #6b21a8;
+  --text-muted: #4c1d95;
+  --card-bg: rgba(255, 255, 255, 0.84);
+  --card-bg-solid: rgba(252, 250, 255, 0.96);
+  --card-border: rgba(126, 34, 206, 0.26);
+  --input-bg: rgba(255, 255, 255, 0.92);
+  --input-border: rgba(126, 34, 206, 0.3);
+  --surface-subtle: rgba(126, 34, 206, 0.08);
+  --chart-bar-a: linear-gradient(to top, #7e22ce, #c084fc);
+  --chart-bar-b: linear-gradient(to top, #0891b2, #22d3ee);
+  --chart-bar-full: linear-gradient(to top, #be185d, #f472b6);
+  --slider-thumb-grad: linear-gradient(135deg, #22d3ee 0%, #7e22ce 100%);
+  --slider-thumb-shadow: rgba(126, 34, 206, 0.42);
+}
+
+/* === JAMINAN KONTRAS FONT, INPUT, SLIDER, KARTU & MODAL PADA MODE TERANG (☀️) === */
+html[data-theme-mode="light"] body {
+  color: var(--text-primary) !important;
+}
+
+html[data-theme-mode="light"] .glass-card,
+html[data-theme-mode="light"] header {
+  background-color: var(--card-bg) !important;
+  border-color: var(--card-border) !important;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.09) !important;
+}
+
+html[data-theme-mode="light"] [role="dialog"]:not([data-transparent-dialog="true"]) > div:not([data-force-dark="true"]):not(.receipt-paper-surface) {
+  background-color: var(--card-bg-solid) !important;
+  border-color: var(--card-border) !important;
+  color: var(--text-primary) !important;
+}
+
+html[data-theme-mode="light"] .twilight-title-glow {
+  color: var(--title-color) !important;
+  text-shadow: 0 2px 12px var(--title-glow) !important;
+}
+
+/* Permukaan dalam yang tadinya gelap transparan (bg-black/20, bg-white/10) menjadi pastel kaca terang */
+html[data-theme-mode="light"] :not([data-force-dark="true"]) .bg-black\/20,
+html[data-theme-mode="light"] :not([data-force-dark="true"]) .bg-black\/25,
+html[data-theme-mode="light"] :not([data-force-dark="true"]) .bg-black\/30,
+html[data-theme-mode="light"] :not([data-force-dark="true"]) .bg-black\/35 {
+  background-color: var(--surface-subtle) !important;
+}
+
+html[data-theme-mode="light"] :not([data-force-dark="true"]) .bg-white\/5,
+html[data-theme-mode="light"] :not([data-force-dark="true"]) .bg-white\/10,
+html[data-theme-mode="light"] :not([data-force-dark="true"]) .bg-white\/15 {
+  background-color: var(--input-bg) !important;
+}
+
+html[data-theme-mode="light"] .border-white\/10,
+html[data-theme-mode="light"] .border-white\/15,
+html[data-theme-mode="light"] .border-white\/20,
+html[data-theme-mode="light"] .border-white\/25 {
+  border-color: var(--input-border) !important;
+}
+
+/* Input, textarea, select & slider kawaii pada Mode Terang */
+html[data-theme-mode="light"] input:not([type="range"]),
+html[data-theme-mode="light"] textarea,
+html[data-theme-mode="light"] select {
+  background-color: var(--input-bg) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--input-border) !important;
+}
+
+html[data-theme-mode="light"] input::placeholder,
+html[data-theme-mode="light"] textarea::placeholder {
+  color: var(--text-muted) !important;
+  opacity: 0.72;
+}
+
+html[data-theme-mode="light"] input[type="range"].kawaii-slider {
+  background: rgba(15, 23, 42, 0.16) !important;
+}
+
+/* Jamin seluruh teks terang menjadi teks gelap tajam di atas kartu terang (kecuali di dalam tombol aktif & canvas gelap) */
+html[data-theme-mode="light"] .text-white,
+html[data-theme-mode="light"] .text-pink-50,
+html[data-theme-mode="light"] .text-pink-100,
+html[data-theme-mode="light"] .text-pink-50\/95,
+html[data-theme-mode="light"] .text-pink-100\/90,
+html[data-theme-mode="light"] .text-pink-100\/85,
+html[data-theme-mode="light"] .text-purple-50,
+html[data-theme-mode="light"] .text-purple-100,
+html[data-theme-mode="light"] .text-purple-100\/80,
+html[data-theme-mode="light"] .text-purple-100\/75,
+html[data-theme-mode="light"] .text-sky-100,
+html[data-theme-mode="light"] .text-emerald-100,
+html[data-theme-mode="light"] .text-amber-50,
+html[data-theme-mode="light"] .text-amber-100,
+html[data-theme-mode="light"] .text-rose-50,
+html[data-theme-mode="light"] .text-rose-100,
+html[data-theme-mode="light"] .text-indigo-100 {
+  color: var(--text-primary) !important;
+}
+
+html[data-theme-mode="light"] .text-pink-200,
+html[data-theme-mode="light"] .text-pink-300,
+html[data-theme-mode="light"] .text-pink-200\/90,
+html[data-theme-mode="light"] .text-pink-200\/85,
+html[data-theme-mode="light"] .text-pink-200\/80,
+html[data-theme-mode="light"] .text-pink-200\/75,
+html[data-theme-mode="light"] .text-purple-200,
+html[data-theme-mode="light"] .text-purple-200\/85,
+html[data-theme-mode="light"] .text-purple-200\/80,
+html[data-theme-mode="light"] .text-purple-200\/75,
+html[data-theme-mode="light"] .text-sky-200,
+html[data-theme-mode="light"] .text-sky-200\/90,
+html[data-theme-mode="light"] .text-emerald-200,
+html[data-theme-mode="light"] .text-emerald-200\/85,
+html[data-theme-mode="light"] .text-amber-200,
+html[data-theme-mode="light"] .text-amber-200\/95 {
+  color: var(--text-secondary) !important;
+}
+
+html[data-theme-mode="light"] .text-purple-200\/70,
+html[data-theme-mode="light"] .text-purple-200\/60,
+html[data-theme-mode="light"] .text-purple-200\/45,
+html[data-theme-mode="light"] .text-purple-200\/40,
+html[data-theme-mode="light"] .text-pink-100\/65 {
+  color: var(--text-muted) !important;
+}
+
+/* Tombol Aksi Aktif & Sekunder di Mode Terang: selalu menggunakan teks putih tegas (#FFFFFF) di atas warna pekat */
+html[data-theme-mode="light"] .cozy-active-btn,
+html[data-theme-mode="light"] .ocean-active-btn,
+html[data-theme-mode="light"] .cozy-reset-btn,
+html[data-theme-mode="light"] .cozy-toggle-secondary,
+html[data-theme-mode="light"] .cozy-pause-active,
+html[data-theme-mode="light"] .cozy-active-btn *,
+html[data-theme-mode="light"] .ocean-active-btn *,
+html[data-theme-mode="light"] .cozy-reset-btn *,
+html[data-theme-mode="light"] .cozy-toggle-secondary *,
+html[data-theme-mode="light"] .cozy-pause-active * {
+  color: var(--btn-active-text, #ffffff) !important;
+}
+
+html[data-theme-mode="light"] .cozy-active-btn,
+html[data-theme-mode="light"] .ocean-active-btn {
+  background-image: var(--accent-btn-grad) !important;
+  background-color: var(--accent-primary) !important;
+  border-color: var(--accent-primary) !important;
+  box-shadow: 0 6px 16px var(--accent-btn-shadow) !important;
+}
+
+/* Pertahankan teks putih cerah di atas permukaan kanvas malam gelap (mis. overlay Break Game & Twilight Focus) */
+html[data-theme-mode="light"] [data-force-dark="true"],
+html[data-theme-mode="light"] [data-force-dark="true"] .text-white,
+html[data-theme-mode="light"] [data-force-dark="true"] .text-pink-100,
+html[data-theme-mode="light"] [data-force-dark="true"] .text-pink-200,
+html[data-theme-mode="light"] [data-force-dark="true"] .text-purple-100,
+html[data-theme-mode="light"] [data-force-dark="true"] .text-purple-200,
+html[data-theme-mode="light"] [data-force-dark="true"] .text-purple-200\/85,
+html[data-theme-mode="light"] [data-force-dark="true"] .text-amber-100,
+html[data-theme-mode="light"] [data-force-dark="true"] .text-emerald-100,
+html[data-theme-mode="light"] [data-force-dark="true"] .text-rose-200 {
+  color: #f8fafc !important;
+}
+
+html[data-theme-mode="light"] [data-force-dark="true"] .bg-white\/10 {
+  background-color: rgba(255, 255, 255, 0.14) !important;
 }
 
 /* Selaraskan tombol, garis strikethrough, & border tersisa pada tema non-ungu (termasuk Ocean Night base theme) */

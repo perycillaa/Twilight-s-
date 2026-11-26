@@ -1,7 +1,12 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useBackgroundResilience } from '~/composables/useBackgroundResilience'
-import { THEME_OPTIONS, useTwilightStorage } from '~/composables/useTwilightStorage'
+import {
+  CURSOR_OPTIONS,
+  type CursorStyleId,
+  THEME_OPTIONS,
+  useTwilightStorage,
+} from '~/composables/useTwilightStorage'
 
 // Ambil seluruh kontrol global dari composable penyimpanan bersama
 const {
@@ -11,6 +16,7 @@ const {
   habits,
   alarms,
   isPomodoroRunning,
+  activeCursor,
   isStarCursorEnabled,
   graphicsQuality,
   graphicsConfig,
@@ -30,6 +36,8 @@ const {
   setTheme,
   toggleDarkTheme,
   setUserName,
+  isCursorUnlocked,
+  setActiveCursor,
   toggleStarCursor,
   cycleGraphicsQuality,
   toggleZenMode,
@@ -90,6 +98,35 @@ const nameInputRef = ref<HTMLInputElement | null>(null)
 
 // Ref input file tersembunyi untuk fitur Restore JSON di footer
 const restoreInputRef = ref<HTMLInputElement | null>(null)
+
+// Popover menu pilihan 12 Kursor Bertema (terbuka otomatis sesuai tema yang dimiliki)
+const isCursorMenuOpen = ref<boolean>(false)
+const cursorMenuWrapRef = ref<HTMLElement | null>(null)
+
+const activeCursorMeta = computed(() => {
+  return CURSOR_OPTIONS.find(c => c.id === activeCursor.value) ?? CURSOR_OPTIONS[1]!
+})
+
+const unlockedCursorCount = computed<number>(() => {
+  return CURSOR_OPTIONS.filter(c => c.id !== 'off' && isCursorUnlocked(c.id)).length
+})
+
+const totalThemedCursorCount = CURSOR_OPTIONS.filter(c => c.id !== 'off').length
+
+function handleSelectCursorOption(cursorId: CursorStyleId) {
+  const result = setActiveCursor(cursorId)
+  if (result.ok) {
+    isCursorMenuOpen.value = false
+  }
+}
+
+function handleDocumentPointerDown(event: PointerEvent) {
+  if (!isCursorMenuOpen.value) return
+  const target = event.target as Node | null
+  if (cursorMenuWrapRef.value && target && !cursorMenuWrapRef.value.contains(target)) {
+    isCursorMenuOpen.value = false
+  }
+}
 
 // Sapaan personal otomatis sesuai waktu lokal + nama panggilan pengguna
 const personalizedGreeting = computed<string>(() => {
@@ -196,7 +233,10 @@ function handleGlobalShortcut(event: KeyboardEvent) {
   // 1. Tombol [Esc]: tutup modal/popup yang terbuka, atau keluar dari Twilight Focus & Starlight Focus
   if (event.key === 'Escape') {
     let handled = false
-    if (isShortcutsModalOpen.value) {
+    if (isCursorMenuOpen.value) {
+      isCursorMenuOpen.value = false
+      handled = true
+    } else if (isShortcutsModalOpen.value) {
       isShortcutsModalOpen.value = false
       handled = true
     } else if (isStudyCardModalOpen.value) {
@@ -402,6 +442,7 @@ onMounted(() => {
     coarsePointerMql.addEventListener?.('change', updateDeviceDetection)
   }
   window.addEventListener('keydown', handleGlobalShortcut)
+  window.addEventListener('pointerdown', handleDocumentPointerDown)
   window.addEventListener('pointerdown', handleBackgroundResumeGesture, { passive: true })
   document.addEventListener('visibilitychange', handleBackgroundResumeGesture)
   initPwaInstallListeners()
@@ -416,6 +457,7 @@ onUnmounted(() => {
     window.removeEventListener('resize', updateDeviceDetection)
     coarsePointerMql?.removeEventListener?.('change', updateDeviceDetection)
     window.removeEventListener('keydown', handleGlobalShortcut)
+    window.removeEventListener('pointerdown', handleDocumentPointerDown)
     window.removeEventListener('pointerdown', handleBackgroundResumeGesture)
     document.removeEventListener('visibilitychange', handleBackgroundResumeGesture)
   }
@@ -689,25 +731,116 @@ onUnmounted(() => {
               <span>Grafik: {{ graphicsConfig.icon }} {{ graphicsConfig.label }}</span>
             </button>
 
-            <!-- Tombol Toggle Kursor Bintang Kustom (khusus PC/Laptop — otomatis tersembunyi di HP/Mobile) -->
-            <button
-              type="button"
-              :title="
-                isStarCursorEnabled
-                  ? 'Matikan kursor bintang kustom'
-                  : 'Nyalakan kursor bintang kustom'
-              "
-              class="desktop-only-control btn-bouncy inline-flex cursor-pointer items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-semibold"
-              :class="
-                isStarCursorEnabled
-                  ? 'cozy-pill-btn border-pink-200/45 bg-pink-300/20 text-pink-100 shadow-sm'
-                  : 'border-white/15 bg-white/5 text-purple-200/70 hover:bg-white/15 hover:text-white'
-              "
-              @click="toggleStarCursor"
-            >
-              <span>{{ isStarCursorEnabled ? '✦' : '✧' }}</span>
-              <span>Kursor</span>
-            </button>
+            <!-- Tombol & Popover Pilihan 12 Kursor Bertema (Terbuka Otomatis Sesuai Tema Dimiliki + Tap Ripple HP) -->
+            <div ref="cursorMenuWrapRef" class="relative inline-flex">
+              <button
+                type="button"
+                :title="`Kursor aktif: ${activeCursorMeta.name} — Klik untuk pilih kursor bertema`"
+                :aria-expanded="isCursorMenuOpen"
+                aria-haspopup="menu"
+                class="btn-bouncy inline-flex cursor-pointer items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-semibold"
+                :class="
+                  activeCursor !== 'off'
+                    ? 'cozy-pill-btn border-pink-200/45 bg-pink-300/20 text-pink-100 shadow-sm'
+                    : 'border-white/15 bg-white/5 text-purple-200/70 hover:bg-white/15 hover:text-white'
+                "
+                @click="isCursorMenuOpen = !isCursorMenuOpen"
+              >
+                <span>{{ activeCursorMeta.icon }}</span>
+                <span>Kursor</span>
+                <span class="text-[9px] opacity-75">▾</span>
+              </button>
+
+              <Transition
+                enter-active-class="transition duration-150 ease-out"
+                enter-from-class="translate-y-1 opacity-0 scale-95"
+                enter-to-class="translate-y-0 opacity-100 scale-100"
+                leave-active-class="transition duration-120 ease-in"
+                leave-from-class="opacity-100 scale-100"
+                leave-to-class="translate-y-1 opacity-0 scale-95"
+              >
+                <div
+                  v-if="isCursorMenuOpen"
+                  role="menu"
+                  aria-label="Menu pilihan kursor bertema"
+                  class="cozy-popover-menu absolute right-0 top-full z-50 mt-2.5 w-72 overflow-hidden rounded-2xl border shadow-2xl backdrop-blur-xl sm:w-80"
+                >
+                  <div class="flex items-center justify-between border-b border-white/15 px-3.5 py-2.5">
+                    <div>
+                      <p class="font-display text-xs font-bold text-pink-100">
+                        ✨ Pilihan Kursor Bertema
+                      </p>
+                      <p class="text-[10px] font-medium text-purple-200/75">
+                        Terbuka otomatis saat tema dimiliki • Tap ripple di HP
+                      </p>
+                    </div>
+                    <span class="cozy-badge rounded-full border px-2 py-0.5 text-[10px] font-bold">
+                      {{ unlockedCursorCount }}/{{ totalThemedCursorCount }}
+                    </span>
+                  </div>
+
+                  <div class="max-h-[60vh] space-y-1 overflow-y-auto p-2">
+                    <button
+                      v-for="cursorOpt in CURSOR_OPTIONS"
+                      :key="cursorOpt.id"
+                      type="button"
+                      role="menuitemradio"
+                      :aria-checked="activeCursor === cursorOpt.id"
+                      class="flex w-full items-center justify-between gap-2 rounded-xl border px-2.5 py-2 text-left transition"
+                      :class="
+                        activeCursor === cursorOpt.id
+                          ? 'cozy-pill-btn cursor-pointer border-pink-300/60 shadow-sm'
+                          : isCursorUnlocked(cursorOpt.id)
+                            ? 'cursor-pointer border-transparent bg-white/5 hover:border-white/20 hover:bg-white/15'
+                            : 'cursor-not-allowed border-transparent bg-black/10 opacity-60 hover:opacity-75'
+                      "
+                      @click="handleSelectCursorOption(cursorOpt.id)"
+                    >
+                      <div class="flex min-w-0 items-center gap-2">
+                        <span
+                          class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-white/25 text-sm shadow-inner"
+                          :style="{
+                            background: `linear-gradient(135deg, ${cursorOpt.accentColor}33, ${cursorOpt.secondaryColor}33)`,
+                          }"
+                        >
+                          {{ cursorOpt.icon }}
+                        </span>
+                        <div class="min-w-0">
+                          <p class="truncate text-[11px] font-bold text-white">
+                            {{ cursorOpt.name }}
+                          </p>
+                          <p
+                            v-if="!isCursorUnlocked(cursorOpt.id)"
+                            class="truncate text-[9.5px] font-semibold text-amber-200/90"
+                          >
+                            🔒 Buka tema {{ cursorOpt.requiredThemeName }}
+                          </p>
+                          <p
+                            v-else
+                            class="truncate text-[9.5px] text-purple-200/75"
+                          >
+                            {{ cursorOpt.description }}
+                          </p>
+                        </div>
+                      </div>
+
+                      <span
+                        v-if="activeCursor === cursorOpt.id"
+                        class="cozy-active-btn shrink-0 rounded-full px-2 py-0.5 text-[9.5px] font-bold"
+                      >
+                        ✓ Aktif
+                      </span>
+                      <span
+                        v-else-if="!isCursorUnlocked(cursorOpt.id)"
+                        class="shrink-0 text-xs"
+                      >
+                        🔒
+                      </span>
+                    </button>
+                  </div>
+                </div>
+              </Transition>
+            </div>
 
             <!-- Tombol Panduan Keyboard Shortcuts (⌨️) khusus PC/Laptop — tersembunyi otomatis di HP/Mobile -->
             <button
@@ -743,24 +876,19 @@ onUnmounted(() => {
                 />
               </div>
 
-              <!-- Tombol Sakelar Mode Gelap (🌙) / Mode Normal (☀️) untuk Ketiga Tema Warna -->
+              <!-- Tombol Sakelar Mode Terang Pastel (☀️) / Mode Gelap Cozy (🌙) untuk SEMUA Tema -->
               <button
                 type="button"
                 :title="
                   isDarkTheme
-                    ? 'Beralih ke Mode Normal (☀️)'
-                    : 'Beralih ke Mode Gelap / Midnight (🌙)'
+                    ? 'Saat ini Mode Gelap (🌙) — Klik untuk beralih ke Mode Terang Pastel (☀️)'
+                    : 'Saat ini Mode Terang (☀️) — Klik untuk beralih ke Mode Gelap Cozy (🌙)'
                 "
-                :aria-label="isDarkTheme ? 'Aktifkan mode normal' : 'Aktifkan mode gelap'"
-                class="btn-bouncy inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border text-sm shadow-sm transition"
-                :class="
-                  isDarkTheme
-                    ? 'border-amber-200/50 bg-indigo-950/80 text-amber-200 hover:bg-indigo-900/90'
-                    : 'border-white/20 bg-white/10 text-pink-100 hover:bg-white/20'
-                "
+                :aria-label="isDarkTheme ? 'Beralih ke mode terang pastel' : 'Beralih ke mode gelap'"
+                class="cozy-pill-btn btn-bouncy inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border text-sm shadow-sm transition"
                 @click="toggleDarkTheme"
               >
-                {{ isDarkTheme ? '☀️' : '🌙' }}
+                {{ isDarkTheme ? '🌙' : '☀️' }}
               </button>
             </div>
           </div>

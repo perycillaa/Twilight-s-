@@ -15,6 +15,7 @@ const props = withDefaults(
 
 const {
   theme,
+  isDarkTheme,
   activeCozyTheme,
   graphicsQuality,
   isPomodoroRunning,
@@ -29,7 +30,9 @@ const {
   triggerVibration,
 } = useTwilightStorage()
 
-const catStyle = computed(() => getCatMascotThemePalette(activeCozyTheme.value, theme.value))
+const catStyle = computed(() =>
+  getCatMascotThemePalette(activeCozyTheme.value, theme.value, isDarkTheme.value),
+)
 const showSpecialEffects = computed<boolean>(() => graphicsQuality.value !== 'low')
 
 // Status Co-Working Body Doubling Kucing Mini: ikut fokus ('focus'), santai istirahat ('break'), atau idle

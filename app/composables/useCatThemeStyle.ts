@@ -425,14 +425,46 @@ const COZY_THEME_PALETTES: Partial<Record<CozyThemeId, CatMascotThemePalette>> =
   },
 }
 
-/** Kembalikan palet & mode spesial maskot kucing berdasarkan Tema Toko atau tema dasar aktif */
+/** Kembalikan palet & mode spesial maskot kucing berdasarkan Tema Toko, tema dasar, & Mode Gelap/Terang */
 export function getCatMascotThemePalette(
   activeCozyTheme: CozyThemeId,
   baseTheme: ThemeName,
+  isDarkTheme = true,
 ): CatMascotThemePalette {
-  if (activeCozyTheme !== 'classic') {
-    const cozy = COZY_THEME_PALETTES[activeCozyTheme]
-    if (cozy) return cozy
+  const base =
+    activeCozyTheme !== 'classic' && COZY_THEME_PALETTES[activeCozyTheme]
+      ? COZY_THEME_PALETTES[activeCozyTheme]!
+      : BASE_THEME_PALETTES[baseTheme] ?? DEFAULT_TWILIGHT_PALETTE
+
+  if (isDarkTheme) return base
+
+  // Mode Terang (☀️ Daylight Pastel): gelembung ucapan & zzz kucing menjadi putih-kaca lembut berteks gelap kontras tinggi
+  const lightTextByTheme: Partial<Record<CozyThemeId, string>> = {
+    'matcha-garden': '#064e3b',
+    'biolum-ocean': '#083344',
+    'sakura-lantern': '#500724',
+    'autumn-cafe': '#451a03',
+    'honey-library': '#451a03',
+    'pastel-cloudland': '#0f172a',
+    'winter-frost': '#0f172a',
+    'midnight-rain': '#0f172a',
+    'astral-palace': '#1e1b4b',
+    'neon-night-city': '#1e1b4b',
   }
-  return BASE_THEME_PALETTES[baseTheme] ?? DEFAULT_TWILIGHT_PALETTE
+  const lightBaseText: Record<ThemeName, string> = {
+    twilight: '#2e1065',
+    sakura: '#4c0519',
+    ocean: '#0f172a',
+  }
+  const darkInk =
+    activeCozyTheme !== 'classic'
+      ? lightTextByTheme[activeCozyTheme] ?? '#1e1b4b'
+      : lightBaseText[baseTheme] ?? '#2e1065'
+
+  return {
+    ...base,
+    bubbleBg: 'rgba(255, 255, 255, 0.92)',
+    bubbleBorder: `${base.hpCupOuter}55`,
+    bubbleText: darkInk,
+  }
 }

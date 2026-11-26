@@ -102,6 +102,7 @@ onUnmounted(() => {
     <div
       v-if="isImmersiveZenOpen"
       role="dialog"
+      data-transparent-dialog="true"
       aria-modal="true"
       aria-label="Twilight Focus Layar Penuh"
       class="fixed inset-0 z-30 flex flex-col items-center justify-between overflow-y-auto px-5 py-6 sm:px-8 sm:py-8"

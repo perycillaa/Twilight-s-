@@ -15,6 +15,7 @@ const props = withDefaults(
 
 const {
   theme,
+  isDarkTheme,
   currentMascotMood,
   mascotSpeech,
   isPomodoroRunning,
@@ -32,8 +33,10 @@ const {
   triggerVibration,
 } = useTwilightStorage()
 
-// Palet & efek spesial maskot kucing otomatis mengikuti tema aktif (termasuk efek WAW Astral & Neon)
-const catStyle = computed(() => getCatMascotThemePalette(activeCozyTheme.value, theme.value))
+// Palet & efek spesial maskot kucing otomatis mengikuti tema aktif & mode terang/gelap
+const catStyle = computed(() =>
+  getCatMascotThemePalette(activeCozyTheme.value, theme.value, isDarkTheme.value),
+)
 const showSpecialEffects = computed<boolean>(() => graphicsQuality.value !== 'low')
 
 // Status Co-Working Body Doubling mengikuti timer aktif: 'focus' (meja belajar), 'break' (teh & ikan bakar), atau 'idle'

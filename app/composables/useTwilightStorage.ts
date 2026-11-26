@@ -295,6 +295,171 @@ export const NEON_CITY_REQUIRED_THEME_IDS: CozyThemeId[] = COZY_THEMES.filter(
   t => t.id !== 'classic' && t.id !== 'neon-night-city',
 ).map(t => t.id)
 
+// --- Sistem 12 Kursor Bertema Dinamis (+ Default / Mati) yang Terbuka Otomatis Sesuai Tema Dimiliki ---
+export type CursorStyleId =
+  | 'off'
+  | 'starlight-wand'
+  | 'cat-paw'
+  | 'raindrop-ripple'
+  | 'maple-leaf'
+  | 'sakura-petal'
+  | 'matcha-leaf'
+  | 'jellyfish-glow'
+  | 'golden-quill'
+  | 'fluffy-cloud'
+  | 'ice-crystal'
+  | 'astral-prism'
+  | 'cyber-neon-bolt'
+
+export interface CursorStyleOption {
+  id: CursorStyleId
+  name: string
+  icon: string
+  description: string
+  requiredTheme?: Exclude<CozyThemeId, 'classic'>
+  requiredThemeName?: string
+  accentColor: string
+  secondaryColor: string
+}
+
+export const CURSOR_OPTIONS: CursorStyleOption[] = [
+  {
+    id: 'off',
+    name: 'Default / Mati',
+    icon: '🖱️',
+    description: 'Gunakan kursor standar perangkat tanpa efek',
+    accentColor: '#94a3b8',
+    secondaryColor: '#cbd5e1',
+  },
+  {
+    id: 'starlight-wand',
+    name: 'Starlight Wand',
+    icon: '✦',
+    description: 'Bintang twilight dengan jejak kilau ungu-pink lembut',
+    accentColor: '#f9a8d4',
+    secondaryColor: '#c084fc',
+  },
+  {
+    id: 'cat-paw',
+    name: 'Cat Paw',
+    icon: '🐾',
+    description: 'Telapak kaki kucing imut dengan jejak tapak memudar',
+    accentColor: '#fda4af',
+    secondaryColor: '#fbcfe8',
+  },
+  {
+    id: 'raindrop-ripple',
+    name: 'Raindrop Ripple',
+    icon: '🌧️',
+    description: 'Tetes hujan bercahaya dengan riak air lembut',
+    requiredTheme: 'midnight-rain',
+    requiredThemeName: 'Midnight Rainy',
+    accentColor: '#60a5fa',
+    secondaryColor: '#bae6fd',
+  },
+  {
+    id: 'maple-leaf',
+    name: 'Maple Leaf',
+    icon: '🍂',
+    description: 'Daun maple musim gugur yang melayang hangat',
+    requiredTheme: 'autumn-cafe',
+    requiredThemeName: 'Cozy Autumn Cafe',
+    accentColor: '#fb923c',
+    secondaryColor: '#fbbf24',
+  },
+  {
+    id: 'sakura-petal',
+    name: 'Sakura Petal',
+    icon: '🌸',
+    description: 'Kelopak bunga sakura dengan kilau lentera emas',
+    requiredTheme: 'sakura-lantern',
+    requiredThemeName: 'Sakura Lantern',
+    accentColor: '#f472b6',
+    secondaryColor: '#fde68a',
+  },
+  {
+    id: 'matcha-leaf',
+    name: 'Matcha Whisk / Leaf',
+    icon: '🍵',
+    description: 'Daun teh hijau segar dengan serpihan matcha lembut',
+    requiredTheme: 'matcha-garden',
+    requiredThemeName: 'Matcha Garden',
+    accentColor: '#4ade80',
+    secondaryColor: '#bbf7d0',
+  },
+  {
+    id: 'jellyfish-glow',
+    name: 'Jellyfish Glow',
+    icon: '🪼',
+    description: 'Ubur-ubur pendar laut dalam dengan gelembung cyan',
+    requiredTheme: 'biolum-ocean',
+    requiredThemeName: 'Bioluminescent Ocean',
+    accentColor: '#00f5d4',
+    secondaryColor: '#22d3ee',
+  },
+  {
+    id: 'golden-quill',
+    name: 'Golden Quill',
+    icon: '✒️',
+    description: 'Pena bulu emas perpustakaan dengan debu tinta berkilau',
+    requiredTheme: 'honey-library',
+    requiredThemeName: 'Honey Library',
+    accentColor: '#fcd34d',
+    secondaryColor: '#f59e0b',
+  },
+  {
+    id: 'fluffy-cloud',
+    name: 'Fluffy Cloud',
+    icon: '☁️',
+    description: 'Awan pastel empuk dengan jejak bintang langit',
+    requiredTheme: 'pastel-cloudland',
+    requiredThemeName: 'Pastel Cloudland',
+    accentColor: '#93c5fd',
+    secondaryColor: '#c4b5fd',
+  },
+  {
+    id: 'ice-crystal',
+    name: 'Ice Crystal',
+    icon: '❄️',
+    description: 'Kristal es bersinar dengan serpihan salju dingin',
+    requiredTheme: 'winter-frost',
+    requiredThemeName: 'Winter Frost',
+    accentColor: '#7dd3fc',
+    secondaryColor: '#e0f2fe',
+  },
+  {
+    id: 'astral-prism',
+    name: 'Astral Prism',
+    icon: '💎',
+    description: 'Prisma kristal aurora dengan jejak konstelasi emas',
+    requiredTheme: 'astral-palace',
+    requiredThemeName: 'Astral Crystal',
+    accentColor: '#34d399',
+    secondaryColor: '#fde047',
+  },
+  {
+    id: 'cyber-neon-bolt',
+    name: 'Cyber Neon Bolt',
+    icon: '⚡',
+    description: 'Kilat neon cyberpunk dengan jejak ganda Cyan & Magenta',
+    requiredTheme: 'neon-night-city',
+    requiredThemeName: 'Neon Night City',
+    accentColor: '#00f5d4',
+    secondaryColor: '#ff2a85',
+  },
+]
+
+const VALID_CURSOR_IDS = new Set<string>(CURSOR_OPTIONS.map(c => c.id))
+
+function isValidCursorId(val: unknown): val is CursorStyleId {
+  return typeof val === 'string' && VALID_CURSOR_IDS.has(val)
+}
+
+export function getCursorOptionByTheme(cozyId: CozyThemeId): CursorStyleOption | null {
+  if (cozyId === 'classic') return null
+  return CURSOR_OPTIONS.find(c => c.requiredTheme === cozyId) ?? null
+}
+
 interface CozyThemeRecord {
   owned: CozyThemeId[]
   active: CozyThemeId
@@ -739,7 +904,7 @@ function sanitizeTimerDurations(raw: unknown): CustomTimerDurations {
 // Kunci penyimpanan di localStorage browser
 const STORAGE_KEYS = {
   THEME: 'twilights_theme_v1',
-  DARK_THEME: 'twilights_dark_theme_v1',
+  DARK_THEME: 'twilights_dark_theme_v2',
   HABITS: 'twilights_habits',
   TIMER_DURATIONS: 'twilights_timer_durations_v1',
   AMBIENT_MIXER: 'twilights_ambient_mixer_v1',
@@ -749,6 +914,7 @@ const STORAGE_KEYS = {
   QUICK_NOTES: 'twilights_quick_notes_v1',
   STREAK: 'twilights_streak_v1',
   STAR_CURSOR: 'twilights_star_cursor_v1',
+  ACTIVE_CURSOR: 'twilights_active_cursor_v1',
   TREATS: 'twilights_treats_v1',
   COZY_THEMES: 'twilights_cozy_themes_v1',
   FULL_GOAL_STREAK: 'twilights_full_goal_streak_v1',
@@ -923,7 +1089,8 @@ export function useTwilightStorage() {
 
   // --- Data tersimpan di localStorage ---
   const theme = useState<ThemeName>('twilights-theme', () => 'twilight')
-  const isDarkTheme = useState<boolean>('twilights-is-dark-theme', () => false)
+  // Default Mode Gelap (🌙 Cozy Night Vibe); pengguna dapat beralih ke Mode Terang Pastel (☀️) di semua tema
+  const isDarkTheme = useState<boolean>('twilights-is-dark-theme', () => true)
   // Mulai kosong agar daftar default tidak muncul sekilas/mengisi ulang sebelum localStorage dicek di onMounted
   const habits = useState<HabitItem[]>('twilight-habits', () => [])
   const hadLocalHabits = useState<boolean>('twilights-had-local-habits', () => false)
@@ -946,6 +1113,7 @@ export function useTwilightStorage() {
   const streakLastDate = useState<string>('twilights-streak-date', () => '')
   const quickNotes = useState<string>('twilights-quick-notes', () => '')
   const userName = useState<string>('twilights-user-name', () => 'Teman Twilight')
+  const activeCursor = useState<CursorStyleId>('twilights-active-cursor', () => 'starlight-wand')
   const isStarCursorEnabled = useState<boolean>('twilights-star-cursor', () => true)
   const graphicsQuality = useState<GraphicsQuality>('twilights-graphics-quality', () => 'high')
   const isBatterySaverMode = useState<boolean>('twilights-battery-saver', () => false)
@@ -1108,12 +1276,13 @@ export function useTwilightStorage() {
     return 'idle'
   })
 
-  /** Terapkan atribut data-theme & data-theme-mode (normal/dark) ke elemen <html> */
+  /** Terapkan atribut data-theme & data-theme-mode (dark/light) ke elemen <html> untuk SEMUA tema */
   function applyThemeToDocument(themeId: ThemeName, darkMode = isDarkTheme.value) {
     if (!import.meta.client) return
     document.documentElement.setAttribute('data-theme', themeId)
-    document.documentElement.setAttribute('data-theme-mode', darkMode ? 'dark' : 'normal')
+    document.documentElement.setAttribute('data-theme-mode', darkMode ? 'dark' : 'light')
     document.documentElement.classList.toggle('theme-dark', darkMode)
+    document.documentElement.classList.toggle('theme-light', !darkMode)
   }
 
   /** Terapkan atribut data-cozy-theme ke elemen <html> (termasuk aksen glow kristal emas Astral Palace) */
@@ -1198,6 +1367,7 @@ export function useTwilightStorage() {
       localStorage.setItem(STORAGE_KEYS.QUICK_NOTES, quickNotes.value)
       localStorage.setItem(STORAGE_KEYS.USER_NAME, userName.value)
       localStorage.setItem(STORAGE_KEYS.STAR_CURSOR, String(isStarCursorEnabled.value))
+      localStorage.setItem(STORAGE_KEYS.ACTIVE_CURSOR, activeCursor.value)
       localStorage.setItem(STORAGE_KEYS.GRAPHICS_QUALITY, graphicsQuality.value)
       localStorage.setItem(STORAGE_KEYS.VIBRATION_ENABLED, String(isVibrationEnabled.value))
       localStorage.setItem(STORAGE_KEYS.BATTERY_SAVER, String(isBatterySaverMode.value))
@@ -1312,6 +1482,7 @@ export function useTwilightStorage() {
       twilights_alarms: alarms.value,
       selectedAlarmSound: selectedAlarmSound.value,
       isStarCursorEnabled: isStarCursorEnabled.value,
+      activeCursor: activeCursor.value,
       graphicsQuality: graphicsQuality.value,
       isBatterySaverMode: isBatterySaverMode.value,
       lastActiveDate: getTodayDateString(),
@@ -1884,7 +2055,7 @@ export function useTwilightStorage() {
       checkAndUnlockNeonCity(false)
 
       const celebrationMsg = unlockedAstralNow
-        ? '🎉 Luar Biasa! 7-Day Full Goal Streak Tercapai! Hadiah +15 🐟 & Tema 👑 Astral Crystal Palace terbuka!'
+        ? '🎉 Luar Biasa! 7-Day Full Goal Streak Tercapai! Hadiah +15 🐟, Tema 👑 Astral Crystal Palace & Kursor 💎 Astral Prism terbuka!'
         : `🎉 Luar Biasa! ${fullGoalStreak.value}-Day Full Goal Streak Tercapai! Hadiah +${ASTRAL_PALACE_STREAK_FISH_REWARD} 🐟 diterima!`
 
       celebrationCount.value += 1
@@ -1937,27 +2108,26 @@ export function useTwilightStorage() {
     triggerMascotReaction('happy', themeGreeting[newTheme], 2800)
   }
 
-  /** Sakelar Mode Gelap (🌙) / Mode Normal (☀️) — bekerja mulus untuk tema warna header maupun tema toko seperti Matcha Garden */
+  /** Sakelar Mode Gelap (🌙 Cozy Night) / Mode Terang (☀️ Daylight Pastel) universal untuk SEMUA tema */
   function toggleDarkTheme() {
     isDarkTheme.value = !isDarkTheme.value
     applyThemeToDocument(theme.value, isDarkTheme.value)
     persistAll()
 
+    const modeSuffix = isDarkTheme.value ? 'Mode Gelap 🌙' : 'Mode Terang ☀️'
     if (activeCozyTheme.value !== 'classic') {
       const cozyMeta = COZY_THEMES.find(t => t.id === activeCozyTheme.value)
       const cozyName = cozyMeta?.name ?? 'Tema Toko'
-      showMiniToast(
-        `${isDarkTheme.value ? '🌙' : '☀️'} ${cozyName} (${isDarkTheme.value ? 'Mode Gelap' : 'Mode Normal'})`,
-      )
+      showMiniToast(`${isDarkTheme.value ? '🌙' : '☀️'} ${cozyName} — ${modeSuffix}`)
       return
     }
 
-    const darkLabel: Record<ThemeName, string> = {
-      twilight: isDarkTheme.value ? 'Deep Plum (Gelap)' : 'Twilight Normal',
-      sakura: isDarkTheme.value ? 'Dark Velvet Berry (Gelap)' : 'Pastel Berry Normal',
-      ocean: isDarkTheme.value ? 'Midnight Abyss (Gelap)' : 'Ocean Night Normal',
+    const baseLabel: Record<ThemeName, string> = {
+      twilight: 'Twilight Purple',
+      sakura: 'Pastel Berry Sunset',
+      ocean: 'Ocean Night',
     }
-    showMiniToast(`${isDarkTheme.value ? '🌙' : '☀️'} ${darkLabel[theme.value]}`)
+    showMiniToast(`${isDarkTheme.value ? '🌙' : '☀️'} ${baseLabel[theme.value]} — ${modeSuffix}`)
   }
 
   /** Perbarui isi catatan cepat & simpan otomatis */
@@ -1966,10 +2136,47 @@ export function useTwilightStorage() {
     persistAll()
   }
 
-  /** Nyalakan atau matikan kursor bintang kustom & simpan ke localStorage */
-  function toggleStarCursor() {
-    isStarCursorEnabled.value = !isStarCursorEnabled.value
+  /** Cek apakah kursor tertentu sudah terbuka (bawaan selalu terbuka, kursor tema otomatis terbuka jika temanya dimiliki) */
+  function isCursorUnlocked(cursorId: CursorStyleId): boolean {
+    const meta = CURSOR_OPTIONS.find(c => c.id === cursorId)
+    if (!meta) return false
+    if (!meta.requiredTheme) return true
+    if (meta.requiredTheme === 'astral-palace' && fullGoalStreak.value >= ASTRAL_PALACE_STREAK_GOAL) {
+      return true
+    }
+    return ownedCozyThemes.value.includes(meta.requiredTheme)
+  }
+
+  /** Pilih kursor kustom bertema (tervalidasi kepemilikan tema & tersimpan di localStorage) */
+  function setActiveCursor(cursorId: CursorStyleId): { ok: boolean; message: string } {
+    const meta = CURSOR_OPTIONS.find(c => c.id === cursorId)
+    if (!meta) return { ok: false, message: 'Kursor tidak ditemukan.' }
+
+    if (!isCursorUnlocked(cursorId)) {
+      const lockMsg = `🔒 Buka tema ${meta.requiredThemeName ?? 'terkait'} di Toko untuk memakai kursor ${meta.icon} ${meta.name}!`
+      showMiniToast(lockMsg)
+      return { ok: false, message: lockMsg }
+    }
+
+    activeCursor.value = cursorId
+    isStarCursorEnabled.value = cursorId !== 'off'
     persistAll()
+    playPopTing()
+    const okMsg =
+      cursorId === 'off'
+        ? '🖱️ Kursor dikembalikan ke Default perangkat'
+        : `Kursor ${meta.icon} ${meta.name} aktif! ✨`
+    showMiniToast(okMsg)
+    return { ok: true, message: okMsg }
+  }
+
+  /** Nyalakan atau matikan kursor kustom & simpan ke localStorage (kompatibilitas cepat) */
+  function toggleStarCursor() {
+    if (activeCursor.value === 'off') {
+      setActiveCursor('starlight-wand')
+    } else {
+      setActiveCursor('off')
+    }
   }
 
   /** Atur Kualitas Grafik (Ringan / Sedang / Tinggi), terapkan ke DOM & simpan ke localStorage */
@@ -2110,6 +2317,7 @@ export function useTwilightStorage() {
           playCount: gameDailyPlayCount.value,
         },
         isStarCursorEnabled: isStarCursorEnabled.value,
+        activeCursor: activeCursor.value,
         twilights_graphics_quality: graphicsQuality.value,
         twilights_vibration_enabled: isVibrationEnabled.value,
         isBatterySaverMode: isBatterySaverMode.value,
@@ -2358,6 +2566,12 @@ export function useTwilightStorage() {
       if (typeof d.isStarCursorEnabled === 'boolean') {
         isStarCursorEnabled.value = d.isStarCursorEnabled
       }
+      if (isValidCursorId(d.activeCursor)) {
+        activeCursor.value = isCursorUnlocked(d.activeCursor) ? d.activeCursor : 'starlight-wand'
+        isStarCursorEnabled.value = activeCursor.value !== 'off'
+      } else if (typeof d.isStarCursorEnabled === 'boolean') {
+        activeCursor.value = d.isStarCursorEnabled ? 'starlight-wand' : 'off'
+      }
       const importedGraphics = d.twilights_graphics_quality ?? d.graphicsQuality
       if (isValidGraphicsQuality(importedGraphics)) {
         graphicsQuality.value = importedGraphics
@@ -2425,7 +2639,7 @@ export function useTwilightStorage() {
     ownedCozyThemes.value = [...ownedCozyThemes.value, 'neon-night-city']
     if (showCelebration) {
       const unlockMsg =
-        '🌃 ULTIMATE UNLOCK! Koleksi 100% Toko tercapai — Tema Rahasia Neon Night City terbuka! Coba pasang & putar radio Nightride / Synthwave~ ✨'
+        '🌃 ULTIMATE UNLOCK! Koleksi 100% Toko tercapai — Tema Neon Night City & Kursor ⚡ Cyber Neon Bolt terbuka! ✨'
       celebrationCount.value += 1
       playVictoryMelody()
       showDailyRewardCard(unlockMsg)
@@ -2641,9 +2855,13 @@ export function useTwilightStorage() {
     persistAll()
 
     if (!unlockedNeon) {
+      const unlockedCursor = getCursorOptionByTheme(cozyId)
+      const cursorNote = unlockedCursor
+        ? ` Kursor ${unlockedCursor.icon} ${unlockedCursor.name} juga terbuka di menu ✦ Kursor!`
+        : ''
       playVictoryMelody()
       triggerMascotReaction('celebrate', themeReactions[cozyId], 4200)
-      showMiniToast(`Tema ${item.name} ${item.icon} berhasil dibeli & dipakai! ✨`)
+      showMiniToast(`Tema ${item.name} ${item.icon} dibeli & dipakai!${cursorNote} ✨`)
     }
     return { ok: true, message: `${item.name} berhasil dibeli & dipakai!` }
   }
@@ -2887,10 +3105,15 @@ export function useTwilightStorage() {
         quickNotes.value = savedNotes
       }
 
-      // 7. Muat preferensi Kursor Bintang Kustom
+      // 7. Muat preferensi Kursor Kustom Bertema (activeCursor + fallback isStarCursorEnabled)
+      const savedActiveCursor = localStorage.getItem(STORAGE_KEYS.ACTIVE_CURSOR)
       const savedStarCursor = localStorage.getItem(STORAGE_KEYS.STAR_CURSOR)
-      if (savedStarCursor === 'true' || savedStarCursor === 'false') {
+      if (isValidCursorId(savedActiveCursor)) {
+        activeCursor.value = savedActiveCursor
+        isStarCursorEnabled.value = savedActiveCursor !== 'off'
+      } else if (savedStarCursor === 'true' || savedStarCursor === 'false') {
         isStarCursorEnabled.value = savedStarCursor === 'true'
+        activeCursor.value = isStarCursorEnabled.value ? 'starlight-wand' : 'off'
       }
 
       // 8. Muat Koin Hadiah (🐟), Aksesoris Maskot & Kasih Sayang Kucing
@@ -3072,6 +3295,12 @@ export function useTwilightStorage() {
         localStorage.setItem(STORAGE_KEYS.LAST_ACTIVE_DATE, todayStr)
       } else if (rawCurrentDate === null) {
         localStorage.setItem(STORAGE_KEYS.LAST_ACTIVE_DATE, savedDate)
+      }
+
+      // Validasi ulang kursor aktif setelah ownedCozyThemes selesai dimuat
+      if (!isCursorUnlocked(activeCursor.value)) {
+        activeCursor.value = 'starlight-wand'
+        isStarCursorEnabled.value = true
       }
 
       // Sinkronkan batang hari ini di grafik
@@ -3733,6 +3962,7 @@ export function useTwilightStorage() {
     dailyStreak,
     quickNotes,
     userName,
+    activeCursor,
     isStarCursorEnabled,
     graphicsQuality,
     graphicsConfig,
@@ -3814,6 +4044,8 @@ export function useTwilightStorage() {
     toggleDarkTheme,
     updateQuickNotes,
     setUserName,
+    isCursorUnlocked,
+    setActiveCursor,
     toggleStarCursor,
     setGraphicsQuality,
     cycleGraphicsQuality,

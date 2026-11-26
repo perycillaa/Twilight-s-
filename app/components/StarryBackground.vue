@@ -209,31 +209,151 @@ const cozyBgConfig: Record<Exclude<CozyThemeId, 'classic'>, BgPalette> = {
   },
 }
 
+// Varian Mode Terang Pastel (☀️ Daylight / Pastel Vibe — lembut & tidak silau) untuk 3 tema dasar
+const themeLightBgConfig: Record<ThemeName, BgPalette> = {
+  twilight: {
+    gradient: 'from-[#f3e8ff] via-[#f8eafb] to-[#fce7f3]',
+    orb1: 'bg-purple-300/35',
+    orb2: 'bg-pink-300/35',
+    orb3: 'bg-indigo-200/35',
+    moon: '#7c3aed',
+    charmAccent: '#a855f7',
+    cloudFill: '#ffffff',
+    tailGradient: 'from-[#7c3aed] via-pink-400 to-transparent',
+  },
+  sakura: {
+    gradient: 'from-[#ffe4e6] via-[#ffedd5] to-[#fed7aa]',
+    orb1: 'bg-rose-300/35',
+    orb2: 'bg-orange-200/40',
+    orb3: 'bg-pink-200/35',
+    moon: '#be123c',
+    charmAccent: '#f43f5e',
+    cloudFill: '#fff7ed',
+    tailGradient: 'from-[#be123c] via-orange-400 to-transparent',
+  },
+  ocean: {
+    gradient: 'from-[#e0f2fe] via-[#d0ecfe] to-[#bae6fd]',
+    orb1: 'bg-sky-300/35',
+    orb2: 'bg-cyan-200/35',
+    orb3: 'bg-blue-200/35',
+    moon: '#0284c7',
+    charmAccent: '#0ea5e9',
+    cloudFill: '#ffffff',
+    tailGradient: 'from-[#0284c7] via-sky-400 to-transparent',
+  },
+}
+
+// Varian Mode Terang Pastel (☀️ Daylight / Pastel Vibe) untuk SELURUH 10 Tema Toko & Milestone
+const cozyLightBgConfig: Record<Exclude<CozyThemeId, 'classic'>, BgPalette> = {
+  'matcha-garden': {
+    gradient: 'from-[#dcfce7] via-[#ccf7dc] to-[#bbf7d0]',
+    orb1: 'bg-emerald-300/35',
+    orb2: 'bg-lime-200/40',
+    orb3: 'bg-teal-200/30',
+    moon: '#15803d',
+    charmAccent: '#16a34a',
+    cloudFill: '#ffffff',
+    tailGradient: 'from-[#15803d] via-emerald-400 to-transparent',
+  },
+  'biolum-ocean': {
+    gradient: 'from-[#cffafe] via-[#b7f5fc] to-[#a5f3fc]',
+    orb1: 'bg-cyan-300/35',
+    orb2: 'bg-teal-200/40',
+    orb3: 'bg-sky-200/35',
+    moon: '#0e7490',
+    charmAccent: '#0d9488',
+    cloudFill: '#ecfeff',
+    tailGradient: 'from-[#0e7490] via-teal-400 to-transparent',
+  },
+  'sakura-lantern': {
+    gradient: 'from-[#fce7f3] via-[#fbd8ec] to-[#fbcfe8]',
+    orb1: 'bg-pink-300/35',
+    orb2: 'bg-rose-200/40',
+    orb3: 'bg-amber-200/30',
+    moon: '#be185d',
+    charmAccent: '#db2777',
+    cloudFill: '#fff1f2',
+    tailGradient: 'from-[#be185d] via-pink-400 to-transparent',
+  },
+  'autumn-cafe': {
+    gradient: 'from-[#fef3c7] via-[#fdeab1] to-[#fde68a]',
+    orb1: 'bg-amber-300/35',
+    orb2: 'bg-orange-200/40',
+    orb3: 'bg-yellow-200/35',
+    moon: '#b45309',
+    charmAccent: '#d97706',
+    cloudFill: '#fffbeb',
+    tailGradient: 'from-[#b45309] via-amber-500 to-transparent',
+  },
+  'honey-library': {
+    gradient: 'from-[#fef3c7] via-[#feefc0] to-[#fde68a]',
+    orb1: 'bg-amber-300/35',
+    orb2: 'bg-yellow-200/40',
+    orb3: 'bg-orange-200/30',
+    moon: '#b45309',
+    charmAccent: '#d97706',
+    cloudFill: '#fffbeb',
+    tailGradient: 'from-[#b45309] via-yellow-500 to-transparent',
+  },
+  'pastel-cloudland': {
+    gradient: 'from-[#e0f2fe] via-[#ddeafe] to-[#dbeafe]',
+    orb1: 'bg-sky-300/35',
+    orb2: 'bg-indigo-200/35',
+    orb3: 'bg-pink-200/30',
+    moon: '#1d4ed8',
+    charmAccent: '#3b82f6',
+    cloudFill: '#ffffff',
+    tailGradient: 'from-[#1d4ed8] via-sky-400 to-transparent',
+  },
+  'winter-frost': {
+    gradient: 'from-[#e0f2fe] via-[#e4f1fe] to-[#dbeafe]',
+    orb1: 'bg-sky-200/40',
+    orb2: 'bg-cyan-200/35',
+    orb3: 'bg-blue-200/35',
+    moon: '#1d4ed8',
+    charmAccent: '#0284c7',
+    cloudFill: '#ffffff',
+    tailGradient: 'from-[#1d4ed8] via-cyan-400 to-transparent',
+  },
+  'midnight-rain': {
+    gradient: 'from-[#dbeafe] via-[#dfe7fd] to-[#e0e7ff]',
+    orb1: 'bg-blue-300/35',
+    orb2: 'bg-indigo-200/35',
+    orb3: 'bg-sky-200/35',
+    moon: '#1d4ed8',
+    charmAccent: '#2563eb',
+    cloudFill: '#f8fafc',
+    tailGradient: 'from-[#1d4ed8] via-blue-400 to-transparent',
+  },
+  'astral-palace': {
+    gradient: 'from-[#ede9fe] via-[#e0effe] to-[#cffafe]',
+    orb1: 'bg-purple-300/35',
+    orb2: 'bg-emerald-200/35',
+    orb3: 'bg-cyan-200/35',
+    moon: '#7e22ce',
+    charmAccent: '#059669',
+    cloudFill: '#ffffff',
+    tailGradient: 'from-[#7e22ce] via-emerald-400 to-transparent',
+  },
+  'neon-night-city': {
+    gradient: 'from-[#ede9fe] via-[#e8e7fe] to-[#cffafe]',
+    orb1: 'bg-fuchsia-300/35',
+    orb2: 'bg-cyan-300/35',
+    orb3: 'bg-violet-200/35',
+    moon: '#7e22ce',
+    charmAccent: '#db2777',
+    cloudFill: '#f5f3ff',
+    tailGradient: 'from-[#7e22ce] via-cyan-400 to-transparent',
+  },
+}
+
 const activeBg = computed<BgPalette>(() => {
   if (activeCozyTheme.value !== 'classic') {
-    const baseCozy = cozyBgConfig[activeCozyTheme.value]
-    // Varian Mode Gelap 🌙 khusus Matcha Garden (#0D1712 -> #15241D)
-    if (activeCozyTheme.value === 'matcha-garden' && isDarkTheme.value) {
-      return {
-        ...baseCozy,
-        gradient: 'from-[#0d1712] via-[#111e18] to-[#15241d]',
-        orb1: 'bg-emerald-400/10',
-        orb2: 'bg-lime-300/8',
-        orb3: 'bg-teal-400/8',
-      }
-    }
-    if (activeCozyTheme.value === 'biolum-ocean' && isDarkTheme.value) {
-      return {
-        ...baseCozy,
-        gradient: 'from-[#01090d] via-[#03171f] to-[#062630]',
-        orb1: 'bg-[#00f5d4]/10',
-        orb2: 'bg-[#22d3ee]/10',
-        orb3: 'bg-teal-500/8',
-      }
-    }
-    return baseCozy
+    return isDarkTheme.value
+      ? cozyBgConfig[activeCozyTheme.value]
+      : cozyLightBgConfig[activeCozyTheme.value]
   }
-  const map = isDarkTheme.value ? themeDarkBgConfig : themeBgConfig
+  const map = isDarkTheme.value ? themeBgConfig : themeLightBgConfig
   return map[theme.value] ?? map.twilight
 })
 

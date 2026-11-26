@@ -1548,6 +1548,7 @@ onUnmounted(() => {
             <!-- Overlay 1: Layar Awal Sebelum Mulai (atau Pesan Kuota Bermain 5/5 Penuh) -->
             <div
               v-if="phase === 'ready'"
+              data-force-dark="true"
               class="absolute inset-0 flex flex-col items-center justify-center bg-[#150d34]/82 p-5 text-center backdrop-blur-xs"
             >
               <template v-if="isPlayQuotaFull">
@@ -1592,6 +1593,7 @@ onUnmounted(() => {
             <!-- Overlay 2: Layar Selesai Ronde -->
             <div
               v-else-if="phase === 'finished'"
+              data-force-dark="true"
               class="absolute inset-0 flex flex-col items-center justify-center bg-[#150d34]/88 p-5 text-center backdrop-blur-xs"
             >
               <span
