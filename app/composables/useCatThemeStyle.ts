@@ -1,4 +1,154 @@
-import type { CozyThemeId, ThemeName } from '~/composables/useTwilightStorage'
+import type { CatBreedId, CozyThemeId, ThemeName } from '~/composables/useTwilightStorage'
+
+export interface CatBreedPalette {
+  id: CatBreedId
+  headFill: string
+  bodyFill: string
+  bellyFill: string
+  earOuterFill: string
+  earOuterStroke: string
+  earInnerOverride?: string
+  tailFill: string
+  tailTipFill: string
+  pawFill: string
+  pawStroke: string
+  eyeInk: string
+  noseFill: string
+  foreheadStripe: string
+  cheekStripeColor?: string
+  muzzleFill?: string
+  siameseMaskFill?: string
+  calicoPatch1?: string
+  calicoPatch2?: string
+  tuxedoChestFill?: string
+  isDarkFur?: boolean
+}
+
+export const CAT_BREED_PALETTES: Record<CatBreedId, CatBreedPalette> = {
+  'snowy-white': {
+    id: 'snowy-white',
+    headFill: '#fff7fb',
+    bodyFill: '#f5ecff',
+    bellyFill: '#ffffff',
+    earOuterFill: '#fff7fb',
+    earOuterStroke: '#e9d5ff',
+    tailFill: '#f3e8ff',
+    tailTipFill: '#e9d5ff',
+    pawFill: '#fff7fb',
+    pawStroke: '#e9d5ff',
+    eyeInk: '#3b215c',
+    noseFill: '#f472b6',
+    foreheadStripe: '#d8b4fe',
+  },
+  'misty-tabby': {
+    id: 'misty-tabby',
+    headFill: '#e7e5e4',
+    bodyFill: '#d6d3d1',
+    bellyFill: '#fef3c7',
+    earOuterFill: '#cbd5e1',
+    earOuterStroke: '#94a3b8',
+    tailFill: '#cbd5e1',
+    tailTipFill: '#94a3b8',
+    pawFill: '#f5f5f4',
+    pawStroke: '#cbd5e1',
+    eyeInk: '#334155',
+    noseFill: '#f472b6',
+    foreheadStripe: '#94a3b8',
+    cheekStripeColor: '#94a3b8',
+  },
+  'marmalade-ginger': {
+    id: 'marmalade-ginger',
+    headFill: '#fdba74',
+    bodyFill: '#fb923c',
+    bellyFill: '#ffedd5',
+    earOuterFill: '#fb923c',
+    earOuterStroke: '#c2410c',
+    earInnerOverride: '#fed7aa',
+    tailFill: '#fb923c',
+    tailTipFill: '#fff7ed',
+    pawFill: '#ffedd5',
+    pawStroke: '#ea580c',
+    eyeInk: '#431407',
+    noseFill: '#fb7185',
+    foreheadStripe: '#c2410c',
+    cheekStripeColor: '#c2410c',
+  },
+  'matcha-calico': {
+    id: 'matcha-calico',
+    headFill: '#fffbf2',
+    bodyFill: '#fef9ee',
+    bellyFill: '#ffffff',
+    earOuterFill: '#ea580c',
+    earOuterStroke: '#78350f',
+    earInnerOverride: '#fed7aa',
+    tailFill: '#5c3317',
+    tailTipFill: '#f59e0b',
+    pawFill: '#fffbf2',
+    pawStroke: '#d6b48c',
+    eyeInk: '#3b1d0b',
+    noseFill: '#f472b6',
+    foreheadStripe: '#78350f',
+    calicoPatch1: '#f59e0b',
+    calicoPatch2: '#451a03',
+  },
+  'midnight-tuxedo': {
+    id: 'midnight-tuxedo',
+    headFill: '#1f2937',
+    bodyFill: '#111827',
+    bellyFill: '#f8fafc',
+    earOuterFill: '#111827',
+    earOuterStroke: '#475569',
+    earInnerOverride: '#fda4af',
+    tailFill: '#111827',
+    tailTipFill: '#f8fafc',
+    pawFill: '#f8fafc',
+    pawStroke: '#94a3b8',
+    eyeInk: '#111827',
+    noseFill: '#fb7185',
+    foreheadStripe: '#475569',
+    muzzleFill: '#f8fafc',
+    tuxedoChestFill: '#f8fafc',
+    isDarkFur: true,
+  },
+  'mocha-siamese': {
+    id: 'mocha-siamese',
+    headFill: '#f6ebd8',
+    bodyFill: '#efe0c6',
+    bellyFill: '#fcf6ea',
+    earOuterFill: '#5c3a21',
+    earOuterStroke: '#3d2412',
+    earInnerOverride: '#a98265',
+    tailFill: '#5c3a21',
+    tailTipFill: '#3d2412',
+    pawFill: '#5c3a21',
+    pawStroke: '#3d2412',
+    eyeInk: '#1d4ed8',
+    noseFill: '#3d2412',
+    foreheadStripe: '#7c5132',
+    siameseMaskFill: '#6b4426',
+  },
+  'twilight-lilac': {
+    id: 'twilight-lilac',
+    headFill: '#faf5ff',
+    bodyFill: '#f3e8ff',
+    bellyFill: '#ffffff',
+    earOuterFill: '#c084fc',
+    earOuterStroke: '#9333ea',
+    earInnerOverride: '#f5d0fe',
+    tailFill: '#c084fc',
+    tailTipFill: '#a855f7',
+    pawFill: '#faf5ff',
+    pawStroke: '#c084fc',
+    eyeInk: '#3b0764',
+    noseFill: '#ec4899',
+    foreheadStripe: '#a855f7',
+    cheekStripeColor: '#c084fc',
+  },
+}
+
+export function getCatBreedPalette(breedId: CatBreedId): CatBreedPalette {
+  return CAT_BREED_PALETTES[breedId] ?? CAT_BREED_PALETTES['snowy-white']
+}
 
 export interface CatMascotThemePalette {
   /** Warna pendaran aura lingkaran di belakang kucing utama */

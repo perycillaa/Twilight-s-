@@ -102,10 +102,11 @@ const weeklyMotivation = computed<string>(() => {
     <!-- Area Grafik Batang Vertikal dengan Label Sumbu (100%, 50%, 0%) & Garis Target 80% -->
     <div class="relative mt-4 rounded-2xl border border-white/10 bg-black/20 px-3 pb-3 pt-7">
       <div class="flex items-stretch gap-2">
-        <!-- 1. Label Sumbu Persentase Tipis di Sisi Kiri (100%, 50%, 0%) -->
+        <!-- 1. Label Sumbu Persentase Tipis di Sisi Kiri (100%, 50%, 0%) — kontras tinggi sesuai tema -->
         <div
           aria-hidden="true"
-          class="flex h-40 w-7 shrink-0 flex-col justify-between pb-1 text-right text-[9px] font-bold text-purple-200/60"
+          class="flex h-40 w-7 shrink-0 flex-col justify-between pb-1 text-right text-[9.5px] font-bold"
+          style="color: var(--text-secondary)"
         >
           <span>100%</span>
           <span>50%</span>
@@ -119,21 +120,21 @@ const weeklyMotivation = computed<string>(() => {
             aria-hidden="true"
             class="pointer-events-none absolute inset-x-0 top-0 flex h-40 flex-col justify-between"
           >
-            <div class="border-t border-dashed border-white/10" />
-            <div class="border-t border-dashed border-white/10" />
-            <div class="border-t border-white/15" />
+            <div class="border-t border-dashed border-white/15" />
+            <div class="border-t border-dashed border-white/15" />
+            <div class="border-t border-white/20" />
           </div>
 
-          <!-- Garis Batas Target 80% Putus-Putus Bercahaya + Label "Target ✨" -->
+          <!-- Garis Batas Target 75% Putus-Putus + Label "Target 75%" mengikuti warna tema aktif (tanpa oranye/hijau hardcoded) -->
           <div
             aria-hidden="true"
-            class="pointer-events-none absolute inset-x-0 z-10 border-t border-dashed border-amber-200/80 shadow-[0_0_8px_rgba(253,230,138,0.6)]"
-            style="top: 20%"
+            class="cozy-target-line pointer-events-none absolute inset-x-0 z-10 border-t border-dashed"
+            style="top: 25%"
           >
             <span
-              class="absolute -top-4 right-0 rounded-full bg-amber-300/20 px-1.5 py-0.2 text-[9px] font-bold text-amber-100 backdrop-blur-xs"
+              class="cozy-target-badge absolute -top-4.5 right-0 rounded-full px-2 py-0.5 text-[9px] font-bold shadow-xs backdrop-blur-xs"
             >
-              Target ✨
+              Target 75%
             </span>
           </div>
 
@@ -147,8 +148,7 @@ const weeklyMotivation = computed<string>(() => {
               <!-- 2. Tooltip Detail Melayang Saat Hover Batang / Emoji -->
               <div
                 role="tooltip"
-                class="cozy-sub-card pointer-events-none absolute -top-8 z-30 whitespace-nowrap rounded-xl border border-pink-200/40 px-2.5 py-1 text-[10px] font-bold text-pink-100 opacity-0 shadow-lg transition-all duration-200 group-hover:-top-9 group-hover:opacity-100"
-                style="background-color: var(--twilight-bg-base, #1e1b4b)"
+                class="cozy-popover-menu pointer-events-none absolute -top-8 z-30 whitespace-nowrap rounded-xl border px-2.5 py-1 text-[10px] font-bold opacity-0 shadow-lg transition-all duration-200 group-hover:-top-9 group-hover:opacity-100"
                 :class="
                   index === 0
                     ? 'left-0'
@@ -170,19 +170,16 @@ const weeklyMotivation = computed<string>(() => {
                   {{ getMoodEmoji(weeklyProgress[index] ?? 0) }}
                 </span>
 
-                <!-- Batang Vertikal (otomatis menyesuaikan palet Tema Toko + warna Krem Madu saat 100%) -->
+                <!-- Batang Vertikal: 100% mengikuti warna tema aktif (Hari Ini = aksen utama, Hari Lain = aksen sekunder, Kosong 0% = netral bertint tema) -->
                 <div
                   class="w-full max-w-[26px] rounded-t-full transition-all duration-500 ease-out"
                   :style="{ height: getBarHeightStyle(weeklyProgress[index] ?? 0) }"
                   :class="[
-                    (weeklyProgress[index] ?? 0) >= 100
-                      ? 'cozy-chart-bar-full bg-gradient-to-t from-[#f472b6] to-[#fde68a]'
-                      : index % 2 === 0
-                        ? 'cozy-chart-bar-a bg-gradient-to-t from-[#f472b6] to-[#fbcfe8]'
-                        : 'cozy-chart-bar-b bg-gradient-to-t from-[#8b5cf6] to-[#d8b4fe]',
-                    index === todayIndex
-                      ? 'ring-2 ring-white/80 shadow-[0_0_14px_rgba(249,168,212,0.65)]'
-                      : 'opacity-85 group-hover:opacity-100',
+                    (weeklyProgress[index] ?? 0) <= 0
+                      ? 'cozy-chart-bar-empty'
+                      : index === todayIndex
+                        ? 'cozy-chart-bar-today'
+                        : 'cozy-chart-bar-progress opacity-90 group-hover:opacity-100',
                   ]"
                 />
               </div>
@@ -192,9 +189,10 @@ const weeklyMotivation = computed<string>(() => {
                 class="font-display mt-1.5 flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold transition"
                 :class="
                   index === todayIndex
-                    ? 'cozy-active-btn bg-[#f9a8d4] text-[#311042] shadow'
-                    : 'text-purple-200/85'
+                    ? 'cozy-active-btn shadow'
+                    : ''
                 "
+                :style="index !== todayIndex ? { color: 'var(--text-secondary)' } : undefined"
               >
                 {{ day.short }}
               </span>
@@ -209,14 +207,14 @@ const weeklyMotivation = computed<string>(() => {
       <div class="flex flex-wrap items-center justify-between gap-2 text-[11px]">
         <div class="flex items-center gap-1.5">
           <span class="text-purple-200/80">Rata-rata:</span>
-          <span class="font-display rounded-full bg-pink-300/20 px-2 py-0.5 font-bold text-pink-100">
+          <span class="cozy-badge font-display rounded-full px-2 py-0.5 font-bold">
             {{ weeklyAverage }}%
           </span>
         </div>
 
         <div class="flex items-center gap-1.5">
           <span class="text-purple-200/80">Hari Terbaik:</span>
-          <span class="font-display rounded-full bg-purple-300/20 px-2 py-0.5 font-bold text-purple-100">
+          <span class="cozy-badge font-display rounded-full px-2 py-0.5 font-bold">
             🏆 {{ bestDaySummary }}
           </span>
         </div>

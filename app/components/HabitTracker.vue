@@ -681,7 +681,7 @@ onUnmounted(() => {
       <button
         type="button"
         title="Reset centang semua target 🔁 Harian & bersihkan target 1x Sekali yang sudah selesai"
-        class="btn-bouncy cursor-pointer rounded-full border border-purple-200/30 bg-white/10 px-2.5 py-1 text-[11px] font-semibold text-purple-100 hover:bg-white/20"
+        class="cozy-secondary-btn btn-bouncy cursor-pointer rounded-full px-2.5 py-1 text-[11px] font-semibold"
         @click="resetDailyHabits"
       >
         ↻ Reset Harian
@@ -956,7 +956,7 @@ onUnmounted(() => {
               :class="
                 newHabitType === 'daily'
                   ? 'cozy-active-btn bg-[#f9a8d4] text-[#311042] shadow-sm'
-                  : 'text-purple-100/75 hover:bg-white/10 hover:text-white'
+                  : 'cozy-tab-inactive'
               "
               @click="newHabitType = 'daily'"
             >
@@ -969,8 +969,8 @@ onUnmounted(() => {
               class="cursor-pointer rounded-full px-2.5 py-1 font-bold transition"
               :class="
                 newHabitType === 'once'
-                  ? 'bg-[#fcd34d] text-[#311042] shadow-sm'
-                  : 'text-purple-100/75 hover:bg-white/10 hover:text-white'
+                  ? 'cozy-toggle-secondary bg-[#c4b5fd] text-[#1e1b4b] shadow-sm'
+                  : 'cozy-tab-inactive'
               "
               @click="newHabitType = 'once'"
             >
@@ -1023,7 +1023,7 @@ onUnmounted(() => {
               :class="
                 newAlarmMode === 'once'
                   ? 'cozy-toggle-secondary bg-[#c4b5fd] text-[#1e1b4b] shadow-sm'
-                  : 'text-purple-100/75 hover:bg-white/10 hover:text-white'
+                  : 'cozy-tab-inactive'
               "
               @click="newAlarmMode = 'once'"
             >
@@ -1038,7 +1038,7 @@ onUnmounted(() => {
               :class="
                 newAlarmMode === 'repeat'
                   ? 'cozy-active-btn bg-gradient-to-r from-[#f9a8d4] to-[#e879f9] text-[#311042] shadow-sm'
-                  : 'text-purple-100/75 hover:bg-white/10 hover:text-white'
+                  : 'cozy-tab-inactive'
               "
               @click="newAlarmMode = 'repeat'"
             >

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
-import { getCatMascotThemePalette } from '~/composables/useCatThemeStyle'
+import { getCatBreedPalette, getCatMascotThemePalette } from '~/composables/useCatThemeStyle'
 import { useSoundEffects } from '~/composables/useSoundEffects'
 import { VIBRATION_PATTERNS, useTwilightStorage } from '~/composables/useTwilightStorage'
 
@@ -24,7 +24,8 @@ const {
   isMasterAudioMuted,
   masterAudioVolume,
   treatCoins,
-  equippedAccessory,
+  miniCatType,
+  miniCatAccessory,
   feedPetCat,
   addCatAffinityXp,
   triggerVibration,
@@ -33,6 +34,11 @@ const {
 const catStyle = computed(() =>
   getCatMascotThemePalette(activeCozyTheme.value, theme.value, isDarkTheme.value),
 )
+const breed = computed(() => getCatBreedPalette(miniCatType.value))
+const equippedAccessory = computed(() => miniCatAccessory.value)
+const miniEyeStroke = computed(() => (breed.value.isDarkFur ? '#fde68a' : breed.value.eyeInk))
+const miniMouthStroke = computed(() => (breed.value.isDarkFur ? '#1e293b' : breed.value.eyeInk))
+const miniEarInner = computed(() => breed.value.earInnerOverride ?? catStyle.value.earInner)
 const showSpecialEffects = computed<boolean>(() => graphicsQuality.value !== 'low')
 
 // Status Co-Working Body Doubling Kucing Mini: ikut fokus ('focus'), santai istirahat ('break'), atau idle
@@ -843,24 +849,23 @@ onUnmounted(() => {
           <path d="M94 32 L95.2 35 L98.2 36.2 L95.2 37.4 L94 40.4 L92.8 37.4 L89.8 36.2 L92.8 35 Z" fill="#fef08a" />
         </g>
 
-        <!-- Ekor melengkung lucu -->
+        <!-- Ekor melengkung lucu (adaptif 7 ras kucing) -->
         <path
           d="M78 78 C96 76, 98 56, 86 52"
-          stroke="#cbd5e1"
+          :stroke="breed.tailFill"
           stroke-width="8"
           stroke-linecap="round"
         />
         <path
           d="M86 52 C88 53, 91 55, 92 58"
-          stroke="#94a3b8"
+          :stroke="breed.tailTipFill"
           stroke-width="8"
           stroke-linecap="round"
         />
 
-        <!-- Badan bulat kecil berwarna abu-abu krem hangat -->
-        <ellipse cx="55" cy="76" rx="26" ry="20" fill="#e7e5e4" />
-        <!-- Perut krem lembut -->
-        <ellipse cx="55" cy="79" rx="15" ry="12" fill="#fef3c7" />
+        <!-- Badan bulat kecil & perut lembut (adaptif 7 ras kucing) -->
+        <ellipse cx="55" cy="76" rx="26" ry="20" :fill="breed.bodyFill" />
+        <ellipse cx="55" cy="79" rx="15" ry="12" :fill="breed.bellyFill" />
         <!-- Aksesoris Leher Sinkron: 🧣 Syal Rajut / 💖 Kalung Hati Bintang / Kalung Bawaan -->
         <g v-if="equippedAccessory === 'knit-scarf'">
           <path
@@ -900,17 +905,33 @@ onUnmounted(() => {
           <circle v-else cx="55" cy="70" r="3.2" :fill="catStyle.bellFill" />
         </g>
 
-        <!-- Telinga Kiri & Kanan (bagian dalam selaras tema) -->
-        <path d="M33 44 L29 22 L47 33 Z" fill="#cbd5e1" stroke="#94a3b8" stroke-width="1.5" stroke-linejoin="round" />
-        <path d="M34 40 L32 27 L43 34 Z" :fill="catStyle.earInner" />
+        <!-- Telinga Kiri & Kanan (adaptif 7 ras kucing) -->
+        <path d="M33 44 L29 22 L47 33 Z" :fill="breed.earOuterFill" :stroke="breed.earOuterStroke" stroke-width="1.5" stroke-linejoin="round" />
+        <path d="M34 40 L32 27 L43 34 Z" :fill="miniEarInner" />
 
-        <path d="M77 44 L81 22 L63 33 Z" fill="#cbd5e1" stroke="#94a3b8" stroke-width="1.5" stroke-linejoin="round" />
-        <path d="M76 40 L78 27 L67 34 Z" :fill="catStyle.earInner" />
+        <path d="M77 44 L81 22 L63 33 Z" :fill="miniCatType === 'matcha-calico' ? '#451a03' : breed.earOuterFill" :stroke="breed.earOuterStroke" stroke-width="1.5" stroke-linejoin="round" />
+        <path d="M76 40 L78 27 L67 34 Z" :fill="miniEarInner" />
 
-        <!-- Kepala bulat anak kucing -->
-        <ellipse cx="55" cy="50" rx="28" ry="23" fill="#e7e5e4" />
+        <!-- Kepala bulat anak kucing (adaptif 7 ras kucing) -->
+        <ellipse cx="55" cy="50" rx="28" ry="23" :fill="breed.headFill" />
 
-        <!-- Corak dahi (Bulan Sabit Emas di Astral, Lambang Cyber di Neon, atau Corak Tabby Bawaan) -->
+        <!-- Corak Khas Ras pada Kucing Pendamping (Calico, Siamese, Tuxedo, Ginger/Tabby/Lilac) -->
+        <g v-if="miniCatType === 'matcha-calico'">
+          <path d="M56 27 C70 28, 82 36, 83 48 C73 49, 64 41, 56 27 Z" :fill="breed.calicoPatch1" opacity="0.92" />
+          <path d="M29 48 C28 59, 34 68, 45 71 C44 62, 37 53, 29 48 Z" :fill="breed.calicoPatch2" opacity="0.86" />
+        </g>
+        <g v-else-if="miniCatType === 'mocha-siamese'">
+          <ellipse cx="55" cy="53" rx="17" ry="11.5" :fill="breed.siameseMaskFill" opacity="0.86" />
+        </g>
+        <g v-else-if="miniCatType === 'midnight-tuxedo'">
+          <ellipse cx="55" cy="59" rx="14.5" ry="9" :fill="breed.muzzleFill" />
+        </g>
+        <g v-else-if="breed.cheekStripeColor">
+          <path d="M29 50 L35 51.5 M28.5 54.5 L34.5 55" :stroke="breed.cheekStripeColor" stroke-width="1.8" stroke-linecap="round" opacity="0.72" />
+          <path d="M81 50 L75 51.5 M81.5 54.5 L75.5 55" :stroke="breed.cheekStripeColor" stroke-width="1.8" stroke-linecap="round" opacity="0.72" />
+        </g>
+
+        <!-- Corak dahi (Bulan Sabit Emas di Astral, Lambang Cyber di Neon, atau Corak Ras) -->
         <g v-if="catStyle.specialMode === 'astral'">
           <path d="M56.5 29 A3.6 3.6 0 1 0 56.5 35.8 A2.8 2.8 0 1 1 56.5 29 Z" fill="#fde047" stroke="#b45309" stroke-width="0.6" />
         </g>
@@ -919,9 +940,9 @@ onUnmounted(() => {
           <circle cx="55" cy="35" r="1.3" fill="#ff2a85" />
         </g>
         <g v-else>
-          <path d="M55 28 V35" stroke="#94a3b8" stroke-width="3" stroke-linecap="round" />
-          <path d="M48 29 L50 35" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round" />
-          <path d="M62 29 L60 35" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round" />
+          <path d="M55 28 V35" :stroke="breed.foreheadStripe" stroke-width="3" stroke-linecap="round" />
+          <path d="M48 29 L50 35" :stroke="breed.foreheadStripe" stroke-width="2.5" stroke-linecap="round" />
+          <path d="M62 29 L60 35" :stroke="breed.foreheadStripe" stroke-width="2.5" stroke-linecap="round" />
         </g>
 
         <!-- SINKRONISASI AKSESORI KEPALA REAL-TIME (mengikuti Kucing Putih utama: Pita Pink, Topi Penyihir, Mahkota Bintang) -->
@@ -1019,58 +1040,58 @@ onUnmounted(() => {
           <circle cx="84.5" cy="50" r="2" fill="#67e8f9" />
         </g>
 
-        <!-- EKSPRESI MATA ANAK KUCING MINI (DINAMIS) -->
+        <!-- EKSPRESI MATA ANAK KUCING MINI (DINAMIS & KONTRAS UNTUK SEMUA 7 RAS) -->
         <!-- 1. Kesal / Protes (ò ω ó atau > <) saat digoyang cepat -->
         <g v-if="isAnnoyedShaking">
           <template v-if="annoyedVariant === 'grumpy'">
             <!-- Alis menukik kesal menggemaskan (ò ó) -->
-            <path d="M38 44 L49 48" stroke="#334155" stroke-width="2.6" stroke-linecap="round" />
-            <path d="M72 44 L61 48" stroke="#334155" stroke-width="2.6" stroke-linecap="round" />
-            <circle cx="44" cy="51" r="3.4" fill="#334155" />
-            <circle cx="66" cy="51" r="3.4" fill="#334155" />
+            <path d="M38 44 L49 48" :stroke="miniEyeStroke" stroke-width="2.6" stroke-linecap="round" />
+            <path d="M72 44 L61 48" :stroke="miniEyeStroke" stroke-width="2.6" stroke-linecap="round" />
+            <circle cx="44" cy="51" r="3.4" :fill="miniEyeStroke" />
+            <circle cx="66" cy="51" r="3.4" :fill="miniEyeStroke" />
           </template>
           <template v-else>
             <!-- Mata terpejam kesal/pusing (> <) -->
-            <path d="M39 46 L48 50 L39 54" stroke="#334155" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" />
-            <path d="M71 46 L62 50 L71 54" stroke="#334155" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M39 46 L48 50 L39 54" :stroke="miniEyeStroke" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M71 46 L62 50 L71 54" :stroke="miniEyeStroke" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" />
           </template>
         </g>
 
         <!-- 2. Cemberut Lucu (- ︵ -) selama ~1 detik setelah digoyang cepat lalu dilepas -->
         <g v-else-if="isPouting">
-          <line x1="39" y1="50" x2="49" y2="51.5" stroke="#334155" stroke-width="2.5" stroke-linecap="round" />
-          <line x1="71" y1="50" x2="61" y2="51.5" stroke="#334155" stroke-width="2.5" stroke-linecap="round" />
+          <line x1="39" y1="50" x2="49" y2="51.5" :stroke="miniEyeStroke" stroke-width="2.5" stroke-linecap="round" />
+          <line x1="71" y1="50" x2="61" y2="51.5" :stroke="miniEyeStroke" stroke-width="2.5" stroke-linecap="round" />
         </g>
 
         <!-- 3. Sedang Digeser (Drag) Pelan (> <) -->
         <g v-else-if="isDragging">
-          <path d="M40 46 L48 50 L40 54" stroke="#334155" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
-          <path d="M70 46 L62 50 L70 54" stroke="#334155" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+          <path d="M40 46 L48 50 L40 54" :stroke="miniEyeStroke" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+          <path d="M70 46 L62 50 L70 54" :stroke="miniEyeStroke" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
         </g>
 
         <!-- 4. Sangat Menikmati Elusan (Pet-Pet: ˘ ◡ ˘), Senyum Manja Puas, atau Santai Saat Break Timer -->
         <g v-else-if="isBeingPetted || isSmugSatisfied || coWorkingMode === 'break'">
-          <path d="M39 50 Q44 54.8 49 50" stroke="#334155" stroke-width="2.6" stroke-linecap="round" />
-          <path d="M61 50 Q66 54.8 71 50" stroke="#334155" stroke-width="2.6" stroke-linecap="round" />
+          <path d="M39 50 Q44 54.8 49 50" :stroke="miniEyeStroke" stroke-width="2.6" stroke-linecap="round" />
+          <path d="M61 50 Q66 54.8 71 50" :stroke="miniEyeStroke" stroke-width="2.6" stroke-linecap="round" />
         </g>
 
         <!-- 5. Terbuka Lebar Kaget Menggemaskan (O ω O / ◕ ᴥ ◕) selama ~1.5 detik saat diklik -->
         <g v-else-if="isStartledAwake">
           <template v-if="startledVariant === 'wide'">
-            <circle cx="44" cy="49.5" r="5.5" fill="#ffffff" stroke="#334155" stroke-width="2.2" />
-            <circle cx="44" cy="49.5" r="2.7" fill="#334155" />
+            <circle cx="44" cy="49.5" r="5.5" fill="#ffffff" :stroke="miniEyeStroke" stroke-width="2.2" />
+            <circle cx="44" cy="49.5" r="2.7" :fill="breed.eyeInk" />
             <circle cx="43" cy="48.2" r="1.1" fill="#ffffff" />
 
-            <circle cx="66" cy="49.5" r="5.5" fill="#ffffff" stroke="#334155" stroke-width="2.2" />
-            <circle cx="66" cy="49.5" r="2.7" fill="#334155" />
+            <circle cx="66" cy="49.5" r="5.5" fill="#ffffff" :stroke="miniEyeStroke" stroke-width="2.2" />
+            <circle cx="66" cy="49.5" r="2.7" :fill="breed.eyeInk" />
             <circle cx="65" cy="48.2" r="1.1" fill="#ffffff" />
           </template>
           <template v-else>
-            <circle cx="44" cy="49.5" r="5.6" fill="#334155" />
+            <circle cx="44" cy="49.5" r="5.6" :fill="miniEyeStroke" />
             <circle cx="42.2" cy="47.5" r="2.1" fill="#ffffff" />
             <circle cx="45.8" cy="51.2" r="1" fill="#ffffff" />
 
-            <circle cx="66" cy="49.5" r="5.6" fill="#334155" />
+            <circle cx="66" cy="49.5" r="5.6" :fill="miniEyeStroke" />
             <circle cx="64.2" cy="47.5" r="2.1" fill="#ffffff" />
             <circle cx="67.8" cy="51.2" r="1" fill="#ffffff" />
           </template>
@@ -1078,21 +1099,21 @@ onUnmounted(() => {
 
         <!-- 6. Makan Ikan dengan Senang (^ ^) -->
         <g v-else-if="isEating">
-          <path d="M39 51 Q44 45 49 51" stroke="#334155" stroke-width="2.6" stroke-linecap="round" />
-          <path d="M61 51 Q66 45 71 51" stroke="#334155" stroke-width="2.6" stroke-linecap="round" />
+          <path d="M39 51 Q44 45 49 51" :stroke="miniEyeStroke" stroke-width="2.6" stroke-linecap="round" />
+          <path d="M61 51 Q66 45 71 51" :stroke="miniEyeStroke" stroke-width="2.6" stroke-linecap="round" />
         </g>
 
         <!-- 7. Tertidur / Mengantuk Pulas (- ᴗ -) saat Idle -->
         <g v-else-if="isSleeping">
-          <line x1="39" y1="51" x2="49" y2="51" stroke="#334155" stroke-width="2.5" stroke-linecap="round" />
-          <line x1="61" y1="51" x2="71" y2="51" stroke="#334155" stroke-width="2.5" stroke-linecap="round" />
+          <line x1="39" y1="51" x2="49" y2="51" :stroke="miniEyeStroke" stroke-width="2.5" stroke-linecap="round" />
+          <line x1="61" y1="51" x2="71" y2="51" :stroke="miniEyeStroke" stroke-width="2.5" stroke-linecap="round" />
         </g>
 
         <!-- 8. Terbangun Santai (mata bulat berbinar berkedip lembut) -->
         <g v-else class="animate-cat-blink">
-          <circle cx="44" cy="50" r="4" fill="#334155" />
+          <circle cx="44" cy="50" r="4" :fill="miniEyeStroke" />
           <circle cx="42.8" cy="48.5" r="1.4" fill="#ffffff" />
-          <circle cx="66" cy="50" r="4" fill="#334155" />
+          <circle cx="66" cy="50" r="4" :fill="miniEyeStroke" />
           <circle cx="64.8" cy="48.5" r="1.4" fill="#ffffff" />
         </g>
 
@@ -1136,12 +1157,12 @@ onUnmounted(() => {
         />
 
         <!-- Hidung & Mulut Mungil Dinamis -->
-        <path d="M53 54 H57 L55 56.5 Z" fill="#f472b6" />
+        <path d="M53 54 H57 L55 56.5 Z" :fill="breed.noseFill" />
         <!-- Mulut cemberut lucu (︵) saat pout setelah digoyang cepat -->
         <path
           v-if="isPouting"
           d="M50.5 61.5 Q55 57.5 59.5 61.5"
-          stroke="#334155"
+          :stroke="miniMouthStroke"
           stroke-width="2.2"
           stroke-linecap="round"
         />
@@ -1150,7 +1171,7 @@ onUnmounted(() => {
         <path
           v-else-if="isBeingPetted || isSmugSatisfied || coWorkingMode === 'break' || isSleeping"
           d="M50.5 58.5 Q55 62.5 59.5 58.5"
-          stroke="#334155"
+          :stroke="miniMouthStroke"
           stroke-width="2.2"
           stroke-linecap="round"
         />
@@ -1158,7 +1179,7 @@ onUnmounted(() => {
         <path
           v-else
           d="M50 58.5 Q52.5 61.5 55 58.2 Q57.5 61.5 60 58.5"
-          stroke="#334155"
+          :stroke="miniMouthStroke"
           stroke-width="2"
           stroke-linecap="round"
           stroke-linejoin="round"
@@ -1171,9 +1192,9 @@ onUnmounted(() => {
           <circle cx="-3.5" cy="-1" r="1.1" fill="#0f172a" />
         </g>
 
-        <!-- Cakar Depan Mungil -->
-        <ellipse cx="44" cy="91" rx="6.5" ry="4.5" fill="#f5f5f4" stroke="#cbd5e1" stroke-width="1.2" />
-        <ellipse cx="66" cy="91" rx="6.5" ry="4.5" fill="#f5f5f4" stroke="#cbd5e1" stroke-width="1.2" />
+        <!-- Cakar Depan Mungil (adaptif 7 ras kucing) -->
+        <ellipse cx="44" cy="91" rx="6.5" ry="4.5" :fill="breed.pawFill" :stroke="breed.pawStroke" stroke-width="1.2" />
+        <ellipse cx="66" cy="91" rx="6.5" ry="4.5" :fill="breed.pawFill" :stroke="breed.pawStroke" stroke-width="1.2" />
 
         <defs>
           <radialGradient id="miniCatSpecialAura" cx="55" cy="56" r="44" gradientUnits="userSpaceOnUse">

@@ -612,7 +612,7 @@ onUnmounted(() => {
         :class="
           currentMode === mode.key
             ? 'ocean-active-btn bg-gradient-to-r from-[#f9a8d4]/95 to-[#c4b5fd]/95 text-[#1e1b4b] shadow-md'
-            : 'text-purple-100/80 hover:bg-white/10 hover:text-white'
+            : 'cozy-tab-inactive'
         "
         @click="selectMode(mode.key)"
       >
@@ -823,7 +823,7 @@ onUnmounted(() => {
       >
         <span
           v-if="isRunning"
-          class="h-2 w-2 animate-pulse rounded-full bg-[#311042]"
+          class="h-2 w-2 animate-pulse rounded-full bg-current"
         />
         <span>START</span>
       </button>
@@ -835,8 +835,8 @@ onUnmounted(() => {
           isPaused
             ? 'cozy-pause-active cursor-default bg-gradient-to-r from-[#c4b5fd] to-[#a78bfa] text-[#1e1b4b] ring-2 ring-white/55 shadow-lg'
             : isRunning
-              ? 'cozy-pill-btn cursor-pointer border border-purple-200/45 bg-purple-300/20 text-purple-100'
-              : 'cursor-not-allowed border border-white/10 bg-white/5 text-purple-200/40'
+              ? 'cozy-secondary-btn cursor-pointer'
+              : 'cozy-secondary-btn cursor-not-allowed'
         "
         :disabled="!isRunning"
         @click="pauseTimer()"
@@ -850,7 +850,7 @@ onUnmounted(() => {
 
       <button
         type="button"
-        class="cozy-reset-btn btn-bouncy font-display cursor-pointer rounded-full border border-purple-200/35 bg-[#8b5cf6]/35 px-4 py-2.5 text-sm font-semibold tracking-wide text-purple-100 shadow-lg focus:outline-none"
+        class="cozy-reset-btn btn-bouncy font-display cursor-pointer rounded-full px-4 py-2.5 text-sm font-semibold tracking-wide focus:outline-none"
         @click="resetTimer"
       >
         RESET

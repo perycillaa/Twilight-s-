@@ -167,6 +167,105 @@ function sanitizeOwnedAccessories(raw: unknown): MascotAccessoryId[] {
   return Array.from(unique)
 }
 
+// --- Sistem Toko Koleksi Kucing (7 Ras/Warna Kucing + Kustomisasi 2 Kucing) ---
+export type CatBreedId =
+  | 'snowy-white'
+  | 'misty-tabby'
+  | 'marmalade-ginger'
+  | 'matcha-calico'
+  | 'midnight-tuxedo'
+  | 'mocha-siamese'
+  | 'twilight-lilac'
+
+export type CatTargetSlot = 'main' | 'mini' | 'both'
+
+export interface CatBreedItem {
+  id: CatBreedId
+  name: string
+  subtitle: string
+  cost: number // 0 = Gratis / Bawaan Awal
+  description: string
+}
+
+export const CAT_BREEDS: CatBreedItem[] = [
+  {
+    id: 'snowy-white',
+    name: 'Kucing Putih Salju',
+    subtitle: 'Snowy White',
+    cost: 0,
+    description: 'Bawaan awal • Putih salju lembut menenangkan',
+  },
+  {
+    id: 'misty-tabby',
+    name: 'Kucing Abu Tabby',
+    subtitle: 'Misty Tabby',
+    cost: 0,
+    description: 'Bawaan awal • Abu krem hangat dengan corak tabby',
+  },
+  {
+    id: 'marmalade-ginger',
+    name: 'Kucing Oren',
+    subtitle: 'Marmalade Ginger',
+    cost: 40,
+    description: 'Oranye hangat ceria dengan belang pipi khas',
+  },
+  {
+    id: 'matcha-calico',
+    name: 'Kucing Calico',
+    subtitle: 'Matcha & Caramel Calico',
+    cost: 60,
+    description: 'Putih krem dengan bercak oranye & cokelat gelap',
+  },
+  {
+    id: 'midnight-tuxedo',
+    name: 'Kucing Tuxedo',
+    subtitle: 'Midnight Tuxedo',
+    cost: 75,
+    description: 'Hitam pekat elegan dengan dada & kaus kaki putih',
+  },
+  {
+    id: 'mocha-siamese',
+    name: 'Kucing Siamese',
+    subtitle: 'Mocha Siamese',
+    cost: 90,
+    description: 'Krem lembut dengan telinga, wajah & ekor cokelat tua',
+  },
+  {
+    id: 'twilight-lilac',
+    name: 'Kucing Ragdoll / Lavender',
+    subtitle: 'Twilight Lilac',
+    cost: 120,
+    description: 'Putih mutiara dengan gradasi telinga & ekor ungu pastel',
+  },
+]
+
+const VALID_CAT_BREED_IDS = new Set<string>(CAT_BREEDS.map(c => c.id))
+
+function isValidCatBreedId(val: unknown): val is CatBreedId {
+  return typeof val === 'string' && VALID_CAT_BREED_IDS.has(val)
+}
+
+function sanitizeOwnedCats(raw: unknown): CatBreedId[] {
+  const set = new Set<CatBreedId>(['snowy-white', 'misty-tabby'])
+  if (Array.isArray(raw)) {
+    for (const item of raw) {
+      if (isValidCatBreedId(item)) {
+        set.add(item)
+      }
+    }
+  }
+  return Array.from(set)
+}
+
+interface CatCustomizationRecord {
+  ownedCats: CatBreedId[]
+  mainCatType: CatBreedId
+  miniCatType: CatBreedId
+  syncCatAccessories: boolean
+  mainCatAccessory: MascotAccessoryId
+  miniCatAccessory: MascotAccessoryId
+}
+
 // Tipe 11 Tema Latar Belakang Beranimasi (Cozy Themes) di Toko Aksesoris
 export type CozyThemeId =
   | 'classic'
@@ -920,6 +1019,7 @@ const STORAGE_KEYS = {
   STAR_CURSOR: 'twilights_star_cursor_v1',
   ACTIVE_CURSOR: 'twilights_active_cursor_v1',
   TREATS: 'twilights_treats_v1',
+  CAT_CUSTOMIZATION: 'twilights_cat_customization_v1',
   COZY_THEMES: 'twilights_cozy_themes_v1',
   FULL_GOAL_STREAK: 'twilights_full_goal_streak_v1',
   SECRET_CARDS: 'twilights_secret_cards_v1',
@@ -1145,6 +1245,16 @@ export function useTwilightStorage() {
   const treatCoins = useState<number>('twilights-treat-coins', () => 5)
   const ownedAccessories = useState<MascotAccessoryId[]>('twilights-owned-accessories', () => [])
   const equippedAccessory = useState<MascotAccessoryId>('twilights-equipped-accessory', () => 'none')
+  // Toko Koleksi Kucing & Kustomisasi 2 Kucing (Sinkron vs Terpisah)
+  const ownedCats = useState<CatBreedId[]>('twilights-owned-cats', () => [
+    'snowy-white',
+    'misty-tabby',
+  ])
+  const mainCatType = useState<CatBreedId>('twilights-main-cat-type', () => 'snowy-white')
+  const miniCatType = useState<CatBreedId>('twilights-mini-cat-type', () => 'misty-tabby')
+  const syncCatAccessories = useState<boolean>('twilights-sync-cat-accessories', () => true)
+  const mainCatAccessory = useState<MascotAccessoryId>('twilights-main-cat-accessory', () => 'none')
+  const miniCatAccessory = useState<MascotAccessoryId>('twilights-mini-cat-accessory', () => 'none')
   // Tema Latar Belakang Beranimasi (Cozy Themes) & 7-Day Full Goal Streak
   const ownedCozyThemes = useState<CozyThemeId[]>('twilights-owned-cozy-themes', () => ['classic'])
   const activeCozyTheme = useState<CozyThemeId>('twilights-active-cozy-theme', () => 'classic')
@@ -1397,6 +1507,16 @@ export function useTwilightStorage() {
       }
       localStorage.setItem(STORAGE_KEYS.TREATS, JSON.stringify(treatData))
 
+      const catCustomData: CatCustomizationRecord = {
+        ownedCats: ownedCats.value,
+        mainCatType: mainCatType.value,
+        miniCatType: miniCatType.value,
+        syncCatAccessories: syncCatAccessories.value,
+        mainCatAccessory: mainCatAccessory.value,
+        miniCatAccessory: miniCatAccessory.value,
+      }
+      localStorage.setItem(STORAGE_KEYS.CAT_CUSTOMIZATION, JSON.stringify(catCustomData))
+
       const cozyThemeData: CozyThemeRecord = {
         owned: ownedCozyThemes.value,
         active: activeCozyTheme.value,
@@ -1481,6 +1601,12 @@ export function useTwilightStorage() {
       treatCoins: treatCoins.value,
       ownedAccessories: ownedAccessories.value,
       equippedAccessory: equippedAccessory.value,
+      ownedCats: ownedCats.value,
+      mainCatType: mainCatType.value,
+      miniCatType: miniCatType.value,
+      syncCatAccessories: syncCatAccessories.value,
+      mainCatAccessory: mainCatAccessory.value,
+      miniCatAccessory: miniCatAccessory.value,
       ownedCozyThemes: ownedCozyThemes.value,
       activeCozyTheme: activeCozyTheme.value,
       fullGoalStreak: fullGoalStreak.value,
@@ -1652,6 +1778,29 @@ export function useTwilightStorage() {
     }
     if (isValidAccessoryId(d.equippedAccessory)) {
       equippedAccessory.value = d.equippedAccessory
+    }
+    if (Array.isArray(d.ownedCats)) {
+      ownedCats.value = sanitizeOwnedCats(d.ownedCats)
+    }
+    if (isValidCatBreedId(d.mainCatType) && ownedCats.value.includes(d.mainCatType)) {
+      mainCatType.value = d.mainCatType
+    }
+    if (isValidCatBreedId(d.miniCatType) && ownedCats.value.includes(d.miniCatType)) {
+      miniCatType.value = d.miniCatType
+    }
+    if (typeof d.syncCatAccessories === 'boolean') {
+      syncCatAccessories.value = d.syncCatAccessories
+    }
+    if (isValidAccessoryId(d.mainCatAccessory)) {
+      mainCatAccessory.value = d.mainCatAccessory
+      equippedAccessory.value = d.mainCatAccessory
+    } else if (isValidAccessoryId(d.equippedAccessory)) {
+      mainCatAccessory.value = d.equippedAccessory
+    }
+    if (isValidAccessoryId(d.miniCatAccessory)) {
+      miniCatAccessory.value = syncCatAccessories.value ? mainCatAccessory.value : d.miniCatAccessory
+    } else if (isValidAccessoryId(d.equippedAccessory)) {
+      miniCatAccessory.value = d.equippedAccessory
     }
     const cloudAffinity = d.twilights_cat_affinity ?? d.catAffinity
     if (cloudAffinity && typeof cloudAffinity === 'object') {
@@ -2348,6 +2497,12 @@ export function useTwilightStorage() {
         treatCoins: treatCoins.value,
         ownedAccessories: ownedAccessories.value,
         equippedAccessory: equippedAccessory.value,
+        ownedCats: ownedCats.value,
+        mainCatType: mainCatType.value,
+        miniCatType: miniCatType.value,
+        syncCatAccessories: syncCatAccessories.value,
+        mainCatAccessory: mainCatAccessory.value,
+        miniCatAccessory: miniCatAccessory.value,
         twilights_cozy_themes: {
           owned: ownedCozyThemes.value,
           active: activeCozyTheme.value,
@@ -2472,6 +2627,29 @@ export function useTwilightStorage() {
       }
       if (isValidAccessoryId(d.equippedAccessory)) {
         equippedAccessory.value = d.equippedAccessory
+      }
+      if (Array.isArray(d.ownedCats)) {
+        ownedCats.value = sanitizeOwnedCats(d.ownedCats)
+      }
+      if (isValidCatBreedId(d.mainCatType) && ownedCats.value.includes(d.mainCatType)) {
+        mainCatType.value = d.mainCatType
+      }
+      if (isValidCatBreedId(d.miniCatType) && ownedCats.value.includes(d.miniCatType)) {
+        miniCatType.value = d.miniCatType
+      }
+      if (typeof d.syncCatAccessories === 'boolean') {
+        syncCatAccessories.value = d.syncCatAccessories
+      }
+      if (isValidAccessoryId(d.mainCatAccessory)) {
+        mainCatAccessory.value = d.mainCatAccessory
+        equippedAccessory.value = d.mainCatAccessory
+      } else if (isValidAccessoryId(d.equippedAccessory)) {
+        mainCatAccessory.value = d.equippedAccessory
+      }
+      if (isValidAccessoryId(d.miniCatAccessory)) {
+        miniCatAccessory.value = syncCatAccessories.value ? mainCatAccessory.value : d.miniCatAccessory
+      } else if (isValidAccessoryId(d.equippedAccessory)) {
+        miniCatAccessory.value = d.equippedAccessory
       }
       // Pulihkan Tema Latar Belakang Beranimasi (Cozy Themes) & 7-Day Full Goal Streak
       const importedCozy = (d.twilights_cozy_themes ?? d.cozyThemes) as Partial<CozyThemeRecord> | undefined
@@ -2759,16 +2937,65 @@ export function useTwilightStorage() {
   }
 
   /**
-   * Sistem Koin Hadiah & Aksesoris Maskot:
-   * - Jika aksesoris sudah dimiliki: pasang / lepas langsung.
+   * Sakelar Mode Aksesoris 2 Kucing:
+   * - ON (`🔗 2 Kucing Sinkron`): aksesoris Kucing Utama & Kucing Pendamping selalu serentak.
+   * - OFF (`✂️ Aksesoris Terpisah`): pengguna bebas memasang aksesoris berbeda pada masing-masing kucing!
+   */
+  function toggleSyncCatAccessories() {
+    syncCatAccessories.value = !syncCatAccessories.value
+    if (syncCatAccessories.value) {
+      miniCatAccessory.value = mainCatAccessory.value
+      equippedAccessory.value = mainCatAccessory.value
+    }
+    persistAll()
+    playPopTing()
+    showMiniToast(
+      syncCatAccessories.value
+        ? '🔗 Mode 2 Kucing Sinkron aktif — aksesoris otomatis kembar!'
+        : '✂️ Mode Aksesoris Terpisah aktif — atur gaya Kucing Utama & Pendamping sesukamu!',
+    )
+  }
+
+  /**
+   * Sistem Koin Hadiah & Aksesoris Maskot (mendukung Mode Sinkron & Mode Terpisah):
+   * - Jika aksesoris sudah dimiliki: pasang / lepas langsung ke target (keduanya, utama, atau pendamping).
    * - Jika aksesoris eksklusif Milestone (cost === null): tampilkan syarat levelnya.
    * - Jika belum dimiliki dan koin cukup: tukar koin 🐟 lalu pasang langsung!
    */
-  function buyOrEquipAccessory(accessoryId: MascotAccessoryId): { ok: boolean; message: string } {
+  function buyOrEquipAccessory(
+    accessoryId: MascotAccessoryId,
+    target?: CatTargetSlot,
+  ): { ok: boolean; message: string } {
+    const effectiveTarget: CatTargetSlot = syncCatAccessories.value
+      ? 'both'
+      : target ?? 'main'
+
+    const applyAccessoryToSlot = (nextId: MascotAccessoryId) => {
+      if (effectiveTarget === 'both') {
+        mainCatAccessory.value = nextId
+        miniCatAccessory.value = nextId
+        equippedAccessory.value = nextId
+      } else if (effectiveTarget === 'mini') {
+        miniCatAccessory.value = nextId
+      } else {
+        mainCatAccessory.value = nextId
+        equippedAccessory.value = nextId
+      }
+    }
+
+    const currentForTarget =
+      effectiveTarget === 'mini' ? miniCatAccessory.value : mainCatAccessory.value
+
     if (accessoryId === 'none') {
-      equippedAccessory.value = 'none'
+      applyAccessoryToSlot('none')
       persistAll()
-      return { ok: true, message: 'Aksesoris dilepas~' }
+      const label =
+        effectiveTarget === 'mini'
+          ? 'Aksesoris Kucing Pendamping dilepas~'
+          : effectiveTarget === 'main'
+            ? 'Aksesoris Kucing Utama dilepas~'
+            : 'Aksesoris kedua kucing dilepas~'
+      return { ok: true, message: label }
     }
 
     const item = MASCOT_ACCESSORIES.find(a => a.id === accessoryId)
@@ -2778,21 +3005,30 @@ export function useTwilightStorage() {
       (item.milestoneLevel === 10 && catAffinityLevel.value >= CAT_AFFINITY_MILESTONE_LV10) ||
       (item.milestoneLevel === 20 && catAffinityLevel.value >= CAT_AFFINITY_MAX_LEVEL)
 
-    // Jika sudah dimiliki (atau sudah memenuhi milestone), cukup pasang atau lepas
+    // Jika sudah dimiliki (atau sudah memenuhi milestone), cukup pasang atau lepas pada target aktif
     if (ownedAccessories.value.includes(accessoryId) || isUnlockedByMilestone) {
       if (!ownedAccessories.value.includes(accessoryId)) {
         ownedAccessories.value = [...ownedAccessories.value, accessoryId]
       }
-      const nextEquipped = equippedAccessory.value === accessoryId ? 'none' : accessoryId
-      equippedAccessory.value = nextEquipped
+      const nextEquipped = currentForTarget === accessoryId ? 'none' : accessoryId
+      applyAccessoryToSlot(nextEquipped)
       persistAll()
       if (nextEquipped !== 'none') {
         playPopTing()
         triggerMascotReaction('happy', `Yay! Aku pakai ${item.name} ${item.icon}`, 2800)
       }
+      const slotNote =
+        effectiveTarget === 'mini'
+          ? ' (Pendamping)'
+          : effectiveTarget === 'main'
+            ? ' (Utama)'
+            : ''
       return {
         ok: true,
-        message: nextEquipped === 'none' ? `${item.name} dilepas` : `${item.name} dipasang!`,
+        message:
+          nextEquipped === 'none'
+            ? `${item.name}${slotNote} dilepas`
+            : `${item.name}${slotNote} dipasang!`,
       }
     }
 
@@ -2813,10 +3049,10 @@ export function useTwilightStorage() {
       }
     }
 
-    // Tukar koin dan langsung pasang aksesoris pada kedua kucing!
+    // Tukar koin dan langsung pasang aksesoris!
     treatCoins.value -= item.cost
     ownedAccessories.value = [...ownedAccessories.value, accessoryId]
-    equippedAccessory.value = accessoryId
+    applyAccessoryToSlot(accessoryId)
     const unlockedNeon = checkAndUnlockNeonCity(true)
     persistAll()
 
@@ -2826,6 +3062,63 @@ export function useTwilightStorage() {
       showMiniToast(`Berhasil menukar ${item.name} ${item.icon}!`)
     }
     return { ok: true, message: `${item.name} berhasil dibuka & dipakai!` }
+  }
+
+  /**
+   * Toko Koleksi Kucing (7 Ras/Warna Kucing):
+   * - Beli ras kucing baru dengan Koin Ikan 🐟, lalu pasang ke Kucing Utama, Pendamping, atau Keduanya.
+   */
+  function buyOrEquipCatBreed(
+    breedId: CatBreedId,
+    target: CatTargetSlot = 'both',
+  ): { ok: boolean; message: string } {
+    const item = CAT_BREEDS.find(c => c.id === breedId)
+    if (!item) return { ok: false, message: 'Jenis kucing tidak ditemukan.' }
+
+    const applyBreed = () => {
+      if (target === 'main') {
+        mainCatType.value = breedId
+      } else if (target === 'mini') {
+        miniCatType.value = breedId
+      } else {
+        mainCatType.value = breedId
+        miniCatType.value = breedId
+      }
+    }
+
+    const slotLabel =
+      target === 'main'
+        ? 'Kucing Utama'
+        : target === 'mini'
+          ? 'Kucing Pendamping'
+          : 'Kedua Kucing'
+
+    if (ownedCats.value.includes(breedId) || item.cost === 0) {
+      if (!ownedCats.value.includes(breedId)) {
+        ownedCats.value = [...ownedCats.value, breedId]
+      }
+      applyBreed()
+      persistAll()
+      playPopTing()
+      triggerMascotReaction('happy', `Meow~ ${item.name} siap menemani fokusmu! 🐱✨`, 3000)
+      return { ok: true, message: `${item.name} dipasang ke ${slotLabel}!` }
+    }
+
+    if (treatCoins.value < item.cost) {
+      return {
+        ok: false,
+        message: `Butuh ${item.cost} 🐟 (kurang ${item.cost - treatCoins.value} 🐟 lagi!)`,
+      }
+    }
+
+    treatCoins.value -= item.cost
+    ownedCats.value = [...ownedCats.value, breedId]
+    applyBreed()
+    persistAll()
+    playVictoryMelody()
+    triggerMascotReaction('celebrate', `Yeay! ${item.name} resmi bergabung di sudut fokusmu! 🐱💖`, 4000)
+    showMiniToast(`🐱 ${item.name} (${item.subtitle}) berhasil diadopsi & dipasang!`)
+    return { ok: true, message: `${item.name} berhasil dibeli & dipasang ke ${slotLabel}!` }
   }
 
   /**
@@ -3187,6 +3480,37 @@ export function useTwilightStorage() {
         }
         if (isValidAccessoryId(parsedTreats.equipped)) {
           equippedAccessory.value = parsedTreats.equipped
+          mainCatAccessory.value = parsedTreats.equipped
+          miniCatAccessory.value = parsedTreats.equipped
+        }
+      }
+
+      // 8b. Muat Kustomisasi 2 Kucing (ownedCats, mainCatType, miniCatType, syncCatAccessories, mainCatAccessory, miniCatAccessory)
+      const savedCatCustom = localStorage.getItem(STORAGE_KEYS.CAT_CUSTOMIZATION)
+      if (savedCatCustom) {
+        try {
+          const parsedCat = JSON.parse(savedCatCustom) as Partial<CatCustomizationRecord>
+          ownedCats.value = sanitizeOwnedCats(parsedCat.ownedCats)
+          if (isValidCatBreedId(parsedCat.mainCatType) && ownedCats.value.includes(parsedCat.mainCatType)) {
+            mainCatType.value = parsedCat.mainCatType
+          }
+          if (isValidCatBreedId(parsedCat.miniCatType) && ownedCats.value.includes(parsedCat.miniCatType)) {
+            miniCatType.value = parsedCat.miniCatType
+          }
+          if (typeof parsedCat.syncCatAccessories === 'boolean') {
+            syncCatAccessories.value = parsedCat.syncCatAccessories
+          }
+          if (isValidAccessoryId(parsedCat.mainCatAccessory)) {
+            mainCatAccessory.value = parsedCat.mainCatAccessory
+            equippedAccessory.value = parsedCat.mainCatAccessory
+          }
+          if (isValidAccessoryId(parsedCat.miniCatAccessory)) {
+            miniCatAccessory.value = syncCatAccessories.value
+              ? mainCatAccessory.value
+              : parsedCat.miniCatAccessory
+          }
+        } catch {
+          // Gunakan default aman bila korup
         }
       }
       const savedAffinity = localStorage.getItem(STORAGE_KEYS.CAT_AFFINITY)
@@ -4040,6 +4364,12 @@ export function useTwilightStorage() {
     treatCoins,
     ownedAccessories,
     equippedAccessory,
+    ownedCats,
+    mainCatType,
+    miniCatType,
+    syncCatAccessories,
+    mainCatAccessory,
+    miniCatAccessory,
     ownedCozyThemes,
     activeCozyTheme,
     fullGoalStreak,
@@ -4131,7 +4461,9 @@ export function useTwilightStorage() {
     toggleZenMode,
     exitZenMode,
     setDailyMood,
+    toggleSyncCatAccessories,
     buyOrEquipAccessory,
+    buyOrEquipCatBreed,
     buyOrEquipCozyTheme,
     drawSecretCatCard,
     openSecretCardGacha,

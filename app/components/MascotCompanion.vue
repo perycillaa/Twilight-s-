@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
-import { getCatMascotThemePalette } from '~/composables/useCatThemeStyle'
+import { getCatBreedPalette, getCatMascotThemePalette } from '~/composables/useCatThemeStyle'
 import { useSoundEffects } from '~/composables/useSoundEffects'
 import { VIBRATION_PATTERNS, useTwilightStorage } from '~/composables/useTwilightStorage'
 
@@ -24,7 +24,8 @@ const {
   isBgmPlaying,
   isMasterAudioMuted,
   masterAudioVolume,
-  equippedAccessory,
+  mainCatType,
+  mainCatAccessory,
   activeCozyTheme,
   graphicsQuality,
   catKeyboardInteractSignal,
@@ -33,9 +34,17 @@ const {
   triggerVibration,
 } = useTwilightStorage()
 
-// Palet & efek spesial maskot kucing otomatis mengikuti tema aktif & mode terang/gelap
+// Palet & efek spesial maskot kucing otomatis mengikuti tema aktif & mode terang/gelap + ras kucing utama!
 const catStyle = computed(() =>
   getCatMascotThemePalette(activeCozyTheme.value, theme.value, isDarkTheme.value),
+)
+const breed = computed(() => getCatBreedPalette(mainCatType.value))
+const equippedAccessory = computed(() => mainCatAccessory.value)
+const mainEyeStroke = computed(() => (breed.value.isDarkFur ? '#fde68a' : breed.value.eyeInk))
+const mainMouthStroke = computed(() => (breed.value.isDarkFur ? '#1e293b' : breed.value.eyeInk))
+const mainEarInner = computed(() => breed.value.earInnerOverride ?? catStyle.value.earInner)
+const mainEarStroke = computed(() =>
+  mainCatType.value === 'snowy-white' ? catStyle.value.earStroke : breed.value.earOuterStroke,
 )
 const showSpecialEffects = computed<boolean>(() => graphicsQuality.value !== 'low')
 
@@ -945,10 +954,25 @@ onUnmounted(() => {
             :opacity="equippedAccessory === 'lofi-headphones' ? '0.92' : '0.68'"
           />
 
-          <!-- Tubuh kecil kucing -->
+          <!-- Tubuh kecil kucing (menyesuaikan ras kucing utama yang dipilih di Toko Kucing) -->
           <path
             d="M72 174 C72 150, 148 150, 148 174 L152 192 C136 198, 84 198, 68 192 Z"
-            fill="#f5ecff"
+            :fill="breed.bodyFill"
+          />
+          <!-- Dada putih elegan khusus Tuxedo / perut lembut ras lain -->
+          <path
+            v-if="breed.tuxedoChestFill"
+            d="M93 162 Q110 172 127 162 L122 194 Q110 197 98 194 Z"
+            :fill="breed.tuxedoChestFill"
+          />
+          <ellipse
+            v-else-if="mainCatType !== 'snowy-white'"
+            cx="110"
+            cy="182"
+            rx="22"
+            ry="12"
+            :fill="breed.bellyFill"
+            opacity="0.88"
           />
           <!-- Aksesoris Leher: 🧣 Syal Rajut / 💖 Kalung Hati Bintang / Syal Bawaan Bertema -->
           <g v-if="equippedAccessory === 'knit-scarf'">
@@ -1012,29 +1036,45 @@ onUnmounted(() => {
             <circle v-else cx="110" cy="169" r="5" :fill="catStyle.bellFill" />
           </g>
 
-          <!-- Telinga Kiri & Kanan -->
+          <!-- Telinga Kiri & Kanan (adaptif 7 ras kucing) -->
           <path
             d="M66 96 L58 58 L93 78 Z"
-            fill="#fff7fb"
-            :stroke="catStyle.earStroke"
+            :fill="breed.earOuterFill"
+            :stroke="mainEarStroke"
             stroke-width="2"
             stroke-linejoin="round"
           />
-          <path d="M68 90 L64 67 L85 79 Z" :fill="catStyle.earInner" />
+          <path d="M68 90 L64 67 L85 79 Z" :fill="mainEarInner" />
 
           <path
             d="M154 96 L162 58 L127 78 Z"
-            fill="#fff7fb"
-            :stroke="catStyle.earStroke"
+            :fill="mainCatType === 'matcha-calico' ? '#451a03' : breed.earOuterFill"
+            :stroke="mainEarStroke"
             stroke-width="2"
             stroke-linejoin="round"
           />
-          <path d="M152 90 L156 67 L135 79 Z" :fill="catStyle.earInner" />
+          <path d="M152 90 L156 67 L135 79 Z" :fill="mainEarInner" />
 
-          <!-- Kepala Kucing Bulat -->
-          <ellipse cx="110" cy="116" rx="54" ry="47" fill="#fff7fb" />
+          <!-- Kepala Kucing Bulat (adaptif 7 ras kucing) -->
+          <ellipse cx="110" cy="116" rx="54" ry="47" :fill="breed.headFill" />
 
-          <!-- Tanda Dahi Spesial (Bulan Sabit Emas di Astral, Lambang Cyber di Neon, atau Garis Dahi Bertema) -->
+          <!-- Corak Khas Ras: Calico (bercak oranye & cokelat), Siamese (masker wajah mocha), Tuxedo (moncong putih), Ginger/Tabby/Lilac (belang pipi) -->
+          <g v-if="mainCatType === 'matcha-calico'">
+            <path d="M112 69 C138 70, 162 86, 163 110 C145 112, 128 96, 112 69 Z" :fill="breed.calicoPatch1" opacity="0.92" />
+            <path d="M60 112 C58 134, 70 152, 90 158 C88 140, 76 122, 60 112 Z" :fill="breed.calicoPatch2" opacity="0.86" />
+          </g>
+          <g v-else-if="mainCatType === 'mocha-siamese'">
+            <ellipse cx="110" cy="122" rx="34" ry="23" :fill="breed.siameseMaskFill" opacity="0.86" />
+          </g>
+          <g v-else-if="mainCatType === 'midnight-tuxedo'">
+            <ellipse cx="110" cy="134" rx="28" ry="18" :fill="breed.muzzleFill" />
+          </g>
+          <g v-else-if="breed.cheekStripeColor">
+            <path d="M60 115 L71 118 M59 124 L70 125" :stroke="breed.cheekStripeColor" stroke-width="3" stroke-linecap="round" opacity="0.72" />
+            <path d="M160 115 L149 118 M161 124 L150 125" :stroke="breed.cheekStripeColor" stroke-width="3" stroke-linecap="round" opacity="0.72" />
+          </g>
+
+          <!-- Tanda Dahi Spesial (Bulan Sabit Emas di Astral, Lambang Cyber di Neon, atau Garis Dahi Ras/Tema) -->
           <g v-if="catStyle.specialMode === 'astral'">
             <path
               d="M113 73 A6.5 6.5 0 1 0 113 85 A5 5 0 1 1 113 73 Z"
@@ -1049,9 +1089,9 @@ onUnmounted(() => {
             <circle cx="110" cy="81" r="2.2" fill="#ff2a85" />
           </g>
           <g v-else>
-            <path d="M110 71 V81" :stroke="catStyle.foreheadMark" stroke-width="4" stroke-linecap="round" />
-            <path d="M99 73 L102 82" :stroke="catStyle.foreheadMark" stroke-width="3.5" stroke-linecap="round" />
-            <path d="M121 73 L118 82" :stroke="catStyle.foreheadMark" stroke-width="3.5" stroke-linecap="round" />
+            <path d="M110 71 V81" :stroke="mainCatType === 'snowy-white' ? catStyle.foreheadMark : breed.foreheadStripe" stroke-width="4" stroke-linecap="round" />
+            <path d="M99 73 L102 82" :stroke="mainCatType === 'snowy-white' ? catStyle.foreheadMark : breed.foreheadStripe" stroke-width="3.5" stroke-linecap="round" />
+            <path d="M121 73 L118 82" :stroke="mainCatType === 'snowy-white' ? catStyle.foreheadMark : breed.foreheadStripe" stroke-width="3.5" stroke-linecap="round" />
           </g>
 
           <!-- 3. Aksesori Pita Pink Kawaii di dekat telinga kiri kucing -->
@@ -1161,13 +1201,13 @@ onUnmounted(() => {
           <g v-else-if="activeFaceMode === 'click-cheer' || activeFaceMode === 'happy' || activeFaceMode === 'celebrate'">
             <path
               d="M81 116 Q90 104 99 116"
-              stroke="#3b215c"
+              :stroke="mainEyeStroke"
               stroke-width="3.6"
               stroke-linecap="round"
             />
             <path
               d="M121 116 Q130 104 139 116"
-              stroke="#3b215c"
+              :stroke="mainEyeStroke"
               stroke-width="3.6"
               stroke-linecap="round"
             />
@@ -1177,13 +1217,13 @@ onUnmounted(() => {
           <g v-else-if="activeFaceMode === 'petted' || activeFaceMode === 'music'">
             <path
               d="M82 113 Q90 120 98 113"
-              stroke="#3b215c"
+              :stroke="mainEyeStroke"
               stroke-width="3.3"
               stroke-linecap="round"
             />
             <path
               d="M122 113 Q130 120 138 113"
-              stroke="#3b215c"
+              :stroke="mainEyeStroke"
               stroke-width="3.3"
               stroke-linecap="round"
             />
@@ -1191,32 +1231,32 @@ onUnmounted(() => {
 
           <!-- 4. Idle Variasi Penasaran Menoleh (◕ ω ◕) -->
           <g v-else-if="activeFaceMode === 'curious'" class="animate-cat-blink">
-            <circle cx="93" cy="113" r="7.2" fill="#3b215c" />
+            <circle cx="93" cy="113" r="7.2" :fill="mainEyeStroke" />
             <circle cx="95.2" cy="110.5" r="2.5" fill="#ffffff" />
             <circle cx="90.5" cy="115.8" r="1.2" fill="#ffffff" />
 
-            <circle cx="133" cy="113" r="7.2" fill="#3b215c" />
+            <circle cx="133" cy="113" r="7.2" :fill="mainEyeStroke" />
             <circle cx="135.2" cy="110.5" r="2.5" fill="#ffffff" />
             <circle cx="130.5" cy="115.8" r="1.2" fill="#ffffff" />
           </g>
 
           <!-- 4b. Fokus Co-Working: Mata serius berkonsentrasi menatap buku & laptop -->
           <g v-else-if="activeFaceMode === 'focus-serious'">
-            <path d="M81 103 L98 106" stroke="#4c1d95" stroke-width="2.4" stroke-linecap="round" />
-            <path d="M139 103 L122 106" stroke="#4c1d95" stroke-width="2.4" stroke-linecap="round" />
-            <circle cx="90" cy="115" r="6.2" fill="#3b215c" />
+            <path d="M81 103 L98 106" :stroke="mainEyeStroke" stroke-width="2.4" stroke-linecap="round" />
+            <path d="M139 103 L122 106" :stroke="mainEyeStroke" stroke-width="2.4" stroke-linecap="round" />
+            <circle cx="90" cy="115" r="6.2" :fill="mainEyeStroke" />
             <circle cx="88.5" cy="113" r="2" fill="#ffffff" />
-            <circle cx="130" cy="115" r="6.2" fill="#3b215c" />
+            <circle cx="130" cy="115" r="6.2" :fill="mainEyeStroke" />
             <circle cx="128.5" cy="113" r="2" fill="#ffffff" />
           </g>
 
           <!-- 5. Idle Tenang Tersenyum (• ᴗ •) / Focus / Reminder: Mata bulat berbinar berkedip alami -->
           <g v-else class="animate-cat-blink">
-            <circle cx="90" cy="114" r="6.5" fill="#3b215c" />
+            <circle cx="90" cy="114" r="6.5" :fill="mainEyeStroke" />
             <circle cx="88" cy="111.5" r="2.2" fill="#ffffff" />
             <circle cx="92.5" cy="116" r="1.1" fill="#ffffff" />
 
-            <circle cx="130" cy="114" r="6.5" fill="#3b215c" />
+            <circle cx="130" cy="114" r="6.5" :fill="mainEyeStroke" />
             <circle cx="128" cy="111.5" r="2.2" fill="#ffffff" />
             <circle cx="132.5" cy="116" r="1.1" fill="#ffffff" />
           </g>
@@ -1300,7 +1340,7 @@ onUnmounted(() => {
           />
 
           <!-- Hidung & Mulut Dinamis -->
-          <path d="M107 122 L113 122 L110 126 Z" fill="#f472b6" />
+          <path d="M107 122 L113 122 L110 126 Z" :fill="breed.noseFill" />
           <!-- Mulut ceria terbuka (^ o ^) saat diklik menyemangati atau selebrasi -->
           <ellipse
             v-if="activeFaceMode === 'click-cheer'"
@@ -1309,14 +1349,14 @@ onUnmounted(() => {
             rx="5.5"
             ry="6.5"
             fill="#f472b6"
-            stroke="#3b215c"
+            :stroke="mainMouthStroke"
             stroke-width="2.2"
           />
           <path
             v-else-if="currentMascotMood === 'celebrate'"
             d="M101 129 Q110 142 119 129 Z"
             fill="#f472b6"
-            stroke="#3b215c"
+            :stroke="mainMouthStroke"
             stroke-width="2.2"
             stroke-linejoin="round"
           />
@@ -1324,7 +1364,7 @@ onUnmounted(() => {
           <path
             v-else-if="activeFaceMode === 'petted' || activeFaceMode === 'music'"
             d="M103 130 Q110 137.5 117 130"
-            stroke="#3b215c"
+            :stroke="mainMouthStroke"
             stroke-width="2.7"
             stroke-linecap="round"
           />
@@ -1332,7 +1372,7 @@ onUnmounted(() => {
           <path
             v-else
             d="M101 130 Q105.5 135 110 129 Q114.5 135 119 130"
-            stroke="#3b215c"
+            :stroke="mainMouthStroke"
             stroke-width="2.6"
             stroke-linecap="round"
             stroke-linejoin="round"
@@ -1379,13 +1419,13 @@ onUnmounted(() => {
               <path d="M2 30 H62 L66 34 H-2 Z" fill="#cbd5e1" stroke="#94a3b8" stroke-width="1.2" stroke-linejoin="round" />
             </g>
 
-            <!-- Kedua cakar mungil Kucing Putih sedang mengetik pelan -->
+            <!-- Kedua cakar mungil Kucing Utama sedang mengetik pelan -->
             <g class="animate-cat-typing-left">
-              <ellipse cx="116" cy="176" rx="9" ry="6.2" fill="#fff7fb" stroke="#e9d5ff" stroke-width="1.5" />
+              <ellipse cx="116" cy="176" rx="9" ry="6.2" :fill="breed.pawFill" :stroke="breed.pawStroke" stroke-width="1.5" />
               <circle cx="116" cy="175" r="2.2" fill="#fbcfe8" />
             </g>
             <g class="animate-cat-typing-right">
-              <ellipse cx="144" cy="176" rx="9" ry="6.2" fill="#fff7fb" stroke="#e9d5ff" stroke-width="1.5" />
+              <ellipse cx="144" cy="176" rx="9" ry="6.2" :fill="breed.pawFill" :stroke="breed.pawStroke" stroke-width="1.5" />
               <circle cx="144" cy="175" r="2.2" fill="#fbcfe8" />
             </g>
           </g>
@@ -1449,13 +1489,13 @@ onUnmounted(() => {
             </g>
 
             <!-- Cakar rileks bertumpu di tepi meja -->
-            <ellipse cx="94" cy="177" rx="9.5" ry="6.5" fill="#fff7fb" stroke="#e9d5ff" stroke-width="1.5" />
-            <ellipse cx="114" cy="177" rx="9.5" ry="6.5" fill="#fff7fb" stroke="#e9d5ff" stroke-width="1.5" />
+            <ellipse cx="94" cy="177" rx="9.5" ry="6.5" :fill="breed.pawFill" :stroke="breed.pawStroke" stroke-width="1.5" />
+            <ellipse cx="114" cy="177" rx="9.5" ry="6.5" :fill="breed.pawFill" :stroke="breed.pawStroke" stroke-width="1.5" />
           </g>
 
           <!-- C. Mode IDLE / PAUSED: Pose siaga ramah seperti biasa tanpa meja kerja -->
           <g v-else>
-            <ellipse cx="88" cy="176" rx="11" ry="8" fill="#fff7fb" stroke="#e9d5ff" stroke-width="1.5" />
+            <ellipse cx="88" cy="176" rx="11" ry="8" :fill="breed.pawFill" :stroke="breed.pawStroke" stroke-width="1.5" />
 
             <g
               v-if="currentMascotMood === 'reminder' || currentMascotMood === 'celebrate'"
@@ -1467,8 +1507,8 @@ onUnmounted(() => {
                 rx="10"
                 ry="13"
                 transform="rotate(24 154 154)"
-                fill="#fff7fb"
-                stroke="#e9d5ff"
+                :fill="breed.pawFill"
+                :stroke="breed.pawStroke"
                 stroke-width="1.8"
               />
               <circle cx="154" cy="151" r="3" fill="#fbcfe8" />
@@ -1479,8 +1519,8 @@ onUnmounted(() => {
               cy="176"
               rx="11"
               ry="8"
-              fill="#fff7fb"
-              stroke="#e9d5ff"
+              :fill="breed.pawFill"
+              :stroke="breed.pawStroke"
               stroke-width="1.5"
             />
           </g>

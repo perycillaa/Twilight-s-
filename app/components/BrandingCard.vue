@@ -301,7 +301,7 @@ onUnmounted(() => {
           </p>
         </div>
 
-        <div class="rounded-2xl border border-amber-200/25 bg-amber-300/10 px-2 py-2">
+        <div class="cozy-stat-streak rounded-2xl border border-amber-200/25 bg-amber-300/10 px-2 py-2">
           <p class="text-[10px] font-semibold text-amber-100/90">Streak</p>
           <p class="font-display text-lg font-bold text-amber-200">
             🔥{{ dailyStreak }}
@@ -330,7 +330,7 @@ onUnmounted(() => {
             :class="
               activeLeftTab === 'notes'
                 ? 'ocean-active-btn bg-[#f9a8d4] text-[#311042] shadow'
-                : 'text-purple-100/80 hover:bg-white/10 hover:text-white'
+                : 'cozy-tab-inactive'
             "
             @click="activeLeftTab = 'notes'"
           >
@@ -343,7 +343,7 @@ onUnmounted(() => {
             :class="
               activeLeftTab === 'accessories'
                 ? 'ocean-active-btn bg-[#c4b5fd] text-[#1e1b4b] shadow'
-                : 'text-purple-100/80 hover:bg-white/10 hover:text-white'
+                : 'cozy-tab-inactive'
             "
             @click="activeLeftTab = 'accessories'"
           >

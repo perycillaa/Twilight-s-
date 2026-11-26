@@ -1356,7 +1356,7 @@ onUnmounted(() => {
           :class="
             activeTab === 'radio'
               ? 'cozy-active-btn bg-[#7dd3fc] text-[#0c1e3a] shadow'
-              : 'text-purple-100/80 hover:text-white'
+              : 'cozy-tab-inactive'
           "
           @click="switchTab('radio')"
         >
@@ -1368,7 +1368,7 @@ onUnmounted(() => {
           :class="
             activeTab === 'youtube'
               ? 'cozy-active-btn bg-[#c4b5fd] text-[#1e1b4b] shadow'
-              : 'text-purple-100/80 hover:text-white'
+              : 'cozy-tab-inactive'
           "
           @click="switchTab('youtube')"
         >
@@ -1421,7 +1421,7 @@ onUnmounted(() => {
               style="transform-origin: 41px 36px"
               :class="{ 'animate-spin-tape': isAnyAudioSpinning }"
             >
-              <circle cx="41" cy="36" r="5.5" fill="var(--accent-cassette-stroke, #f9a8d4)" />
+              <circle cx="41" cy="36" r="5.5" fill="var(--accent-cassette-reel, var(--accent-cassette-stroke, #f9a8d4))" />
               <circle cx="41" cy="36" r="2.2" fill="var(--accent-cassette-window, #1e1b4b)" />
               <line x1="41" y1="30.5" x2="41" y2="33" stroke="var(--accent-cassette-window, #1e1b4b)" stroke-width="1.5" />
               <line x1="41" y1="39" x2="41" y2="41.5" stroke="var(--accent-cassette-window, #1e1b4b)" stroke-width="1.5" />
@@ -1433,7 +1433,7 @@ onUnmounted(() => {
               style="transform-origin: 79px 36px"
               :class="{ 'animate-spin-tape': isAnyAudioSpinning }"
             >
-              <circle cx="79" cy="36" r="5.5" fill="var(--accent-cassette-stroke, #f9a8d4)" />
+              <circle cx="79" cy="36" r="5.5" fill="var(--accent-cassette-reel, var(--accent-cassette-stroke, #f9a8d4))" />
               <circle cx="79" cy="36" r="2.2" fill="var(--accent-cassette-window, #1e1b4b)" />
               <line x1="79" y1="30.5" x2="79" y2="33" stroke="var(--accent-cassette-window, #1e1b4b)" stroke-width="1.5" />
               <line x1="79" y1="39" x2="79" y2="41.5" stroke="var(--accent-cassette-window, #1e1b4b)" stroke-width="1.5" />
