@@ -4,8 +4,10 @@ import { getCatBreedPalette } from '~/composables/useCatThemeStyle'
 import {
   ASTRAL_PALACE_STREAK_GOAL,
   CAT_BREEDS,
+  COZY_CAT_BUDDIES,
   type CatBreedId,
   type CatTargetSlot,
+  type CozyBuddyId,
   COZY_THEMES,
   type CozyThemeId,
   MASCOT_ACCESSORIES,
@@ -13,11 +15,13 @@ import {
   useTwilightStorage,
 } from '~/composables/useTwilightStorage'
 
-// Ambil saldo koin 🐟, aksesoris 2 kucing (sinkron/terpisah), Toko Kucing (7 ras), & Toko Tema Latar Belakang
+// Ambil saldo koin 🐟, aksesoris 2 kucing (sinkron/terpisah), Toko Kucing (7 ras + 3 Cozy Cat Buddies), & Toko Tema Latar Belakang
 const {
   treatCoins,
   ownedAccessories,
   ownedCats,
+  ownedBuddies,
+  activeBuddies,
   mainCatType,
   miniCatType,
   syncCatAccessories,
@@ -31,6 +35,7 @@ const {
   toggleSyncCatAccessories,
   buyOrEquipAccessory,
   buyOrEquipCatBreed,
+  buyOrToggleCozyBuddy,
   buyOrEquipCozyTheme,
 } = useTwilightStorage()
 
@@ -62,10 +67,14 @@ function showFeedback(message: string) {
   }, 3200)
 }
 
-function isAccessoryOwned(id: Exclude<MascotAccessoryId, 'none'>, milestoneLevel?: 10 | 20): boolean {
+function isAccessoryOwned(
+  id: Exclude<MascotAccessoryId, 'none'>,
+  milestoneLevel?: 10 | 20 | 30,
+): boolean {
   if (ownedAccessories.value.includes(id)) return true
   if (milestoneLevel === 10 && catAffinityLevel.value >= 10) return true
   if (milestoneLevel === 20 && catAffinityLevel.value >= 20) return true
+  if (milestoneLevel === 30 && catAffinityLevel.value >= 30) return true
   return false
 }
 
@@ -83,6 +92,19 @@ function isCatOwned(breedId: CatBreedId, cost: number): boolean {
 
 function handleSelectCatBreed(breedId: CatBreedId, target: CatTargetSlot) {
   const result = buyOrEquipCatBreed(breedId, target)
+  showFeedback(result.message)
+}
+
+function isBuddyOwned(buddyId: CozyBuddyId): boolean {
+  return ownedBuddies.value.includes(buddyId)
+}
+
+function isBuddyActive(buddyId: CozyBuddyId): boolean {
+  return activeBuddies.value.includes(buddyId)
+}
+
+function handleBuddyAction(buddyId: CozyBuddyId) {
+  const result = buyOrToggleCozyBuddy(buddyId)
   showFeedback(result.message)
 }
 
@@ -253,7 +275,7 @@ function handleSelectCozyTheme(id: CozyThemeId) {
             v-else-if="item.cost === null"
             class="cozy-shop-price shrink-0 rounded-full border border-amber-200/35 bg-amber-300/15 px-2 py-0.5 text-[9.5px] font-bold text-amber-100"
           >
-            🔒 Lv. {{ item.milestoneLevel }}{{ item.milestoneLevel === 20 ? ' MAX' : '' }}
+            🔒 Lv. {{ item.milestoneLevel }}{{ item.milestoneLevel === 30 ? ' MAX' : '' }}
           </span>
           <span
             v-else
@@ -440,6 +462,123 @@ function handleSelectCozyTheme(id: CozyThemeId) {
               @click="handleSelectCatBreed(cat.id, 'both')"
             >
               ✨ Keduanya
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sub-Bagian: 🐾 Kucing Peramai Ruangan (3 Cozy Cat Buddies: Mochi, Kuro, Latte) -->
+      <div class="my-2.5 border-t border-white/15" />
+
+      <div class="mb-1.5 flex items-center justify-between gap-2">
+        <h3 class="text-[11px] font-bold uppercase tracking-wider text-pink-200">
+          🐾 Kucing Peramai Ruangan
+        </h3>
+        <span class="text-[10px] font-semibold text-purple-200/75">
+          {{ ownedBuddies.length }}/{{ COZY_CAT_BUDDIES.length }} Dimiliki
+        </span>
+      </div>
+
+      <div class="flex flex-col gap-1.5">
+        <div
+          v-for="buddy in COZY_CAT_BUDDIES"
+          :key="buddy.id"
+          class="rounded-xl border px-2.5 py-2 transition"
+          :class="
+            isBuddyActive(buddy.id)
+              ? 'cozy-shop-item-active border-pink-300/80 bg-pink-300/20'
+              : 'cozy-shop-item border-white/15 bg-black/20'
+          "
+        >
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex min-w-0 items-center gap-2">
+              <!-- Pratinjau Mini SVG Wajah Cozy Cat Buddy -->
+              <svg
+                class="h-8 w-8 shrink-0 drop-shadow-xs"
+                viewBox="0 0 40 40"
+                fill="none"
+                aria-hidden="true"
+              >
+                <circle cx="20" cy="21" r="17" fill="var(--accent-soft, rgba(255,255,255,0.12))" />
+                <!-- Mochi (Scottish Fold Abu-Biru Bertelinga Lipat) -->
+                <template v-if="buddy.id === 'mochi'">
+                  <ellipse cx="20" cy="22.5" rx="12" ry="10.2" fill="#9eb2d1" stroke="#53688a" stroke-width="1" />
+                  <path d="M8.5 18 C8 11, 15 10.5, 17 15 C14 15.5, 11 16.5, 8.5 18 Z" fill="#8298bd" stroke="#53688a" stroke-width="1" stroke-linejoin="round" />
+                  <path d="M31.5 18 C32 11, 25 10.5, 23 15 C26 15.5, 29 16.5, 31.5 18 Z" fill="#8298bd" stroke="#53688a" stroke-width="1" stroke-linejoin="round" />
+                  <ellipse cx="20" cy="25.5" rx="6" ry="3.8" fill="#d7e2f2" opacity="0.85" />
+                  <circle cx="15.5" cy="21.5" r="2" fill="#fbbf24" />
+                  <circle cx="24.5" cy="21.5" r="2" fill="#fbbf24" />
+                  <circle cx="15.6" cy="21.5" r="0.95" fill="#1e293b" />
+                  <circle cx="24.6" cy="21.5" r="0.95" fill="#1e293b" />
+                  <path d="M18.8 24.4 H21.2 L20 25.6 Z" fill="#64748b" />
+                </template>
+                <!-- Kuro (Havana Espresso & Mata Zamrud + Lonceng Emas) -->
+                <template v-else-if="buddy.id === 'kuro'">
+                  <path d="M9 17 L7 7 L16 12 Z" fill="#633a28" stroke="#3d2217" stroke-width="1.1" stroke-linejoin="round" />
+                  <path d="M31 17 L33 7 L24 12 Z" fill="#633a28" stroke="#3d2217" stroke-width="1.1" stroke-linejoin="round" />
+                  <ellipse cx="20" cy="21.5" rx="12" ry="10.2" fill="#633a28" stroke="#3d2217" stroke-width="1" />
+                  <circle cx="15.5" cy="21" r="2.1" fill="#34d399" />
+                  <circle cx="24.5" cy="21" r="2.1" fill="#34d399" />
+                  <circle cx="15.7" cy="21" r="0.9" fill="#064e3b" />
+                  <circle cx="24.7" cy="21" r="0.9" fill="#064e3b" />
+                  <path d="M18.8 23.8 H21.2 L20 25 Z" fill="#d6a58d" />
+                  <path d="M13 30.5 Q20 33.5 27 30.5" stroke="#e11d48" stroke-width="2.2" stroke-linecap="round" />
+                  <circle cx="20" cy="33" r="2.5" fill="#fbbf24" stroke="#b45309" stroke-width="0.9" />
+                </template>
+                <!-- Latte (Tabby Karamel-Madu + Bunga Pastel) -->
+                <template v-else>
+                  <path d="M9 17 L7 7 L16 12 Z" fill="#e6b873" stroke="#b57a40" stroke-width="1.1" stroke-linejoin="round" />
+                  <path d="M31 17 L33 7 L24 12 Z" fill="#e6b873" stroke="#b57a40" stroke-width="1.1" stroke-linejoin="round" />
+                  <ellipse cx="20" cy="22" rx="12" ry="10.5" fill="#f5d5a3" stroke="#b57a40" stroke-width="1" />
+                  <path d="M20 12.5 V16.2 M17 13.2 L18 16.2 M23 13.2 L22 16.2" stroke="#b87639" stroke-width="1.3" stroke-linecap="round" />
+                  <circle cx="29.5" cy="14" r="2.3" fill="#f9a8d4" />
+                  <circle cx="29.5" cy="14" r="1.1" fill="#fde047" />
+                  <circle cx="15.5" cy="21.5" r="2" fill="#14b8a6" />
+                  <circle cx="24.5" cy="21.5" r="2" fill="#14b8a6" />
+                  <circle cx="15.6" cy="21.5" r="0.95" fill="#134e4a" />
+                  <circle cx="24.6" cy="21.5" r="0.95" fill="#134e4a" />
+                  <path d="M18.8 24.4 H21.2 L20 25.6 Z" fill="#fb7185" />
+                </template>
+              </svg>
+
+              <div class="min-w-0">
+                <p class="truncate text-[11px] font-bold text-white">
+                  {{ buddy.name }}
+                  <span class="font-normal opacity-80">• {{ buddy.subtitle }}</span>
+                </p>
+                <p class="truncate text-[9.5px] leading-tight text-purple-200/75">
+                  {{ buddy.description }}
+                </p>
+              </div>
+            </div>
+
+            <!-- Tombol Beli / Toggle Tampil di Ruangan -->
+            <button
+              v-if="!isBuddyOwned(buddy.id)"
+              type="button"
+              :disabled="treatCoins < buddy.cost"
+              class="btn-bouncy shrink-0 rounded-full px-2.5 py-1 text-[10px] font-bold transition"
+              :class="
+                treatCoins >= buddy.cost
+                  ? 'cozy-shop-price cursor-pointer bg-amber-300/25 text-amber-100 hover:bg-amber-300/40'
+                  : 'cozy-shop-price-locked cursor-not-allowed bg-white/10 text-purple-200/45 opacity-65'
+              "
+              @click="handleBuddyAction(buddy.id)"
+            >
+              🐟 {{ buddy.cost }}
+            </button>
+            <button
+              v-else
+              type="button"
+              class="btn-bouncy shrink-0 cursor-pointer rounded-full px-2.5 py-1 text-[10px] font-bold transition"
+              :class="
+                isBuddyActive(buddy.id)
+                  ? 'cozy-active-btn bg-[#f9a8d4] text-[#311042]'
+                  : 'cozy-secondary-btn'
+              "
+              @click="handleBuddyAction(buddy.id)"
+            >
+              {{ isBuddyActive(buddy.id) ? '✓ Di Ruangan' : '🐾 Tampilkan' }}
             </button>
           </div>
         </div>

@@ -940,15 +940,10 @@ onUnmounted(() => {
                 />
               </div>
 
-              <!-- Tombol Sakelar Mode Terang Pastel (☀️) / Mode Gelap Cozy (🌙) untuk SEMUA Tema -->
+              <!-- Tombol Sakelar Mode Pastel (☀️) / Mode Cozy (🌙) untuk SEMUA Tema -->
               <button
                 type="button"
-                :title="
-                  isDarkTheme
-                    ? 'Saat ini Mode Gelap (🌙) — Klik untuk beralih ke Mode Terang Pastel (☀️)'
-                    : 'Saat ini Mode Terang (☀️) — Klik untuk beralih ke Mode Gelap Cozy (🌙)'
-                "
-                :aria-label="isDarkTheme ? 'Beralih ke mode terang pastel' : 'Beralih ke mode gelap'"
+                :aria-label="isDarkTheme ? 'Beralih ke Mode Pastel' : 'Beralih ke Mode Cozy'"
                 class="cozy-pill-btn btn-bouncy inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border text-sm shadow-sm transition"
                 @click="toggleDarkTheme"
               >

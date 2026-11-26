@@ -221,7 +221,12 @@ function smartMergeCloudWithLocal(
 
   const claimed10 = Boolean(cAff.claimedLv10Reward) || Boolean(lAff.claimedLv10Reward)
   const claimed20 = Boolean(cAff.claimedLv20Reward) || Boolean(lAff.claimedLv20Reward)
-  if (claimed10 !== Boolean(cAff.claimedLv10Reward) || claimed20 !== Boolean(cAff.claimedLv20Reward)) {
+  const claimed30 = Boolean(cAff.claimedLv30Reward) || Boolean(lAff.claimedLv30Reward)
+  if (
+    claimed10 !== Boolean(cAff.claimedLv10Reward) ||
+    claimed20 !== Boolean(cAff.claimedLv20Reward) ||
+    claimed30 !== Boolean(cAff.claimedLv30Reward)
+  ) {
     localAdded = true
   }
 
@@ -231,6 +236,7 @@ function smartMergeCloudWithLocal(
     heartChestXp: localHigherAffinity ? lChest : cChest,
     claimedLv10Reward: claimed10,
     claimedLv20Reward: claimed20,
+    claimedLv30Reward: claimed30,
   }
   merged.catAffinity = bestAffinity
   merged.affectionPoints = bestAffinity.xp
@@ -254,6 +260,16 @@ function smartMergeCloudWithLocal(
   merged.ownedAccessories = unionField(cloudData.ownedAccessories, localData.ownedAccessories)
   merged.ownedCats = unionField(cloudData.ownedCats, localData.ownedCats)
   merged.ownedCozyThemes = unionField(cloudData.ownedCozyThemes, localData.ownedCozyThemes)
+  merged.ownedBuddies = unionField(cloudData.ownedBuddies, localData.ownedBuddies)
+  const cLoveDate = typeof cloudData.dailyLoveCardDate === 'string' ? cloudData.dailyLoveCardDate : ''
+  const lLoveDate = typeof localData.dailyLoveCardDate === 'string' ? localData.dailyLoveCardDate : ''
+  if (cLoveDate && cLoveDate === lLoveDate) {
+    const cLoveCount = toSafeNum(cloudData.dailyLoveCardCount, 0)
+    const lLoveCount = toSafeNum(localData.dailyLoveCardCount, 0)
+    const bestLoveCount = Math.max(cLoveCount, lLoveCount)
+    if (bestLoveCount > cLoveCount) localAdded = true
+    merged.dailyLoveCardCount = bestLoveCount
+  }
 
   // 4. Jika cloud belum punya habits namun lokal punya, pertahankan habits lokal
   const cloudHabits = Array.isArray(cloudData.habits) ? cloudData.habits : []

@@ -2,9 +2,12 @@
 import { computed, onUnmounted, ref, watch } from 'vue'
 import {
   AFFINITY_DROP_DUPLICATE_FISH_BONUS,
+  MAX_DAILY_LOVE_CARDS,
   SECRET_CARD_CATEGORIES,
   SECRET_CARD_GACHA_COST,
+  SECRET_CARD_RARITIES,
   SECRET_CAT_CARDS,
+  resolveCardRarity,
   type SecretCardCategoryId,
   type SecretCatCard,
   useTwilightStorage,
@@ -13,6 +16,8 @@ import {
 const {
   treatCoins,
   collectedSecretCards,
+  dailyLoveCardCount,
+  isDarkTheme,
   isSecretCardModalOpen,
   secretCardModalMode,
   lastDrawnCardResult,
@@ -107,6 +112,25 @@ const revealSparkOffsets = computed(() => {
 
 function formatCardNumber(num: number): string {
   return `#${String(num).padStart(2, '0')}`
+}
+
+function getCardRarityMeta(card: SecretCatCard) {
+  return SECRET_CARD_RARITIES[resolveCardRarity(card)]
+}
+
+function getRarityPillStyle(card: SecretCatCard) {
+  const meta = getCardRarityMeta(card)
+  return isDarkTheme.value
+    ? {
+        background: meta.darkBg,
+        borderColor: meta.darkBorder,
+        color: meta.darkText,
+      }
+    : {
+        background: meta.lightBg,
+        borderColor: meta.lightBorder,
+        color: meta.lightText,
+      }
 }
 
 function isCardCollected(cardId: string): boolean {
@@ -302,6 +326,10 @@ onUnmounted(() => {
                     : `Seluruh ${totalCardsCount}/${totalCardsCount} kartu sudah terkoleksi! Kamu dapat bonus +${lastDrawnCardResult.bonusFish ?? AFFINITY_DROP_DUPLICATE_FISH_BONUS} 🐟!`
                 }}
               </p>
+              <p class="mt-1 text-[10.5px] font-bold" style="color: var(--accent-primary)">
+                💌 Hadiah Kartu Hari Ini: {{ dailyLoveCardCount }}/{{ MAX_DAILY_LOVE_CARDS }}
+                {{ dailyLoveCardCount >= MAX_DAILY_LOVE_CARDS ? '• Batas harian tercapai, kembali besok~ 💖' : '' }}
+              </p>
             </div>
 
             <!-- Kilau Partikel Bertema saat Kartu Terbuka -->
@@ -423,17 +451,27 @@ onUnmounted(() => {
                       {{ lastDrawnCardResult.card.name }}
                     </h3>
 
-                    <span
-                      class="mt-1 inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[10px] font-bold"
-                      style="
-                        background: var(--accent-badge-bg);
-                        border-color: var(--accent-badge-border);
-                        color: var(--accent-badge-text);
-                      "
-                    >
-                      <span>{{ SECRET_CARD_CATEGORIES[lastDrawnCardResult.card.category].icon }}</span>
-                      <span>{{ SECRET_CARD_CATEGORIES[lastDrawnCardResult.card.category].label }}</span>
-                    </span>
+                    <div class="mt-1 flex flex-wrap items-center justify-center gap-1.5">
+                      <span
+                        class="inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[10px] font-bold"
+                        style="
+                          background: var(--accent-badge-bg);
+                          border-color: var(--accent-badge-border);
+                          color: var(--accent-badge-text);
+                        "
+                      >
+                        <span>{{ SECRET_CARD_CATEGORIES[lastDrawnCardResult.card.category].icon }}</span>
+                        <span>{{ SECRET_CARD_CATEGORIES[lastDrawnCardResult.card.category].label }}</span>
+                      </span>
+
+                      <span
+                        class="inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[10px] font-extrabold"
+                        :style="getRarityPillStyle(lastDrawnCardResult.card)"
+                      >
+                        <span>{{ getCardRarityMeta(lastDrawnCardResult.card).icon }}</span>
+                        <span>{{ getCardRarityMeta(lastDrawnCardResult.card).label }}</span>
+                      </span>
+                    </div>
                   </div>
 
                   <!-- Isi Teks Kartu -->
@@ -612,17 +650,26 @@ onUnmounted(() => {
                       {{ inspectingAlbumCard.name }}
                     </span>
                   </div>
-                  <span
-                    class="mt-0.5 inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[9.5px] font-bold"
-                    style="
-                      background: var(--accent-badge-bg);
-                      border-color: var(--accent-badge-border);
-                      color: var(--accent-badge-text);
-                    "
-                  >
-                    {{ SECRET_CARD_CATEGORIES[inspectingAlbumCard.category].icon }}
-                    {{ SECRET_CARD_CATEGORIES[inspectingAlbumCard.category].label }}
-                  </span>
+                  <div class="mt-0.5 flex flex-wrap items-center gap-1">
+                    <span
+                      class="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[9.5px] font-bold"
+                      style="
+                        background: var(--accent-badge-bg);
+                        border-color: var(--accent-badge-border);
+                        color: var(--accent-badge-text);
+                      "
+                    >
+                      {{ SECRET_CARD_CATEGORIES[inspectingAlbumCard.category].icon }}
+                      {{ SECRET_CARD_CATEGORIES[inspectingAlbumCard.category].label }}
+                    </span>
+                    <span
+                      class="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[9.5px] font-extrabold"
+                      :style="getRarityPillStyle(inspectingAlbumCard)"
+                    >
+                      {{ getCardRarityMeta(inspectingAlbumCard).icon }}
+                      {{ getCardRarityMeta(inspectingAlbumCard).label }}
+                    </span>
+                  </div>
                 </div>
               </div>
               <button
@@ -684,16 +731,24 @@ onUnmounted(() => {
                       <p class="truncate text-xs font-bold" style="color: var(--text-primary)">
                         {{ formatCardNumber(card.number) }} {{ card.name }}
                       </p>
-                      <span
-                        class="mt-0.5 inline-block rounded-full border px-1.5 py-0.2 text-[9px] font-bold"
-                        style="
-                          background: var(--accent-badge-bg);
-                          border-color: var(--accent-badge-border);
-                          color: var(--accent-badge-text);
-                        "
-                      >
-                        {{ SECRET_CARD_CATEGORIES[card.category].icon }} {{ SECRET_CARD_CATEGORIES[card.category].shortLabel }}
-                      </span>
+                      <div class="mt-0.5 flex flex-wrap items-center gap-1">
+                        <span
+                          class="inline-block rounded-full border px-1.5 py-0.2 text-[9px] font-bold"
+                          style="
+                            background: var(--accent-badge-bg);
+                            border-color: var(--accent-badge-border);
+                            color: var(--accent-badge-text);
+                          "
+                        >
+                          {{ SECRET_CARD_CATEGORIES[card.category].icon }} {{ SECRET_CARD_CATEGORIES[card.category].shortLabel }}
+                        </span>
+                        <span
+                          class="inline-block rounded-full border px-1.5 py-0.2 text-[9px] font-extrabold"
+                          :style="getRarityPillStyle(card)"
+                        >
+                          {{ getCardRarityMeta(card).icon }} {{ getCardRarityMeta(card).label }}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>

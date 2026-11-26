@@ -5,6 +5,14 @@ import {
   useFirebaseCloudSync,
 } from '~/composables/useFirebaseCloudSync'
 import { type AlarmSoundId, useSoundEffects } from '~/composables/useSoundEffects'
+import {
+  EXTRA_SECRET_CAT_CARDS,
+  SECRET_CARD_RARITIES,
+  type SecretCardRarityId,
+  resolveCardRarity,
+} from '~/data/secretCatCardsExtra'
+
+export { SECRET_CARD_RARITIES, resolveCardRarity, type SecretCardRarityId }
 
 // Tipe tema warna website (disimpan di localStorage)
 export type ThemeName = 'twilight' | 'sakura' | 'ocean'
@@ -107,7 +115,7 @@ export interface HabitItem {
 // Tipe mode ekspresi maskot kucing interaktif
 export type MascotMood = 'idle' | 'focus' | 'happy' | 'reminder' | 'celebrate'
 
-// Tipe aksesoris maskot kucing (toko koin 🐟 + eksklusif milestone Kasih Sayang Lv. 10 & Lv. 20 MAX)
+// Tipe aksesoris maskot kucing (toko koin 🐟 + eksklusif milestone Kasih Sayang Lv. 10, Lv. 20 & Lv. 30 MAX)
 export type MascotAccessoryId =
   | 'none'
   | 'round-glasses'
@@ -122,13 +130,14 @@ export type MascotAccessoryId =
   | 'star-crown'
   | 'soulmate-collar'
   | 'angel-wings'
+  | 'starlight-crown'
 
 export interface AccessoryItem {
   id: Exclude<MascotAccessoryId, 'none'>
   name: string
   icon: string
   cost: number | null // null = eksklusif hadiah Milestone Kasih Sayang (tidak dibeli dengan koin)
-  milestoneLevel?: 10 | 20
+  milestoneLevel?: 10 | 20 | 30
 }
 
 export const MASCOT_ACCESSORIES: AccessoryItem[] = [
@@ -144,6 +153,7 @@ export const MASCOT_ACCESSORIES: AccessoryItem[] = [
   { id: 'star-crown', name: 'Mahkota Bintang', icon: '👑', cost: 50 },
   { id: 'soulmate-collar', name: 'Kalung Hati Bintang', icon: '💖', cost: null, milestoneLevel: 10 },
   { id: 'angel-wings', name: 'Sayap Malaikat', icon: '✨', cost: null, milestoneLevel: 20 },
+  { id: 'starlight-crown', name: 'Mahkota Bintang Celestial', icon: '🌠', cost: null, milestoneLevel: 30 },
 ]
 
 export const SHOP_PURCHASABLE_ACCESSORY_IDS: Exclude<MascotAccessoryId, 'none'>[] =
@@ -592,6 +602,8 @@ export interface SecretCatCard {
   category: SecretCardCategoryId
   emoji: string
   text: string
+  rarity?: SecretCardRarityId
+  accentColor?: string
 }
 
 export interface SecretCardDrawResult {
@@ -600,11 +612,84 @@ export interface SecretCardDrawResult {
   bonusAffinity: number
   bonusFish?: number
   source?: 'gacha' | 'affinity-drop'
+  dailyLoveCount?: number
   drawId: number
 }
 
 export const SECRET_CARD_GACHA_COST = 2
 export const AFFINITY_DROP_DUPLICATE_FISH_BONUS = 5
+export const MAX_DAILY_LOVE_CARDS = 5
+
+// --- 3 Karakter Kucing Peramai (Cozy Cat Buddies: Mochi, Kuro, Latte) ---
+export type CozyBuddyId = 'mochi' | 'kuro' | 'latte'
+
+export interface CozyCatBuddyItem {
+  id: CozyBuddyId
+  name: string
+  subtitle: string
+  cost: number
+  description: string
+  speeches: string[]
+  focusMoodText: string
+}
+
+export const COZY_CAT_BUDDIES: CozyCatBuddyItem[] = [
+  {
+    id: 'mochi',
+    name: 'Mochi',
+    subtitle: 'Scottish Fold Abu-Biru',
+    cost: 45,
+    description: 'Scottish Fold abu-abu kebiruan bertelinga lipat yang suka meringkuk & kejar bintang ✨',
+    focusMoodText: 'Meringkuk tenang dengan telinga lipat sambil jaga fokusmu~ 💤',
+    speeches: [
+      'Mochi lagi kejar kilau bintang kecil~ Semangat fokusnya ya! 🐾✨',
+      'Mew~ Telinga lipatku ikut mendengarkan alunan fokusmu!',
+      'Kalau bahu mulai pegal, tarik napas sebentar bareng Mochi yuk~ 💙',
+    ],
+  },
+  {
+    id: 'kuro',
+    name: 'Kuro',
+    subtitle: 'Havana Espresso & Emas',
+    cost: 55,
+    description: 'Kucing cokelat espresso hangat bermata zamrud & lonceng emas yang suka membaca 📖',
+    focusMoodText: 'Membaca buku kecil dengan tenang di sampingmu~ 📖',
+    speeches: [
+      'Kuro ikut baca buku bareng kamu ya... tenang & fokus~ 📖🔔',
+      'Lonceng emasku berdenting merayakan progres hebatmu hari ini! ✨',
+      'Pelan tapi pasti, Kuro selalu menemani sampai selesai~ ☕',
+    ],
+  },
+  {
+    id: 'latte',
+    name: 'Latte',
+    subtitle: 'Tabby Karamel-Madu',
+    cost: 65,
+    description: 'Kucing tabby karamel-madu lembut bergaris manis & bunga kecil yang ceria 💖',
+    focusMoodText: 'Mendengkur pelan & kirim semangat manis hangat~ 🍯',
+    speeches: [
+      'Latte senang banget bisa nemenin hari fokusmu! 💖',
+      'Meow~ Kamu manis dan hebat banget hari ini, teruskan ya! 🍯✨',
+      'Satu sesi fokus lagi ya, habis itu kita santai bareng! 🌼',
+    ],
+  },
+]
+
+const VALID_COZY_BUDDY_IDS = new Set<string>(COZY_CAT_BUDDIES.map(b => b.id))
+
+function isValidCozyBuddyId(val: unknown): val is CozyBuddyId {
+  return typeof val === 'string' && VALID_COZY_BUDDY_IDS.has(val)
+}
+
+function sanitizeCozyBuddyList(raw: unknown): CozyBuddyId[] {
+  const unique = new Set<CozyBuddyId>()
+  if (Array.isArray(raw)) {
+    for (const item of raw) {
+      if (isValidCozyBuddyId(item)) unique.add(item)
+    }
+  }
+  return Array.from(unique)
+}
 
 export const SECRET_CARD_CATEGORIES: Record<SecretCardCategoryId, SecretCardCategoryMeta> = {
   encourage: {
@@ -1167,6 +1252,7 @@ export const SECRET_CAT_CARDS: SecretCatCard[] = [
     emoji: '🌟',
     text: 'Semoga sesi fokus kita hari ini berjalan lancar ya, karena aku siap nemenin setiap target dan impian besarmu satu per satu!',
   },
+  ...EXTRA_SECRET_CAT_CARDS,
 ]
 
 /** Pengurutan stabil daftar target: belum selesai di atas, sudah dicentang di bawah */
@@ -1436,6 +1522,8 @@ const STORAGE_KEYS = {
   ALARM_SOUND: 'twilights_alarm_sound_v1',
   GAME_HIGHSCORE: 'twilights_game_highscore',
   GAME_DAILY_CLAIMS: 'twilights_game_daily_claims_v1',
+  DAILY_LOVE_CARDS: 'twilights_daily_love_cards_v1',
+  COZY_BUDDIES: 'twilights_cozy_buddies_v1',
 }
 
 // Kunci lama (untuk migrasi satu kali agar data pengguna lama tidak hilang)
@@ -1461,21 +1549,35 @@ export const MAX_GAME_DAILY_REWARDS = 3
 export const MAX_GAME_DAILY_PLAYS = 3
 export const GAME_COMPLETION_BASE_COINS = 5
 export const GAME_ROUND_DURATION_SECONDS = 50
-export const CAT_AFFINITY_MAX_LEVEL = 20
+export const CAT_AFFINITY_MAX_LEVEL = 30
 export const CAT_AFFINITY_MILESTONE_LV10 = 10
-export const CAT_AFFINITY_XP_PER_LEVEL = 10
-export const CAT_AFFINITY_HIGH_XP_PER_LEVEL = 15
+export const CAT_AFFINITY_MILESTONE_LV20 = 20
+export const CAT_AFFINITY_MILESTONE_LV30 = 30
+export const CAT_AFFINITY_XP_PER_LEVEL = 12
+export const CAT_AFFINITY_HIGH_XP_PER_LEVEL = 96
+export const CAT_AFFINITY_PAT_COOLDOWN_MS = 2500
 export const CAT_AFFINITY_LEVELUP_FISH_REWARD = 2
 export const CAT_AFFINITY_LV10_MILESTONE_FISH = 20
 export const CAT_AFFINITY_LV20_MILESTONE_FISH = 40
-export const HEART_CHEST_XP_GOAL = 10
+export const CAT_AFFINITY_LV30_MILESTONE_FISH = 100
+export const HEART_CHEST_XP_GOAL = 15
 export const HEART_CHEST_FISH_REWARD = 3
 
-/** Kebutuhan XP Kasih Sayang per level: 10 poin (Lv. 1–9), 15 poin (Lv. 10–19) */
+/**
+ * Kurva progresif kebutuhan XP Kasih Sayang per level (Lv. 1 -> Lv. 30 MAX):
+ * - Lv. 1–9  : 12 .. 28 XP (+2 per level)
+ * - Lv. 10–19: 30 .. 57 XP (+3 per level)
+ * - Lv. 20–29: 60 .. 96 XP (+4 per level)
+ */
 export function getCatAffinityXpNeeded(level: number): number {
-  return level >= CAT_AFFINITY_MILESTONE_LV10
-    ? CAT_AFFINITY_HIGH_XP_PER_LEVEL
-    : CAT_AFFINITY_XP_PER_LEVEL
+  const safeLv = Math.max(1, Math.floor(level))
+  if (safeLv < CAT_AFFINITY_MILESTONE_LV10) {
+    return 12 + (safeLv - 1) * 2
+  }
+  if (safeLv < CAT_AFFINITY_MILESTONE_LV20) {
+    return 30 + (safeLv - CAT_AFFINITY_MILESTONE_LV10) * 3
+  }
+  return 60 + Math.min(9, safeLv - CAT_AFFINITY_MILESTONE_LV20) * 4
 }
 
 interface CatAffinityRecord {
@@ -1484,6 +1586,7 @@ interface CatAffinityRecord {
   heartChestXp?: number
   claimedLv10Reward?: boolean
   claimedLv20Reward?: boolean
+  claimedLv30Reward?: boolean
 }
 
 function sanitizeCatAffinity(raw: unknown): Required<CatAffinityRecord> {
@@ -1493,11 +1596,12 @@ function sanitizeCatAffinity(raw: unknown): Required<CatAffinityRecord> {
   const rawXp = Math.max(0, Math.floor(Number(obj.xp) || 0))
   const claimedLv10Reward = Boolean(obj.claimedLv10Reward)
   const claimedLv20Reward = Boolean(obj.claimedLv20Reward)
-  // Data lama di Lv. 10 tersimpan dengan xp=10 (batas MAX lama) -> reset ke 0 agar mulus menuju Lv. 11 (0/15)
+  const claimedLv30Reward = Boolean(obj.claimedLv30Reward)
+  // Data lama di Lv. 10 atau Lv. 20 (batas MAX lama) tetap aman & mulus lanjut menuju Lv. 30 MAX!
   const xp =
     level >= CAT_AFFINITY_MAX_LEVEL
       ? CAT_AFFINITY_HIGH_XP_PER_LEVEL
-      : level === CAT_AFFINITY_MILESTONE_LV10 && !claimedLv10Reward && rawXp >= CAT_AFFINITY_XP_PER_LEVEL
+      : level === CAT_AFFINITY_MILESTONE_LV20 && claimedLv20Reward && rawXp === 15
         ? 0
         : Math.min(needed - 1, rawXp)
   const heartChestXp =
@@ -1510,12 +1614,12 @@ function sanitizeCatAffinity(raw: unknown): Required<CatAffinityRecord> {
     heartChestXp,
     claimedLv10Reward,
     claimedLv20Reward,
+    claimedLv30Reward,
   }
 }
 
-// Cooldown anti-spam XP Kasih Sayang Kucing (klik 2 dtk, elusan 1.5 dtk)
-let lastCatClickXpAt = 0
-let lastCatPetXpAt = 0
+// Cooldown anti-spam XP Kasih Sayang Kucing untuk pat-pat & klik (2.5 detik bersama agar tidak bisa di-spam)
+let lastCatPatXpAt = 0
 let catAffinityToastTimer: ReturnType<typeof setTimeout> | null = null
 
 // Daftar catatan awal kosong bagi pengguna baru (tidak memuat catatan pribadi siapa pun)
@@ -1685,17 +1789,25 @@ export function useTwilightStorage() {
     'twilights-last-drawn-card',
     () => null,
   )
-  // Level & poin XP Bilah Kasih Sayang Kucing (Lv. 1 .. Lv. 20 MAX + Peti Cinta 0/10 + Milestone Lv. 10 & Lv. 20)
+  // Level & poin XP Bilah Kasih Sayang Kucing (Lv. 1 .. Lv. 30 MAX + Peti Cinta + Milestone Lv. 10, Lv. 20 & Lv. 30 MAX)
   const catAffinityLevel = useState<number>('twilights-cat-affinity-level', () => 1)
   const catAffinityXp = useState<number>('twilights-cat-affinity-xp', () => 0)
   const catHeartChestXp = useState<number>('twilights-cat-heart-chest-xp', () => 0)
   const claimedLv10Reward = useState<boolean>('twilights-claimed-lv10-reward', () => false)
   const claimedLv20Reward = useState<boolean>('twilights-claimed-lv20-reward', () => false)
+  const claimedLv30Reward = useState<boolean>('twilights-claimed-lv30-reward', () => false)
   const catAffinityLevelUpMessage = useState<string>('twilights-cat-affinity-levelup', () => '')
+  // Batas harian hadiah kartu dari Kasih Sayang Kucing (maks 5 kartu / hari, reset otomatis ganti tanggal)
+  const dailyLoveCardCount = useState<number>('twilights-daily-love-card-count', () => 0)
+  const dailyLoveCardDate = useState<string>('twilights-daily-love-card-date', () => '')
+  // 3 Karakter Kucing Peramai (Cozy Cat Buddies: Mochi, Kuro, Latte)
+  const ownedBuddies = useState<CozyBuddyId[]>('twilights-owned-buddies', () => [])
+  const activeBuddies = useState<CozyBuddyId[]>('twilights-active-buddies', () => [])
 
-  // Bonus pasif Koin Ikan tiap selesai 1 sesi Pomodoro Fokus (+1 🐟 di Lv. 10–19, +2 🐟 di Lv. 20 MAX)
+  // Bonus pasif Koin Ikan tiap selesai 1 sesi Pomodoro Fokus (+1 🐟 di Lv. 10–19, +2 🐟 di Lv. 20–29, +3 🐟 di Lv. 30 MAX)
   const catAffinityPassiveFishBonus = computed<number>(() => {
-    if (catAffinityLevel.value >= CAT_AFFINITY_MAX_LEVEL) return 2
+    if (catAffinityLevel.value >= CAT_AFFINITY_MAX_LEVEL) return 3
+    if (catAffinityLevel.value >= CAT_AFFINITY_MILESTONE_LV20) return 2
     if (catAffinityLevel.value >= CAT_AFFINITY_MILESTONE_LV10) return 1
     return 0
   })
@@ -1952,6 +2064,7 @@ export function useTwilightStorage() {
         heartChestXp: catHeartChestXp.value,
         claimedLv10Reward: claimedLv10Reward.value,
         claimedLv20Reward: claimedLv20Reward.value,
+        claimedLv30Reward: claimedLv30Reward.value,
       }
       localStorage.setItem(STORAGE_KEYS.CAT_AFFINITY, JSON.stringify(affinityData))
 
@@ -1978,6 +2091,20 @@ export function useTwilightStorage() {
         fishingHighScore: fishingHighScore.value,
       }
       localStorage.setItem(STORAGE_KEYS.GAME_DAILY_CLAIMS, JSON.stringify(claimRecord))
+      localStorage.setItem(
+        STORAGE_KEYS.DAILY_LOVE_CARDS,
+        JSON.stringify({
+          date: dailyLoveCardDate.value || todayStr,
+          count: dailyLoveCardCount.value,
+        }),
+      )
+      localStorage.setItem(
+        STORAGE_KEYS.COZY_BUDDIES,
+        JSON.stringify({
+          owned: ownedBuddies.value,
+          active: activeBuddies.value,
+        }),
+      )
 
       const sessionData: FocusSessionRecord = {
         date: todayStr,
@@ -2035,6 +2162,10 @@ export function useTwilightStorage() {
       fullGoalStreakRewardClaimedDate: fullGoalStreakRewardClaimedDate.value,
       collectedSecretCards: collectedSecretCards.value,
       unlockedCards: collectedSecretCards.value,
+      dailyLoveCardCount: dailyLoveCardCount.value,
+      dailyLoveCardDate: dailyLoveCardDate.value || getLocalTodayDate(),
+      ownedBuddies: ownedBuddies.value,
+      activeBuddies: activeBuddies.value,
       affectionPoints: catAffinityXp.value,
       catAffinity: {
         level: catAffinityLevel.value,
@@ -2042,6 +2173,7 @@ export function useTwilightStorage() {
         heartChestXp: catHeartChestXp.value,
         claimedLv10Reward: claimedLv10Reward.value,
         claimedLv20Reward: claimedLv20Reward.value,
+        claimedLv30Reward: claimedLv30Reward.value,
       },
       ambientMixerSettings: ambientMixerSettings.value,
       quickNotes: quickNotes.value,
@@ -2259,6 +2391,7 @@ export function useTwilightStorage() {
       catHeartChestXp.value = cleanAffinity.heartChestXp
       claimedLv10Reward.value = cleanAffinity.claimedLv10Reward
       claimedLv20Reward.value = cleanAffinity.claimedLv20Reward
+      claimedLv30Reward.value = cleanAffinity.claimedLv30Reward
     }
     if (Array.isArray(d.ownedCozyThemes)) {
       ownedCozyThemes.value = sanitizeOwnedCozyThemes(d.ownedCozyThemes)
@@ -2279,6 +2412,26 @@ export function useTwilightStorage() {
     const cloudCards = d.twilights_secret_cards ?? d.unlockedCards ?? d.collectedSecretCards
     if (Array.isArray(cloudCards)) {
       collectedSecretCards.value = sanitizeCollectedSecretCards(cloudCards)
+    }
+    const localTodayStr = getLocalTodayDate()
+    const cloudLoveDate = typeof d.dailyLoveCardDate === 'string' ? d.dailyLoveCardDate : ''
+    if (cloudLoveDate === localTodayStr && typeof d.dailyLoveCardCount === 'number') {
+      dailyLoveCardDate.value = localTodayStr
+      dailyLoveCardCount.value = Math.max(
+        0,
+        Math.min(MAX_DAILY_LOVE_CARDS, Math.floor(d.dailyLoveCardCount)),
+      )
+    } else if (cloudLoveDate && cloudLoveDate !== localTodayStr) {
+      dailyLoveCardDate.value = localTodayStr
+      dailyLoveCardCount.value = 0
+    }
+    if (Array.isArray(d.ownedBuddies)) {
+      ownedBuddies.value = sanitizeCozyBuddyList(d.ownedBuddies)
+    }
+    if (Array.isArray(d.activeBuddies)) {
+      activeBuddies.value = sanitizeCozyBuddyList(d.activeBuddies).filter(id =>
+        ownedBuddies.value.includes(id),
+      )
     }
     const cloudAmbient = d.twilights_ambient_mixer ?? d.ambientMixerSettings
     if (cloudAmbient && typeof cloudAmbient === 'object') {
@@ -2921,13 +3074,13 @@ export function useTwilightStorage() {
     triggerMascotReaction('happy', themeGreeting[newTheme], 2800)
   }
 
-  /** Sakelar Mode Gelap (🌙 Cozy Night) / Mode Terang (☀️ Daylight Pastel) universal untuk SEMUA tema */
+  /** Sakelar Mode Cozy (🌙 Gelap) / Mode Pastel (☀️ Terang) universal untuk SEMUA tema */
   function toggleDarkTheme() {
     isDarkTheme.value = !isDarkTheme.value
     applyThemeToDocument(theme.value, isDarkTheme.value)
     persistAll()
 
-    const modeSuffix = isDarkTheme.value ? 'Mode Gelap 🌙' : 'Mode Terang ☀️'
+    const modeSuffix = isDarkTheme.value ? 'Mode Cozy 🌙' : 'Mode Pastel ☀️'
     if (activeCozyTheme.value !== 'classic') {
       const cozyMeta = COZY_THEMES.find(t => t.id === activeCozyTheme.value)
       const cozyName = cozyMeta?.name ?? 'Tema Toko'
@@ -3118,6 +3271,10 @@ export function useTwilightStorage() {
         },
         twilights_secret_cards: collectedSecretCards.value,
         unlockedCards: collectedSecretCards.value,
+        dailyLoveCardCount: dailyLoveCardCount.value,
+        dailyLoveCardDate: dailyLoveCardDate.value || getLocalTodayDate(),
+        ownedBuddies: ownedBuddies.value,
+        activeBuddies: activeBuddies.value,
         affectionPoints: catAffinityXp.value,
         twilights_cat_affinity: {
           level: catAffinityLevel.value,
@@ -3125,6 +3282,7 @@ export function useTwilightStorage() {
           heartChestXp: catHeartChestXp.value,
           claimedLv10Reward: claimedLv10Reward.value,
           claimedLv20Reward: claimedLv20Reward.value,
+          claimedLv30Reward: claimedLv30Reward.value,
         },
         quickNotes: quickNotes.value,
         dailyMood: dailyMood.value,
@@ -3240,6 +3398,7 @@ export function useTwilightStorage() {
         catHeartChestXp.value = cleanAffinity.heartChestXp
         claimedLv10Reward.value = cleanAffinity.claimedLv10Reward
         claimedLv20Reward.value = cleanAffinity.claimedLv20Reward
+        claimedLv30Reward.value = cleanAffinity.claimedLv30Reward
       }
       if (Array.isArray(d.ownedAccessories)) {
         ownedAccessories.value = sanitizeOwnedAccessories(d.ownedAccessories)
@@ -3255,6 +3414,42 @@ export function useTwilightStorage() {
       }
       if (isValidCatBreedId(d.miniCatType) && ownedCats.value.includes(d.miniCatType)) {
         miniCatType.value = d.miniCatType
+      }
+      // Pulihkan 3 Cozy Cat Buddies (Mochi, Kuro, Latte)
+      const importedBuddiesObj = d.cozyBuddies as
+        | { owned?: unknown; active?: unknown }
+        | undefined
+      const importedOwnedBuddies = d.ownedBuddies ?? importedBuddiesObj?.owned
+      if (Array.isArray(importedOwnedBuddies)) {
+        ownedBuddies.value = sanitizeCozyBuddyList(importedOwnedBuddies)
+      }
+      const importedActiveBuddies = d.activeBuddies ?? importedBuddiesObj?.active
+      if (Array.isArray(importedActiveBuddies)) {
+        activeBuddies.value = sanitizeCozyBuddyList(importedActiveBuddies).filter(id =>
+          ownedBuddies.value.includes(id),
+        )
+      }
+      // Pulihkan kuota harian hadiah kartu kasih sayang (maks 5/hari)
+      const importedLoveCardsObj = d.dailyLoveCards as
+        | { date?: unknown; count?: unknown }
+        | undefined
+      const importedLoveDate =
+        (typeof d.dailyLoveCardDate === 'string' && d.dailyLoveCardDate) ||
+        (typeof importedLoveCardsObj?.date === 'string' && importedLoveCardsObj.date) ||
+        ''
+      const localTodayLove = getLocalTodayDate()
+      if (importedLoveDate === localTodayLove) {
+        dailyLoveCardDate.value = localTodayLove
+        dailyLoveCardCount.value = Math.max(
+          0,
+          Math.min(
+            MAX_DAILY_LOVE_CARDS,
+            Math.floor(Number(d.dailyLoveCardCount ?? importedLoveCardsObj?.count) || 0),
+          ),
+        )
+      } else {
+        dailyLoveCardDate.value = localTodayLove
+        dailyLoveCardCount.value = 0
       }
       if (typeof d.syncCatAccessories === 'boolean') {
         syncCatAccessories.value = d.syncCatAccessories
@@ -3543,9 +3738,10 @@ export function useTwilightStorage() {
   }
 
   /**
-   * Berikan hadiah Milestone Kasih Sayang Kucing Lv. 10 & Lv. 20 MAX (anti-klaim ganda via flag):
+   * Berikan hadiah Milestone Kasih Sayang Kucing Lv. 10, Lv. 20 & Lv. 30 MAX (anti-klaim ganda via flag):
    * - Lv. 10 (Sahabat Sejati): +20 🐟 + aksesori eksklusif 💖 Kalung Hati Bintang + bonus pasif +1 🐟/sesi
-   * - Lv. 20 (MAX ✨): +40 🐟 + aksesori legendaris ✨ Sayap Malaikat + gelar 👑 Soulmate MAX + bonus pasif +2 🐟/sesi + Peti Cinta
+   * - Lv. 20 (Soulmate): +40 🐟 + aksesori eksklusif ✨ Sayap Malaikat + bonus pasif +2 🐟/sesi
+   * - Lv. 30 (MAX ✨): +100 🐟 + aksesori eksklusif 🌠 Mahkota Bintang Celestial + gelar 👑 Celestial MAX + bonus pasif +3 🐟/sesi + Peti Cinta
    */
   function grantPendingCatAffinityMilestones(showCelebration = true): string[] {
     const messages: string[] = []
@@ -3561,14 +3757,25 @@ export function useTwilightStorage() {
       )
     }
 
-    if (catAffinityLevel.value >= CAT_AFFINITY_MAX_LEVEL && !claimedLv20Reward.value) {
+    if (catAffinityLevel.value >= CAT_AFFINITY_MILESTONE_LV20 && !claimedLv20Reward.value) {
       claimedLv20Reward.value = true
       treatCoins.value += CAT_AFFINITY_LV20_MILESTONE_FISH
       if (!ownedAccessories.value.includes('angel-wings')) {
         ownedAccessories.value = [...ownedAccessories.value, 'angel-wings']
       }
       messages.push(
-        '👑 MILESTONE Lv. 20 MAX ✨! Hadiah 2x: +40 🐟, ✨ Sayap Malaikat, gelar 👑 Soulmate MAX, bonus pasif +2 🐟/sesi & 💖 Peti Cinta terbuka!',
+        '✨ MILESTONE Lv. 20! Hadiah +40 🐟, aksesoris ✨ Sayap Malaikat terbuka, & bonus pasif +2 🐟/sesi! Target berikutnya: Lv. 30 MAX! 🌠',
+      )
+    }
+
+    if (catAffinityLevel.value >= CAT_AFFINITY_MAX_LEVEL && !claimedLv30Reward.value) {
+      claimedLv30Reward.value = true
+      treatCoins.value += CAT_AFFINITY_LV30_MILESTONE_FISH
+      if (!ownedAccessories.value.includes('starlight-crown')) {
+        ownedAccessories.value = [...ownedAccessories.value, 'starlight-crown']
+      }
+      messages.push(
+        '👑 MILESTONE Lv. 30 MAX ✨! Hadiah +100 🐟, 🌠 Mahkota Bintang Celestial terbuka, gelar 👑 Celestial MAX, bonus pasif +3 🐟/sesi & 💖 Peti Cinta!',
       )
     }
 
@@ -3657,7 +3864,8 @@ export function useTwilightStorage() {
 
     const isUnlockedByMilestone =
       (item.milestoneLevel === 10 && catAffinityLevel.value >= CAT_AFFINITY_MILESTONE_LV10) ||
-      (item.milestoneLevel === 20 && catAffinityLevel.value >= CAT_AFFINITY_MAX_LEVEL)
+      (item.milestoneLevel === 20 && catAffinityLevel.value >= CAT_AFFINITY_MILESTONE_LV20) ||
+      (item.milestoneLevel === 30 && catAffinityLevel.value >= CAT_AFFINITY_MAX_LEVEL)
 
     // Jika sudah dimiliki (atau sudah memenuhi milestone), cukup pasang atau lepas pada target aktif
     if (ownedAccessories.value.includes(accessoryId) || isUnlockedByMilestone) {
@@ -3691,7 +3899,7 @@ export function useTwilightStorage() {
       const reqLv = item.milestoneLevel ?? 10
       return {
         ok: false,
-        message: `🔒 Eksklusif Milestone Kasih Sayang Lv. ${reqLv}${reqLv === 20 ? ' MAX' : ''} (Saat ini Lv. ${catAffinityLevel.value})`,
+        message: `🔒 Eksklusif Milestone Kasih Sayang Lv. ${reqLv}${reqLv === 30 ? ' MAX' : ''} (Saat ini Lv. ${catAffinityLevel.value})`,
       }
     }
 
@@ -3773,6 +3981,86 @@ export function useTwilightStorage() {
     triggerMascotReaction('celebrate', `Yeay! ${item.name} resmi bergabung di sudut fokusmu! 🐱💖`, 4000)
     showMiniToast(`🐱 ${item.name} (${item.subtitle}) berhasil diadopsi & dipasang!`)
     return { ok: true, message: `${item.name} berhasil dibeli & dipasang ke ${slotLabel}!` }
+  }
+
+  /**
+   * Sinkronkan batas harian Hadiah Kartu Kasih Sayang (maks 5 kartu/hari).
+   * Otomatis mereset hitungan ke 0 saat pergantian tanggal lokal (YYYY-MM-DD).
+   */
+  function syncDailyLoveCardQuota() {
+    const todayStr = getLocalTodayDate()
+    if (dailyLoveCardDate.value !== todayStr) {
+      dailyLoveCardDate.value = todayStr
+      dailyLoveCardCount.value = 0
+    }
+  }
+
+  /**
+   * Toko Kucing Peramai Ruangan (3 Cozy Cat Buddies: Mochi, Kuro, Latte):
+   * - Jika belum dimiliki: beli dengan Koin Ikan 🐟 dan langsung tampilkan di sudut fokus.
+   * - Jika sudah dimiliki: toggle ON/OFF tampil di ruangan (tanpa mereset progres).
+   */
+  function buyOrToggleCozyBuddy(
+    buddyId: CozyBuddyId,
+  ): { ok: boolean; message: string; action?: 'bought' | 'shown' | 'hidden' } {
+    const item = COZY_CAT_BUDDIES.find(b => b.id === buddyId)
+    if (!item) return { ok: false, message: 'Kucing peramai tidak ditemukan.' }
+
+    // Jika sudah dimiliki -> toggle tampil / istirahat di ruangan
+    if (ownedBuddies.value.includes(buddyId)) {
+      const isCurrentlyActive = activeBuddies.value.includes(buddyId)
+      if (isCurrentlyActive) {
+        activeBuddies.value = activeBuddies.value.filter(id => id !== buddyId)
+        persistAll()
+        playPopTing()
+        return {
+          ok: true,
+          action: 'hidden',
+          message: `${item.name} istirahat sebentar di bantalnya~ 💤`,
+        }
+      }
+
+      activeBuddies.value = [...activeBuddies.value, buddyId]
+      persistAll()
+      playPopTing()
+      triggerMascotReaction(
+        'happy',
+        `Yeay! ${item.name} ikut duduk manis menemani fokusmu~ 🐾✨`,
+        3000,
+      )
+      return {
+        ok: true,
+        action: 'shown',
+        message: `${item.name} sekarang hadir di ruangan! 🐾`,
+      }
+    }
+
+    // Jika belum dimiliki -> cek saldo Koin Ikan 🐟
+    if (treatCoins.value < item.cost) {
+      return {
+        ok: false,
+        message: `Butuh ${item.cost} 🐟 (kurang ${item.cost - treatCoins.value} 🐟 lagi!)`,
+      }
+    }
+
+    treatCoins.value -= item.cost
+    ownedBuddies.value = [...ownedBuddies.value, buddyId]
+    if (!activeBuddies.value.includes(buddyId)) {
+      activeBuddies.value = [...activeBuddies.value, buddyId]
+    }
+    persistAll()
+    playVictoryMelody()
+    triggerMascotReaction(
+      'celebrate',
+      `Yeay! ${item.name} (${item.subtitle}) resmi bergabung & duduk di sudut fokusmu! 🐱💖`,
+      4200,
+    )
+    showMiniToast(`🐾 ${item.name} berhasil diadopsi & langsung hadir di ruangan!`)
+    return {
+      ok: true,
+      action: 'bought',
+      message: `${item.name} berhasil dibeli & tampil di ruangan! ✨`,
+    }
   }
 
   /**
@@ -4223,6 +4511,7 @@ export function useTwilightStorage() {
         catHeartChestXp.value = cleanAffinity.heartChestXp
         claimedLv10Reward.value = cleanAffinity.claimedLv10Reward
         claimedLv20Reward.value = cleanAffinity.claimedLv20Reward
+        claimedLv30Reward.value = cleanAffinity.claimedLv30Reward
       }
 
       // 8b. Muat Tema Latar Belakang Beranimasi (Cozy Themes) & 7-Day Full Goal Streak
@@ -4402,6 +4691,48 @@ export function useTwilightStorage() {
         fishingRewardCount.value = 0
         gameDailyClaimCount.value = 0
         gameDailyPlayCount.value = 0
+      }
+
+      // 17. Muat kuota harian Hadiah Kartu Kasih Sayang (maks 5/hari, reset otomatis tiap ganti tanggal)
+      const savedDailyLoveCards = localStorage.getItem(STORAGE_KEYS.DAILY_LOVE_CARDS)
+      if (savedDailyLoveCards) {
+        try {
+          const parsedLove = JSON.parse(savedDailyLoveCards) as { date?: unknown; count?: unknown }
+          if (parsedLove.date === todayStr) {
+            dailyLoveCardDate.value = todayStr
+            dailyLoveCardCount.value = Math.max(
+              0,
+              Math.min(MAX_DAILY_LOVE_CARDS, Math.floor(Number(parsedLove.count) || 0)),
+            )
+          } else {
+            dailyLoveCardDate.value = todayStr
+            dailyLoveCardCount.value = 0
+          }
+        } catch {
+          dailyLoveCardDate.value = todayStr
+          dailyLoveCardCount.value = 0
+        }
+      } else {
+        dailyLoveCardDate.value = todayStr
+        dailyLoveCardCount.value = 0
+      }
+
+      // 18. Muat koleksi & status aktif 3 Cozy Cat Buddies (Mochi, Kuro, Latte)
+      const savedCozyBuddies = localStorage.getItem(STORAGE_KEYS.COZY_BUDDIES)
+      if (savedCozyBuddies) {
+        try {
+          const parsedBuddies = JSON.parse(savedCozyBuddies) as {
+            owned?: unknown
+            active?: unknown
+          }
+          ownedBuddies.value = sanitizeCozyBuddyList(parsedBuddies.owned)
+          activeBuddies.value = sanitizeCozyBuddyList(parsedBuddies.active).filter(id =>
+            ownedBuddies.value.includes(id),
+          )
+        } catch {
+          ownedBuddies.value = []
+          activeBuddies.value = []
+        }
       }
 
       // Cek pergantian hari lokal (YYYY-MM-DD):
@@ -4858,19 +5189,20 @@ export function useTwilightStorage() {
     amount: number,
     source: 'pet' | 'click' | 'focus' | 'gacha' | 'game',
   ): boolean {
-    const cleanAmount = Math.max(0, Math.floor(amount))
+    // Setiap klik / pat-pat selalu memberikan maksimal +1 poin dengan jeda cooldown 2.5 detik (anti-spam)
+    const cleanAmount =
+      source === 'click' || source === 'pet'
+        ? 1
+        : Math.max(0, Math.floor(amount))
     if (cleanAmount <= 0) return false
 
     const now = Date.now()
-    if (source === 'click') {
-      if (now - lastCatClickXpAt < 2000) return false
-      lastCatClickXpAt = now
-    } else if (source === 'pet') {
-      if (now - lastCatPetXpAt < 1500) return false
-      lastCatPetXpAt = now
+    if (source === 'click' || source === 'pet') {
+      if (now - lastCatPatXpAt < CAT_AFFINITY_PAT_COOLDOWN_MS) return false
+      lastCatPatXpAt = now
     }
 
-    // Jika sudah Lv. 20 (MAX ✨): jalankan siklus 💖 Peti Cinta (0/10 -> +3 🐟 + Auto-Drop Kartu Rahasia!) tanpa batas!
+    // Jika sudah Lv. 30 (MAX ✨): jalankan siklus 💖 Peti Cinta -> +3 🐟 + Auto-Drop Kartu Rahasia (maks 5/hari)!
     if (catAffinityLevel.value >= CAT_AFFINITY_MAX_LEVEL) {
       catAffinityLevel.value = CAT_AFFINITY_MAX_LEVEL
       catAffinityXp.value = CAT_AFFINITY_HIGH_XP_PER_LEVEL
@@ -4885,20 +5217,38 @@ export function useTwilightStorage() {
       catHeartChestXp.value = nextChestXp
 
       if (chestsOpened > 0) {
+        syncDailyLoveCardQuota()
         const chestFish = chestsOpened * HEART_CHEST_FISH_REWARD
         treatCoins.value += chestFish
-        const chestMsg = `💖 Peti Cinta penuh! Hadiah +${chestFish} 🐟 & 💌 Kartu Rahasia Kucing!`
-        catAffinityLevelUpMessage.value = chestMsg
-        if (catAffinityToastTimer) clearTimeout(catAffinityToastTimer)
-        catAffinityToastTimer = setTimeout(() => {
-          catAffinityLevelUpMessage.value = ''
-        }, 4500)
-        playVictoryMelody()
-        showMiniToast(chestMsg)
-        triggerMascotReaction('celebrate', chestMsg, 4200)
-        // Hadiah kartu random otomatis saat Bar Kasih Sayang / Peti Cinta penuh!
-        if (source !== 'gacha') {
+        const canDropLoveCard = source !== 'gacha' && dailyLoveCardCount.value < MAX_DAILY_LOVE_CARDS
+
+        if (canDropLoveCard) {
+          dailyLoveCardCount.value += 1
+          dailyLoveCardDate.value = getLocalTodayDate()
+          const chestMsg = `💖 Peti Cinta penuh! Hadiah +${chestFish} 🐟 & 💌 Kartu Rahasia (${dailyLoveCardCount.value}/${MAX_DAILY_LOVE_CARDS})!`
+          catAffinityLevelUpMessage.value = chestMsg
+          if (catAffinityToastTimer) clearTimeout(catAffinityToastTimer)
+          catAffinityToastTimer = setTimeout(() => {
+            catAffinityLevelUpMessage.value = ''
+          }, 4500)
+          playVictoryMelody()
+          showMiniToast(chestMsg)
+          triggerMascotReaction('celebrate', chestMsg, 4200)
+          // Hadiah kartu random otomatis saat Bar Kasih Sayang / Peti Cinta penuh (maks 5/hari)!
           triggerAffinityRewardCardDrop()
+        } else {
+          const cappedMsg =
+            source !== 'gacha'
+              ? `💖 Peti Cinta penuh! +${chestFish} 🐟 • Batas kartu kasih sayang hari ini (${MAX_DAILY_LOVE_CARDS}/${MAX_DAILY_LOVE_CARDS}) sudah tercapai, kembali lagi besok~ 💖`
+              : `💖 Peti Cinta penuh! Hadiah +${chestFish} 🐟!`
+          catAffinityLevelUpMessage.value = cappedMsg
+          if (catAffinityToastTimer) clearTimeout(catAffinityToastTimer)
+          catAffinityToastTimer = setTimeout(() => {
+            catAffinityLevelUpMessage.value = ''
+          }, 5200)
+          playVictoryMelody()
+          showMiniToast(cappedMsg)
+          triggerMascotReaction('celebrate', cappedMsg, 4600)
         }
       }
 
@@ -4925,30 +5275,47 @@ export function useTwilightStorage() {
     }
 
     if (levelsGained > 0) {
+      syncDailyLoveCardQuota()
       const bonusFish = levelsGained * CAT_AFFINITY_LEVELUP_FISH_REWARD
       treatCoins.value += bonusFish
       const milestoneMsgs = grantPendingCatAffinityMilestones(true)
+      const canDropLoveCard = source !== 'gacha' && dailyLoveCardCount.value < MAX_DAILY_LOVE_CARDS
+
+      if (canDropLoveCard) {
+        dailyLoveCardCount.value += 1
+        dailyLoveCardDate.value = getLocalTodayDate()
+      }
 
       if (milestoneMsgs.length === 0) {
-        const celebrationMsg = `🎉 Level Up! Lv. ${nextLevel} — Hadiah +${bonusFish} 🐟 & 💌 Kartu Rahasia!`
+        const celebrationMsg = canDropLoveCard
+          ? `🎉 Level Up! Lv. ${nextLevel} — Hadiah +${bonusFish} 🐟 & 💌 Kartu Rahasia (${dailyLoveCardCount.value}/${MAX_DAILY_LOVE_CARDS})!`
+          : source !== 'gacha'
+            ? `🎉 Level Up! Lv. ${nextLevel} (+${bonusFish} 🐟) • Batas kartu kasih sayang hari ini (${MAX_DAILY_LOVE_CARDS}/${MAX_DAILY_LOVE_CARDS}) sudah tercapai, kembali lagi besok~ 💖`
+            : `🎉 Level Up! Lv. ${nextLevel} — Hadiah +${bonusFish} 🐟!`
         catAffinityLevelUpMessage.value = celebrationMsg
 
         if (catAffinityToastTimer) clearTimeout(catAffinityToastTimer)
         catAffinityToastTimer = setTimeout(() => {
           catAffinityLevelUpMessage.value = ''
-        }, 4200)
+        }, 4800)
 
         playVictoryMelody()
         showMiniToast(celebrationMsg)
         triggerMascotReaction(
           'celebrate',
-          `Yeay! Kita naik ke Lv. ${nextLevel}! Ini +${bonusFish} 🐟 & kartu rahasia buatmu~ 💖`,
-          4200,
+          canDropLoveCard
+            ? `Yeay! Kita naik ke Lv. ${nextLevel}! Ini +${bonusFish} 🐟 & kartu rahasia (${dailyLoveCardCount.value}/${MAX_DAILY_LOVE_CARDS}) buatmu~ 💖`
+            : `Yeay! Naik ke Lv. ${nextLevel} (+${bonusFish} 🐟)! Batas kartu kasih sayang hari ini (5/5) sudah tercapai, kembali lagi besok~ 💖`,
+          4600,
+        )
+      } else if (!canDropLoveCard && source !== 'gacha') {
+        showMiniToast(
+          `Batas kartu kasih sayang hari ini (${MAX_DAILY_LOVE_CARDS}/${MAX_DAILY_LOVE_CARDS}) sudah tercapai, kembali lagi besok~ 💖`,
         )
       }
 
-      // Hadiah kartu random otomatis saat Bar Kasih Sayang penuh / naik level!
-      if (source !== 'gacha') {
+      // Hadiah kartu random otomatis saat Bar Kasih Sayang penuh / naik level (maks 5/hari)!
+      if (canDropLoveCard) {
         triggerAffinityRewardCardDrop()
       }
     }
@@ -5148,6 +5515,7 @@ export function useTwilightStorage() {
     catHeartChestXp,
     claimedLv10Reward,
     claimedLv20Reward,
+    claimedLv30Reward,
     catAffinityPassiveFishBonus,
     neonCityCollectionProgress,
     catAffinityLevelUpMessage,
@@ -5213,6 +5581,10 @@ export function useTwilightStorage() {
     celebrationCount,
     activeReminder,
     miniToastMessage,
+    dailyLoveCardCount,
+    dailyLoveCardDate,
+    ownedBuddies,
+    activeBuddies,
 
     // Aksi
     setTheme,
@@ -5234,6 +5606,8 @@ export function useTwilightStorage() {
     toggleSyncCatAccessories,
     buyOrEquipAccessory,
     buyOrEquipCatBreed,
+    buyOrToggleCozyBuddy,
+    syncDailyLoveCardQuota,
     buyOrEquipCozyTheme,
     drawSecretCatCard,
     triggerAffinityRewardCardDrop,

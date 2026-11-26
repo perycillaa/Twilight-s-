@@ -611,6 +611,42 @@ function drawCatAccessory(
     ctx.arc(-26, -24, 4.5, 0, Math.PI * 2)
     ctx.arc(26, -24, 4.5, 0, Math.PI * 2)
     ctx.fill()
+  } else if (accessory === 'starlight-crown') {
+    ctx.strokeStyle = 'rgba(253, 224, 71, 0.35)'
+    ctx.lineWidth = 8
+    ctx.beginPath()
+    ctx.ellipse(0, -22, 48, 13, 0, 0, Math.PI * 2)
+    ctx.stroke()
+    ctx.strokeStyle = '#c4b5fd'
+    ctx.lineWidth = 3
+    ctx.beginPath()
+    ctx.ellipse(0, -22, 44, 11, 0, 0, Math.PI * 2)
+    ctx.stroke()
+
+    ctx.fillStyle = '#fef08a'
+    ctx.strokeStyle = '#ffffff'
+    ctx.lineWidth = 3
+    ctx.lineJoin = 'round'
+    ctx.beginPath()
+    ctx.moveTo(-36, 8)
+    ctx.lineTo(-28, -22)
+    ctx.lineTo(-12, -8)
+    ctx.lineTo(0, -34)
+    ctx.lineTo(12, -8)
+    ctx.lineTo(28, -22)
+    ctx.lineTo(36, 8)
+    ctx.closePath()
+    ctx.fill()
+    ctx.stroke()
+
+    ctx.fillStyle = '#67e8f9'
+    ctx.beginPath()
+    ctx.arc(0, -36, 6.2, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.fillStyle = '#e879f9'
+    ctx.beginPath()
+    ctx.arc(0, -10, 5.4, 0, Math.PI * 2)
+    ctx.fill()
   } else if (accessory === 'witch-hat') {
     ctx.fillStyle = '#4c1d95'
     ctx.strokeStyle = '#c4b5fd'
@@ -1234,7 +1270,7 @@ async function renderStudyCard() {
         label: 'KASIH SAYANG',
         value:
           catAffinityLevel.value >= CAT_AFFINITY_MAX_LEVEL
-            ? '👑 Soulmate MAX'
+            ? '👑 Celestial MAX'
             : `Lv. ${catAffinityLevel.value}`,
         icon: '💖',
       },

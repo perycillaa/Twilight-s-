@@ -939,6 +939,36 @@ onUnmounted(() => {
             <path d="M146 26 L147.4 29.4 L150.8 30.8 L147.4 32.2 L146 35.6 L144.6 32.2 L141.2 30.8 L144.6 29.4 Z" fill="#fbcfe8" />
           </g>
 
+          <!-- 7. 🌠 Mahkota Bintang Celestial / Celestial Halo (Eksklusif Milestone Lv. 30 MAX!) -->
+          <g v-else-if="equippedAccessory === 'starlight-crown'">
+            <!-- Halo cahaya bintang melayang lembut di belakang tiara -->
+            <ellipse cx="110" cy="31" rx="38" ry="11" stroke="#fde047" stroke-width="6.5" opacity="0.26" />
+            <ellipse cx="110" cy="31" rx="35" ry="9.2" stroke="#c4b5fd" stroke-width="2.4" stroke-dasharray="6 4" opacity="0.9" />
+            <ellipse cx="110" cy="31" rx="32" ry="7.8" stroke="#fef08a" stroke-width="2.2" />
+            <!-- Tiara Mahkota Bintang Celestial berkilau emas-aurora -->
+            <path
+              d="M82 54 L88 34 L100 45 L110 24 L120 45 L132 34 L138 54 Q110 61 82 54 Z"
+              fill="#fef08a"
+              stroke="#ffffff"
+              stroke-width="2"
+              stroke-linejoin="round"
+            />
+            <path d="M87 51 Q110 56 133 51" stroke="#f59e0b" stroke-width="2.2" stroke-linecap="round" opacity="0.85" />
+            <!-- Permata Bintang Tengah & Bulan Sabit Samping -->
+            <path
+              d="M110 31 L112.4 36.8 L118.2 39 L112.4 41.2 L110 47 L107.6 41.2 L101.8 39 L107.6 36.8 Z"
+              fill="#e879f9"
+              stroke="#ffffff"
+              stroke-width="1.2"
+            />
+            <circle cx="110" cy="22" r="3.8" fill="#67e8f9" stroke="#ffffff" stroke-width="1.2" />
+            <circle cx="88" cy="33" r="2.7" fill="#f9a8d4" stroke="#ffffff" stroke-width="1" />
+            <circle cx="132" cy="33" r="2.7" fill="#f9a8d4" stroke="#ffffff" stroke-width="1" />
+            <!-- Percikan bintang kecil mengorbit -->
+            <path d="M68 25 L69.8 29.2 L74 31 L69.8 32.8 L68 37 L66.2 32.8 L62 31 L66.2 29.2 Z" fill="#fef08a" />
+            <path d="M152 24 L153.6 27.6 L157.2 29.2 L153.6 30.8 L152 34.4 L150.4 30.8 L146.8 29.2 L150.4 27.6 Z" fill="#67e8f9" />
+          </g>
+
           <!-- Band Headphone Atas (mengikuti palet tema aktif + berkilau ekstra saat 🎧 Headphone Lo-Fi dipakai) -->
           <path
             d="M46 112 C46 58, 174 58, 174 112"

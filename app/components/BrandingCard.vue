@@ -3,8 +3,10 @@ import { computed, onMounted, onUnmounted, ref } from 'vue'
 import {
   CAT_AFFINITY_MAX_LEVEL,
   CAT_AFFINITY_MILESTONE_LV10,
+  CAT_AFFINITY_MILESTONE_LV20,
   HEART_CHEST_FISH_REWARD,
   HEART_CHEST_XP_GOAL,
+  MAX_DAILY_LOVE_CARDS,
   SECRET_CARD_GACHA_COST,
   SECRET_CAT_CARDS,
   getCatAffinityXpNeeded,
@@ -23,10 +25,12 @@ const {
   catHeartChestXp,
   catAffinityPassiveFishBonus,
   catAffinityLevelUpMessage,
+  dailyLoveCardCount,
   isZenMode,
   isStudyCardModalOpen,
   openSecretCardGacha,
   openSecretCardAlbum,
+  syncDailyLoveCardQuota,
 } = useTwilightStorage()
 
 // Tab mini ringkas di bagian bawah Kolom Kiri agar tinggi 3 kolom sejajar rapi
@@ -60,6 +64,7 @@ function updateSkyClock() {
   const m = now.getMinutes()
   currentHour.value = h
   currentClockHHMM.value = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
+  syncDailyLoveCardQuota()
 }
 
 const skyPhaseInfo = computed<{ icon: string; greeting: string }>(() => {
@@ -92,7 +97,10 @@ const nextMilestoneHint = computed<string>(() => {
   if (catAffinityLevel.value < CAT_AFFINITY_MILESTONE_LV10) {
     return 'Lv. 10: +20🐟 & Kalung'
   }
-  return 'Lv. 20: +40🐟 & Sayap'
+  if (catAffinityLevel.value < CAT_AFFINITY_MILESTONE_LV20) {
+    return 'Lv. 20: +40🐟 & Sayap'
+  }
+  return 'Lv. 30 MAX: +100🐟 & Mahkota Bintang'
 })
 
 onMounted(() => {
@@ -215,7 +223,7 @@ onUnmounted(() => {
               v-if="isMaxAffinity"
               class="rounded-full border border-amber-200/50 bg-gradient-to-r from-amber-300/25 via-pink-300/25 to-purple-300/25 px-2 py-0.5 text-[10px] font-bold text-amber-100"
             >
-              Lv. 20 MAX ✨ ({{ catHeartChestXp }}/{{ HEART_CHEST_XP_GOAL }})
+              Lv. 30 MAX ✨ ({{ catHeartChestXp }}/{{ HEART_CHEST_XP_GOAL }})
             </span>
             <span
               v-else
@@ -243,7 +251,7 @@ onUnmounted(() => {
           v-if="isMaxAffinity"
           class="mt-1 flex items-center justify-between text-[10px] font-semibold text-purple-200/85"
         >
-          <span>👑 Soulmate MAX • Elus / fokus isi peti</span>
+          <span>👑 Celestial MAX • Elus / fokus isi peti</span>
           <span class="text-amber-200/95">Penuh = +{{ HEART_CHEST_FISH_REWARD }} 🐟</span>
         </p>
         <p
@@ -253,10 +261,34 @@ onUnmounted(() => {
           <span>{{ nextMilestoneHint }}</span>
           <span class="text-amber-200/95">Naik Lv = +2 🐟</span>
         </p>
+
+        <!-- Indikator Batas Harian Hadiah Kartu Kasih Sayang (Maks 5/hari) -->
+        <div
+          class="mt-1.5 flex items-center justify-between gap-1.5 border-t border-white/10 pt-1.5 text-[10px] font-semibold"
+        >
+          <span class="truncate text-pink-100/90">
+            💌 Hadiah Kartu Hari Ini
+          </span>
+          <span
+            class="shrink-0 rounded-full border px-2 py-[1px] text-[9.5px] font-bold"
+            :class="
+              dailyLoveCardCount >= MAX_DAILY_LOVE_CARDS
+                ? 'border-amber-200/50 bg-amber-300/20 text-amber-100'
+                : 'border-pink-200/35 bg-pink-300/15 text-pink-100'
+            "
+            :title="
+              dailyLoveCardCount >= MAX_DAILY_LOVE_CARDS
+                ? 'Batas kartu kasih sayang hari ini (5/5) sudah tercapai, kembali lagi besok~ 💖'
+                : 'Setiap bar kasih sayang penuh berhadiah 1 kartu rahasia (maksimal 5 kartu per hari)'
+            "
+          >
+            {{ dailyLoveCardCount }}/{{ MAX_DAILY_LOVE_CARDS }}{{ dailyLoveCardCount >= MAX_DAILY_LOVE_CARDS ? ' • Penuh' : '' }}
+          </span>
+        </div>
       </div>
     </div>
 
-    <!-- 2. Karakter Pendamping Interaktif (MascotCompanion) + Gelembung Perayaan Level Up! -->
+    <!-- 2. Karakter Pendamping Interaktif (MascotCompanion) + Kucing Peramai (CozyCatBuddies) -->
     <div class="relative z-10 w-full flex flex-col items-center">
       <Transition
         enter-active-class="transition duration-300 ease-out"
@@ -275,6 +307,7 @@ onUnmounted(() => {
         </div>
       </Transition>
       <MascotCompanion />
+      <CozyCatBuddies />
     </div>
 
     <!-- 3. Statistik Ringkas + Kartu Bertab Mini (ikut meredup tanpa blur saat Starlight Focus ✨ aktif agar teks tetap tajam) -->

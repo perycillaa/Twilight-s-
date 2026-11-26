@@ -1900,6 +1900,35 @@ function drawGameCatAccessory(ctx: CanvasRenderingContext2D, accessory: MascotAc
     ctx.beginPath()
     ctx.arc(0, -67, 2.5, 0, Math.PI * 2)
     ctx.fill()
+  } else if (accessory === 'starlight-crown') {
+    ctx.strokeStyle = 'rgba(196, 181, 253, 0.85)'
+    ctx.lineWidth = 2
+    ctx.beginPath()
+    ctx.ellipse(0, -65, 19, 5, 0, 0, Math.PI * 2)
+    ctx.stroke()
+    ctx.fillStyle = '#fef08a'
+    ctx.strokeStyle = '#ffffff'
+    ctx.lineWidth = 1.4
+    ctx.lineJoin = 'round'
+    ctx.beginPath()
+    ctx.moveTo(-14, -53)
+    ctx.lineTo(-11, -65)
+    ctx.lineTo(-5, -59)
+    ctx.lineTo(0, -70)
+    ctx.lineTo(5, -59)
+    ctx.lineTo(11, -65)
+    ctx.lineTo(14, -53)
+    ctx.closePath()
+    ctx.fill()
+    ctx.stroke()
+    ctx.fillStyle = '#67e8f9'
+    ctx.beginPath()
+    ctx.arc(0, -71, 2.6, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.fillStyle = '#e879f9'
+    ctx.beginPath()
+    ctx.arc(0, -60, 2.2, 0, Math.PI * 2)
+    ctx.fill()
   } else if (accessory === 'witch-hat') {
     ctx.fillStyle = '#4c1d95'
     ctx.strokeStyle = '#c4b5fd'

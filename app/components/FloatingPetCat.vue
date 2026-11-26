@@ -1028,6 +1028,23 @@ onUnmounted(() => {
           <path d="M34 10 L35 12.2 L37.2 13.2 L35 14.2 L34 16.4 L33 14.2 L30.8 13.2 L33 12.2 Z" fill="#fef08a" />
         </g>
 
+        <!-- 7b. 🌠 Mahkota Bintang Celestial (Eksklusif Milestone Lv. 30 MAX!) -->
+        <g v-else-if="equippedAccessory === 'starlight-crown'">
+          <ellipse cx="55" cy="13" rx="22" ry="6" stroke="#fde047" stroke-width="3.5" opacity="0.28" />
+          <ellipse cx="55" cy="13" rx="19" ry="5" stroke="#c4b5fd" stroke-width="1.6" stroke-dasharray="4 3" />
+          <path
+            d="M39 28 L43 15 L50 22 L55 10 L60 22 L67 15 L71 28 Q55 32 39 28 Z"
+            fill="#fef08a"
+            stroke="#ffffff"
+            stroke-width="1.5"
+            stroke-linejoin="round"
+          />
+          <circle cx="55" cy="9.5" r="2.5" fill="#67e8f9" stroke="#ffffff" stroke-width="0.9" />
+          <circle cx="55" cy="21" r="2.2" fill="#e879f9" stroke="#ffffff" stroke-width="0.8" />
+          <path d="M32 10 L33 12 L35 13 L33 14 L32 16 L31 14 L29 13 L31 12 Z" fill="#fef08a" />
+          <path d="M78 10 L79 12 L81 13 L79 14 L78 16 L77 14 L75 13 L77 12 Z" fill="#67e8f9" />
+        </g>
+
         <!-- 8. 🎧 Headphone Lo-Fi Pastel (Band & Earcup di telinga Kucing Mini!) -->
         <g v-else-if="equippedAccessory === 'lofi-headphones'">
           <path d="M25 48 C25 18, 85 18, 85 48" stroke="#c084fc" stroke-width="5.5" stroke-linecap="round" />
