@@ -939,7 +939,246 @@ export const SECRET_CAT_CARDS: SecretCatCard[] = [
     emoji: '👑',
     text: 'Di rumah mungkin aku yang jadi majikan, tapi di hati ini kamu pemilik satu-satunya. Semangat terus ya!',
   },
+  // Tambahan Kategori 1: 💖 Penyemangat (7 Kartu Baru: #37–#43, Total 16)
+  {
+    id: 'card-37',
+    number: 37,
+    name: 'Sembilan Kali Bangkit',
+    category: 'encourage',
+    emoji: '🐾',
+    text: 'Kucing selalu mendarat dengan keempat kakinya. Kalau rencanamu sempat meleset hari ini, atur napas dan lompat lagi lebih tinggi, meow~',
+  },
+  {
+    id: 'card-38',
+    number: 38,
+    name: 'Sabar Menunggu Ikan',
+    category: 'encourage',
+    emoji: '🎣',
+    text: 'Lihat kucing yang duduk tenang di depan kolam—kesabaran dan fokus kecilmu hari ini pasti membuahkan hasil besar!',
+  },
+  {
+    id: 'card-39',
+    number: 39,
+    name: 'Peregangan Dulu',
+    category: 'encourage',
+    emoji: '🐱',
+    text: 'Jangan lupa meregangkan punggung seperti kucing bangun tidur ya! Tubuh yang rileks bikin pikiranmu makin jernih.',
+  },
+  {
+    id: 'card-40',
+    number: 40,
+    name: 'Raja di Teritori Sendiri',
+    category: 'encourage',
+    emoji: '👑',
+    text: 'Setiap kucing adalah penguasa di ruangannya. Di meja belajarmu hari ini, kamulah kapten yang memegang kendali penuh!',
+  },
+  {
+    id: 'card-41',
+    number: 41,
+    name: 'Satu Sesi Lagi',
+    category: 'encourage',
+    emoji: '⏳',
+    text: 'Cukup selesaikan satu sesi timer ini dulu. Tidak perlu memikirkan semuanya sekaligus, satu tapak kecil saja sudah hebat, purr~',
+  },
+  {
+    id: 'card-42',
+    number: 42,
+    name: 'Hangat di Bawah Mentari',
+    category: 'encourage',
+    emoji: '☀️',
+    text: 'Seperti kucing yang berjemur di dekat jendela, izinkan dirimu merasa bangga atas setiap usaha kecil yang sudah kamu lakukan.',
+  },
+  {
+    id: 'card-43',
+    number: 43,
+    name: 'Misi Selesai dengan Elegan',
+    category: 'encourage',
+    emoji: '✨',
+    text: 'Kucing tidak pernah panik saat mengejar target—tetap tenang, nikmati prosesnya, dan tuntaskan tugasmu dengan elegan!',
+  },
+  // Tambahan Kategori 2: 🐾 Fakta Kucing (7 Kartu Baru: #44–#50, Total 16)
+  {
+    id: 'card-44',
+    number: 44,
+    name: 'Telinga Radar 180 Derajat',
+    category: 'fact',
+    emoji: '📡',
+    text: 'Fakta Kucing: Kucing memiliki 32 otot di setiap telinganya sehingga mampu memutar daun telinga hingga 180 derajat ke arah sumber suara.',
+  },
+  {
+    id: 'card-45',
+    number: 45,
+    name: 'Pintu Rahasia di Langit-Langit Mulut',
+    category: 'fact',
+    emoji: '😮',
+    text: 'Fakta Kucing: Kucing punya organ Jacobson di langit-langit mulutnya—itulah sebabnya mulut mereka suka terbuka sedikit saat mencium bau unik!',
+  },
+  {
+    id: 'card-46',
+    number: 46,
+    name: 'Tulang Selangka Fleksibel',
+    category: 'fact',
+    emoji: '📦',
+    text: 'Fakta Kucing: Kucing tidak memiliki tulang selangka yang kaku, sehingga tubuhnya bisa masuk ke celah sempit selebar kepalanya.',
+  },
+  {
+    id: 'card-47',
+    number: 47,
+    name: 'Berjalan dengan Ujung Jari',
+    category: 'fact',
+    emoji: '🤫',
+    text: 'Fakta Kucing: Kucing termasuk hewan digitigrade—artinya mereka berjalan menggunakan ujung jari kaki sehingga langkahnya nyaris tanpa suara.',
+  },
+  {
+    id: 'card-48',
+    number: 48,
+    name: 'Keringat di Bantalan Kaki',
+    category: 'fact',
+    emoji: '🐾',
+    text: 'Fakta Kucing: Kucing tidak berkeringat lewat bulu, melainkan lewat kelenjar keringat kecil di bantalan telapak kakinya (toe beans)!',
+  },
+  {
+    id: 'card-49',
+    number: 49,
+    name: 'Kedipan Mata Cinta',
+    category: 'fact',
+    emoji: '😽',
+    text: "Fakta Kucing: Ketika kucing menatapmu lalu berkedip perlahan (slow blink), itu adalah cara mereka bilang 'aku percaya dan sayang padamu'.",
+  },
+  {
+    id: 'card-50',
+    number: 50,
+    name: 'Pelompat Kelas Olimpiade',
+    category: 'fact',
+    emoji: '🏅',
+    text: 'Fakta Kucing: Kucing rumahan bisa melompat vertikal hingga 5 sampai 6 kali tinggi tubuhnya hanya dalam satu kali tolakan!',
+  },
+  // Tambahan Kategori 3: 🤣 Jokes Bapak Kucing (7 Kartu Baru: #51–#57, Total 16)
+  {
+    id: 'card-51',
+    number: 51,
+    name: 'Kucing yang Jadi Musisi',
+    category: 'dad-joke',
+    emoji: '🎶',
+    text: 'Kucing apa yang jago main alat musik tiup? Kucing-krong sama seruling bambu... eh, itu keroncong ya? Meow~',
+  },
+  {
+    id: 'card-52',
+    number: 52,
+    name: 'Kucing yang Suka Belanja',
+    category: 'dad-joke',
+    emoji: '🛒',
+    text: 'Kucing apa yang paling rajin ke pasar pagi-pagi? Kucing-tawar harga ikan tongkol sampai diskon 50%!',
+  },
+  {
+    id: 'card-53',
+    number: 53,
+    name: 'Kucing yang Masuk Angin',
+    category: 'dad-joke',
+    emoji: '🌀',
+    text: 'Kenapa kucing kalau tidur badannya selalu melingkar? Soalnya kalau lurus memanjang nanti dikira lontong sayur!',
+  },
+  {
+    id: 'card-54',
+    number: 54,
+    name: 'Kucing yang Suka Fotografi',
+    category: 'dad-joke',
+    emoji: '📸',
+    text: 'Kucing apa yang paling jago motret? Kucing-jepret (cekrek)! Sekali pose langsung estetik!',
+  },
+  {
+    id: 'card-55',
+    number: 55,
+    name: 'Kucing yang Bikin Terharu',
+    category: 'dad-joke',
+    emoji: '🥹',
+    text: 'Kucing apa yang bikin mata berkaca-kaca? Kucing-tai kamu apa adanya... eaaak, bapak-bapak anabul lewat dulu!',
+  },
+  {
+    id: 'card-56',
+    number: 56,
+    name: 'Kucing yang Suka Olahraga',
+    category: 'dad-joke',
+    emoji: '🏃',
+    text: 'Kucing apa yang napasnya paling kuat lari maraton? Kucing-lari dari kenyataan tugas yang numpuk!',
+  },
+  {
+    id: 'card-57',
+    number: 57,
+    name: 'Kucing yang Jadi Detektif',
+    category: 'dad-joke',
+    emoji: '🕵️',
+    text: 'Kucing apa yang paling jago memecahkan misteri? Kucing-curigai camilan di meja makan yang tiba-tiba hilang!',
+  },
+  // Tambahan Kategori 4: 💘 Gombalan Kucing (7 Kartu Baru: #58–#64, Total 16)
+  {
+    id: 'card-58',
+    number: 58,
+    name: 'Kedipan Pelan untukmu',
+    category: 'flirt',
+    emoji: '😻',
+    text: 'Kalau aku berkedip pelan setiap kamu menatap layar, itu tandanya aku nyaman banget ada di dekatmu hari ini, meow~',
+  },
+  {
+    id: 'card-59',
+    number: 59,
+    name: 'Hangat di Dekatmu',
+    category: 'flirt',
+    emoji: '🧡',
+    text: 'Kucing memang suka mencari sudut ruangan paling hangat, dan buatku tempat terhangat itu selalu di sebelahmu!',
+  },
+  {
+    id: 'card-60',
+    number: 60,
+    name: 'Buntut Berbentuk Tanda Tanya',
+    category: 'flirt',
+    emoji: '❓',
+    text: 'Setiap kali kamu buka web ini, ekorku langsung tegak melengkung kayak tanda tanya—penasaran mau lihat senyum semangatmu!',
+  },
+  {
+    id: 'card-61',
+    number: 61,
+    name: 'Kalah Sama Kamu',
+    category: 'flirt',
+    emoji: '🐟',
+    text: 'Disuruh milih ikan salmon segar atau nemenin kamu nugas sampai malam? Tanpa mikir dua kali pasti aku pilih nemenin kamu, purr~',
+  },
+  {
+    id: 'card-62',
+    number: 62,
+    name: 'Jejak Kaki di Hati',
+    category: 'flirt',
+    emoji: '🐾',
+    text: 'Maaf ya kalau tapak kaki kecilku ninggalin jejak di layar, soalnya jejak senyummu juga udah telanjur membekas di hatiku!',
+  },
+  {
+    id: 'card-63',
+    number: 63,
+    name: 'Elusan Favorit',
+    category: 'flirt',
+    emoji: '💖',
+    text: 'Dari semua sudut di layar ini, bagian favoritku cuma satu: saat kursor kamu mampir dan ngelus kepalaku sebentar!',
+  },
+  {
+    id: 'card-64',
+    number: 64,
+    name: 'Teman Seumur Hidup',
+    category: 'flirt',
+    emoji: '🌟',
+    text: 'Semoga sesi fokus kita hari ini berjalan lancar ya, karena aku siap nemenin setiap target dan impian besarmu satu per satu!',
+  },
 ]
+
+/** Pengurutan stabil daftar target: belum selesai di atas, sudah dicentang di bawah */
+function sortHabitsByCompletion(list: HabitItem[]): HabitItem[] {
+  const active: HabitItem[] = []
+  const done: HabitItem[] = []
+  for (const item of list) {
+    if (item.completed) done.push(item)
+    else active.push(item)
+  }
+  return [...active, ...done]
+}
 
 const VALID_SECRET_CARD_IDS = new Set<string>(SECRET_CAT_CARDS.map(c => c.id))
 
@@ -1949,9 +2188,11 @@ export function useTwilightStorage() {
       applyThemeToDocument(theme.value, isDarkTheme.value)
     }
     if (Array.isArray(d.habits)) {
-      habits.value = d.habits
-        .filter((item): item is HabitItem => Boolean(item) && typeof item === 'object' && typeof (item as HabitItem).title === 'string')
-        .map((item, idx) => normalizeHabitItem(item, `cloud-h-${idx}`))
+      habits.value = sortHabitsByCompletion(
+        d.habits
+          .filter((item): item is HabitItem => Boolean(item) && typeof item === 'object' && typeof (item as HabitItem).title === 'string')
+          .map((item, idx) => normalizeHabitItem(item, `cloud-h-${idx}`)),
+      )
       hadLocalHabits.value = true
     }
     const cloudTimerDurations = d.twilights_timer_durations ?? d.customTimerDurations
@@ -2943,14 +3184,16 @@ export function useTwilightStorage() {
         applyThemeToDocument(d.theme, isDarkTheme.value)
       }
       if (Array.isArray(d.habits)) {
-        habits.value = d.habits
-          .filter(
-            (item): item is HabitItem =>
-              Boolean(item) &&
-              typeof item === 'object' &&
-              typeof (item as HabitItem).title === 'string',
-          )
-          .map((item, idx) => normalizeHabitItem(item, `restored-${Date.now()}-${idx}`))
+        habits.value = sortHabitsByCompletion(
+          d.habits
+            .filter(
+              (item): item is HabitItem =>
+                Boolean(item) &&
+                typeof item === 'object' &&
+                typeof (item as HabitItem).title === 'string',
+            )
+            .map((item, idx) => normalizeHabitItem(item, `restored-${Date.now()}-${idx}`)),
+        )
       }
       if (Array.isArray(d.weeklyProgress) && d.weeklyProgress.length === 7) {
         weeklyProgress.value = d.weeklyProgress.map(n =>
@@ -3815,9 +4058,11 @@ export function useTwilightStorage() {
         try {
           const parsedHabits = JSON.parse(effectiveRawHabits)
           habits.value = Array.isArray(parsedHabits)
-            ? parsedHabits
-                .filter((item): item is Partial<HabitItem> => Boolean(item) && typeof item === 'object')
-                .map((item, idx) => normalizeHabitItem(item, `habit-local-${idx}`))
+            ? sortHabitsByCompletion(
+                parsedHabits
+                  .filter((item): item is Partial<HabitItem> => Boolean(item) && typeof item === 'object')
+                  .map((item, idx) => normalizeHabitItem(item, `habit-local-${idx}`)),
+              )
                 // Bersihkan target 'once' yang mungkin sempat selesai tepat sebelum halaman di-refresh
                 .filter(item => !(item.type === 'once' && item.completed))
             : []
@@ -4247,7 +4492,7 @@ export function useTwilightStorage() {
       reminderTime: cleanTime,
       alarmMode: safeAlarmMode,
     }
-    habits.value = [...habits.value, newHabit]
+    habits.value = sortHabitsByCompletion([...habits.value, newHabit])
     syncTodayProgress()
     // Jika pengguna menyetel jam pengingat & izin notifikasi masih 'default', tawarkan izin otomatis
     if (cleanTime) {
@@ -4289,7 +4534,7 @@ export function useTwilightStorage() {
 
     const nextList = [...habits.value]
     nextList.splice(index + 1, 0, cloned)
-    habits.value = nextList
+    habits.value = sortHabitsByCompletion(nextList)
 
     syncTodayProgress()
     runDbCrud(() =>
@@ -4394,8 +4639,10 @@ export function useTwilightStorage() {
     const becameCompleted = nextCompletedState
     const targetType: HabitType = existing.type
 
-    habits.value = habits.value.map(item =>
-      item.id === id ? { ...item, completed: nextCompletedState } : item,
+    habits.value = sortHabitsByCompletion(
+      habits.value.map(item =>
+        item.id === id ? { ...item, completed: nextCompletedState } : item,
+      ),
     )
 
     // Jika tugas yang sedang mengingatkan baru saja dicentang, hentikan alarm, kedip tab & tutup banner

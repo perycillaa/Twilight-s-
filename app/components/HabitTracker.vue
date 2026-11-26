@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useBackgroundResilience } from '~/composables/useBackgroundResilience'
 import { useSoundEffects } from '~/composables/useSoundEffects'
 import {
@@ -217,6 +217,12 @@ function triggerNotebookCheckJoy() {
     notebookCatSparkle.value = ''
   }, 1200)
 }
+
+// Daftar target terurut otomatis: belum selesai di atas, sudah dicentang di bawah (stabil)
+const sortedHabits = computed(() => [
+  ...habits.value.filter(item => !item.completed),
+  ...habits.value.filter(item => item.completed),
+])
 
 // Input teks target baru + jam pengingat opsional + tipe target + mode dering alarm
 const newHabitTitle = ref('')
@@ -715,18 +721,23 @@ onUnmounted(() => {
       </p>
     </div>
 
-    <!-- Daftar Target Kebiasaan -->
-    <ul class="mt-3.5 flex max-h-56 flex-col gap-2 overflow-y-auto pr-1">
+    <!-- Daftar Target Kebiasaan (Auto-Sort mulus: belum selesai di atas, tercentang di bawah) -->
+    <TransitionGroup
+      name="habit-sort"
+      tag="ul"
+      class="mt-3.5 flex max-h-56 flex-col gap-2 overflow-y-auto pr-1"
+    >
       <!-- Pesan Motivasi Ramah Saat Daftar Masih Kosong -->
       <li
-        v-if="habits.length === 0"
+        v-if="sortedHabits.length === 0"
+        key="habit-empty-state"
         class="rounded-2xl border border-dashed border-pink-200/30 bg-white/5 px-4 py-6 text-center text-xs font-semibold leading-relaxed text-pink-100/90"
       >
         🐾 Belum ada target hari ini! Yuk tulis target pertamamu di bawah dan mulai fokus bareng kucing~
       </li>
 
       <li
-        v-for="habit in habits"
+        v-for="habit in sortedHabits"
         :key="habit.id"
         class="group relative flex flex-col gap-2 rounded-2xl border px-3 py-2.5 transition-all duration-300"
         :class="
@@ -919,7 +930,7 @@ onUnmounted(() => {
           </button>
         </div>
       </li>
-    </ul>
+    </TransitionGroup>
 
     <!-- Form Tambah Target + Input Waktu Pengingat Opsional -->
     <form class="mt-4 flex flex-col gap-2" @submit.prevent="handleAddHabit">
@@ -1050,3 +1061,9 @@ onUnmounted(() => {
     </form>
   </section>
 </template>
+
+<style scoped>
+.habit-sort-move {
+  transition: transform 0.34s cubic-bezier(0.22, 1, 0.36, 1);
+}
+</style>
