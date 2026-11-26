@@ -142,21 +142,26 @@ onUnmounted(() => {
         <span class="cozy-divider-right h-[1.5px] w-10 rounded-full bg-gradient-to-l from-transparent to-pink-300/70" />
       </div>
 
-      <!-- Daily Spark Quote (klik untuk shuffle) -->
-      <button
-        type="button"
-        title="Klik untuk ganti kutipan inspiratif!"
-        class="btn-bouncy mt-2.5 w-full cursor-pointer rounded-2xl border border-white/15 bg-white/10 px-3 py-2 text-left transition hover:border-pink-200/40 hover:bg-white/15"
-        @click="shuffleQuote"
-      >
-        <div class="mb-0.5 flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-pink-200/85">
-          <span>✨ Daily Spark Quote</span>
-          <span class="rounded-full bg-white/10 px-2 py-0.5 text-[9px]">↻ Shuffle</span>
+      <!-- Daily Spark Quote (klik untuk shuffle) + Perintilan Kucing #7 mengintip di sudut atas kanan -->
+      <div class="relative mt-3">
+        <div class="pointer-events-auto absolute -top-[18px] right-2.5 z-20">
+          <MiniCatOrnament pose="hang" :voice-index="6" size-class="h-6 w-9" />
         </div>
-        <p class="text-xs font-semibold leading-snug text-pink-50">
-          "{{ currentQuote }}"
-        </p>
-      </button>
+        <button
+          type="button"
+          title="Klik untuk ganti kutipan inspiratif!"
+          class="btn-bouncy w-full cursor-pointer rounded-2xl border border-white/15 bg-white/10 px-3 py-2 text-left transition hover:border-pink-200/40 hover:bg-white/15"
+          @click="shuffleQuote"
+        >
+          <div class="mb-0.5 flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-pink-200/85">
+            <span>✨ Daily Spark Quote</span>
+            <span class="rounded-full bg-white/10 px-2 py-0.5 text-[9px]">↻ Shuffle</span>
+          </div>
+          <p class="text-xs font-semibold leading-snug text-pink-50">
+            "{{ currentQuote }}"
+          </p>
+        </button>
+      </div>
 
       <!-- GACHA KARTU "💌 PESAN RAHASIA KUCING" (2 🐟) & ALBUM KOLEKSI (X/18) -->
       <div class="mt-2 grid grid-cols-1 gap-1.5 sm:grid-cols-12">
@@ -307,7 +312,8 @@ onUnmounted(() => {
         </div>
       </Transition>
       <MascotCompanion />
-      <CozyCatBuddies />
+      <!-- Kucing Teman Slot 1 (Mochi): Duduk nyaman di sudut bawah kotak Kucing Utama -->
+      <CozyCatBuddies slot="mochi" placement="inline" />
     </div>
 
     <!-- 3. Statistik Ringkas + Kartu Bertab Mini (ikut meredup tanpa blur saat Starlight Focus ✨ aktif agar teks tetap tajam) -->
@@ -387,6 +393,11 @@ onUnmounted(() => {
         <!-- Isi Tab Aktif -->
         <QuickNotes v-if="activeLeftTab === 'notes'" />
         <TreatShop v-else />
+      </div>
+
+      <!-- Perintilan Kucing #8: Peregangan santai di pojok bawah kanan panel kiri -->
+      <div class="-mt-1 flex justify-end pr-1">
+        <MiniCatOrnament pose="stretch" :voice-index="7" size-class="h-6 w-10" />
       </div>
     </div>
   </aside>

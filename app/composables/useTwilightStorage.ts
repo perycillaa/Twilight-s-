@@ -639,25 +639,27 @@ export const COZY_CAT_BUDDIES: CozyCatBuddyItem[] = [
     name: 'Mochi',
     subtitle: 'Scottish Fold Abu-Biru',
     cost: 45,
-    description: 'Scottish Fold abu-abu kebiruan bertelinga lipat yang suka meringkuk & kejar bintang ✨',
-    focusMoodText: 'Meringkuk tenang dengan telinga lipat sambil jaga fokusmu~ 💤',
+    description: 'Sudut Kucing Utama • Scottish Fold abu-abu kebiruan bertelinga lipat yang manja 💕',
+    focusMoodText: 'Meringkuk nyaman di sudut kucing utama sambil kirim pelukan hangat~ 💕',
     speeches: [
-      'Mochi lagi kejar kilau bintang kecil~ Semangat fokusnya ya! 🐾✨',
-      'Mew~ Telinga lipatku ikut mendengarkan alunan fokusmu!',
-      'Kalau bahu mulai pegal, tarik napas sebentar bareng Mochi yuk~ 💙',
+      'Prr~ Di sini nyaman banget bareng kamu, jangan lupa sayang dirimu sendiri ya! 💕🐾',
+      'Mew~ Telinga lipatku langsung senang tiap kamu mampir menyapa~ 💖',
+      'Kalau bahu mulai pegal, tarik napas pelan & rebahan sebentar bareng aku yuk~ 🐾',
+      'Kamu berharga dan udah berusaha keras hari ini, peluk hangat buatmu! 💕',
     ],
   },
   {
     id: 'kuro',
     name: 'Kuro',
-    subtitle: 'Havana Espresso & Emas',
+    subtitle: 'Kucing Hitam Penjaga Timer',
     cost: 55,
-    description: 'Kucing cokelat espresso hangat bermata zamrud & lonceng emas yang suka membaca 📖',
-    focusMoodText: 'Membaca buku kecil dengan tenang di sampingmu~ 📖',
+    description: 'Sudut Pomodoro Timer • Kucing hitam berlonceng emas yang setia menjaga waktu fokus ⏳',
+    focusMoodText: 'Mengintip timer di sampingmu—tetap tenang & fokus sampai bel berbunyi! ⏳🔥',
     speeches: [
-      'Kuro ikut baca buku bareng kamu ya... tenang & fokus~ 📖🔔',
-      'Lonceng emasku berdenting merayakan progres hebatmu hari ini! ✨',
-      'Pelan tapi pasti, Kuro selalu menemani sampai selesai~ ☕',
+      'Timer-nya aku jagain dari sini! Ayo tetap fokus sampai waktu selesai ya~ ⏳🔥',
+      'Tinggal sedikit lagi! Satu tarikan fokus lagi menuju istirahat yang manis~ ⏳✨',
+      'Lonceng emasku siap berdenting merayakan sesi fokusmu kali ini! 🔥🔔',
+      'Jangan pindah tab dulu ya~ Aku temani dari tepi timer sampai tuntas! ⏳🐈‍⬛',
     ],
   },
   {
@@ -665,15 +667,37 @@ export const COZY_CAT_BUDDIES: CozyCatBuddyItem[] = [
     name: 'Latte',
     subtitle: 'Tabby Karamel-Madu',
     cost: 65,
-    description: 'Kucing tabby karamel-madu lembut bergaris manis & bunga kecil yang ceria 💖',
-    focusMoodText: 'Mendengkur pelan & kirim semangat manis hangat~ 🍯',
+    description: 'Sudut Grafik Progres • Tabby karamel-madu ceria yang menyemangati target harianmu 🌟',
+    focusMoodText: 'Mengamati grafik progresmu pelan-pelan—setiap centang bikin bangga! 📈✨',
     speeches: [
-      'Latte senang banget bisa nemenin hari fokusmu! 💖',
-      'Meow~ Kamu manis dan hebat banget hari ini, teruskan ya! 🍯✨',
-      'Satu sesi fokus lagi ya, habis itu kita santai bareng! 🌼',
+      'Wah, grafik progresmu makin cantik! Setiap satu target selesai itu luar biasa! 🌟📈',
+      'Ekor manisku ikut melambai tiap kamu mencentang target harianmu hari ini! 🌟✨',
+      'Pelan-pelan tapi konsisten—progres mingguanmu keren banget loh! 📈🍯',
+      'Satu centang lagi yuk! Aku sorakin paling semangat dari sudut grafik~ 🌟💖',
     ],
   },
 ]
+
+export const DEFAULT_BUDDY_CUSTOM_NAMES: Record<CozyBuddyId, string> = {
+  mochi: 'Mochi',
+  kuro: 'Kuro',
+  latte: 'Latte',
+}
+
+function sanitizeBuddyCustomNames(raw: unknown): Record<CozyBuddyId, string> {
+  const result: Record<CozyBuddyId, string> = { ...DEFAULT_BUDDY_CUSTOM_NAMES }
+  if (raw && typeof raw === 'object') {
+    const obj = raw as Record<string, unknown>
+    for (const id of ['mochi', 'kuro', 'latte'] as CozyBuddyId[]) {
+      const val = obj[id]
+      if (typeof val === 'string') {
+        const clean = val.trim().slice(0, 16)
+        if (clean.length > 0) result[id] = clean
+      }
+    }
+  }
+  return result
+}
 
 const VALID_COZY_BUDDY_IDS = new Set<string>(COZY_CAT_BUDDIES.map(b => b.id))
 
@@ -1800,9 +1824,13 @@ export function useTwilightStorage() {
   // Batas harian hadiah kartu dari Kasih Sayang Kucing (maks 5 kartu / hari, reset otomatis ganti tanggal)
   const dailyLoveCardCount = useState<number>('twilights-daily-love-card-count', () => 0)
   const dailyLoveCardDate = useState<string>('twilights-daily-love-card-date', () => '')
-  // 3 Karakter Kucing Peramai (Cozy Cat Buddies: Mochi, Kuro, Latte)
+  // 3 Karakter Kucing Peramai (Cozy Cat Buddies: Mochi, Kuro, Latte) + Nama Kustom User
   const ownedBuddies = useState<CozyBuddyId[]>('twilights-owned-buddies', () => [])
   const activeBuddies = useState<CozyBuddyId[]>('twilights-active-buddies', () => [])
+  const buddyCustomNames = useState<Record<CozyBuddyId, string>>(
+    'twilights-buddy-custom-names',
+    () => ({ ...DEFAULT_BUDDY_CUSTOM_NAMES }),
+  )
 
   // Bonus pasif Koin Ikan tiap selesai 1 sesi Pomodoro Fokus (+1 🐟 di Lv. 10–19, +2 🐟 di Lv. 20–29, +3 🐟 di Lv. 30 MAX)
   const catAffinityPassiveFishBonus = computed<number>(() => {
@@ -2103,6 +2131,7 @@ export function useTwilightStorage() {
         JSON.stringify({
           owned: ownedBuddies.value,
           active: activeBuddies.value,
+          names: buddyCustomNames.value,
         }),
       )
 
@@ -2166,6 +2195,7 @@ export function useTwilightStorage() {
       dailyLoveCardDate: dailyLoveCardDate.value || getLocalTodayDate(),
       ownedBuddies: ownedBuddies.value,
       activeBuddies: activeBuddies.value,
+      buddyCustomNames: buddyCustomNames.value,
       affectionPoints: catAffinityXp.value,
       catAffinity: {
         level: catAffinityLevel.value,
@@ -2432,6 +2462,9 @@ export function useTwilightStorage() {
       activeBuddies.value = sanitizeCozyBuddyList(d.activeBuddies).filter(id =>
         ownedBuddies.value.includes(id),
       )
+    }
+    if (d.buddyCustomNames && typeof d.buddyCustomNames === 'object') {
+      buddyCustomNames.value = sanitizeBuddyCustomNames(d.buddyCustomNames)
     }
     const cloudAmbient = d.twilights_ambient_mixer ?? d.ambientMixerSettings
     if (cloudAmbient && typeof cloudAmbient === 'object') {
@@ -3275,6 +3308,7 @@ export function useTwilightStorage() {
         dailyLoveCardDate: dailyLoveCardDate.value || getLocalTodayDate(),
         ownedBuddies: ownedBuddies.value,
         activeBuddies: activeBuddies.value,
+        buddyCustomNames: buddyCustomNames.value,
         affectionPoints: catAffinityXp.value,
         twilights_cat_affinity: {
           level: catAffinityLevel.value,
@@ -3415,9 +3449,9 @@ export function useTwilightStorage() {
       if (isValidCatBreedId(d.miniCatType) && ownedCats.value.includes(d.miniCatType)) {
         miniCatType.value = d.miniCatType
       }
-      // Pulihkan 3 Cozy Cat Buddies (Mochi, Kuro, Latte)
+      // Pulihkan 3 Cozy Cat Buddies (Mochi, Kuro, Latte) & Nama Kustom
       const importedBuddiesObj = d.cozyBuddies as
-        | { owned?: unknown; active?: unknown }
+        | { owned?: unknown; active?: unknown; names?: unknown }
         | undefined
       const importedOwnedBuddies = d.ownedBuddies ?? importedBuddiesObj?.owned
       if (Array.isArray(importedOwnedBuddies)) {
@@ -3428,6 +3462,10 @@ export function useTwilightStorage() {
         activeBuddies.value = sanitizeCozyBuddyList(importedActiveBuddies).filter(id =>
           ownedBuddies.value.includes(id),
         )
+      }
+      const importedBuddyNames = d.buddyCustomNames ?? importedBuddiesObj?.names
+      if (importedBuddyNames && typeof importedBuddyNames === 'object') {
+        buddyCustomNames.value = sanitizeBuddyCustomNames(importedBuddyNames)
       }
       // Pulihkan kuota harian hadiah kartu kasih sayang (maks 5/hari)
       const importedLoveCardsObj = d.dailyLoveCards as
@@ -4061,6 +4099,19 @@ export function useTwilightStorage() {
       action: 'bought',
       message: `${item.name} berhasil dibeli & tampil di ruangan! ✨`,
     }
+  }
+
+  /** Ganti nama kustom salah satu Cozy Cat Buddy & sinkron otomatis ke localStorage + Cloud Firestore */
+  function setCozyBuddyName(buddyId: CozyBuddyId, rawName: string): string {
+    const clean = rawName.trim().slice(0, 16) || DEFAULT_BUDDY_CUSTOM_NAMES[buddyId]
+    buddyCustomNames.value = {
+      ...buddyCustomNames.value,
+      [buddyId]: clean,
+    }
+    persistAll()
+    playPopTing()
+    showMiniToast(`Nama kucing peramai diubah menjadi "${clean}" ✨`)
+    return clean
   }
 
   /**
@@ -4717,18 +4768,22 @@ export function useTwilightStorage() {
         dailyLoveCardCount.value = 0
       }
 
-      // 18. Muat koleksi & status aktif 3 Cozy Cat Buddies (Mochi, Kuro, Latte)
+      // 18. Muat koleksi, status aktif, & nama kustom 3 Cozy Cat Buddies (Mochi, Kuro, Latte)
       const savedCozyBuddies = localStorage.getItem(STORAGE_KEYS.COZY_BUDDIES)
       if (savedCozyBuddies) {
         try {
           const parsedBuddies = JSON.parse(savedCozyBuddies) as {
             owned?: unknown
             active?: unknown
+            names?: unknown
           }
           ownedBuddies.value = sanitizeCozyBuddyList(parsedBuddies.owned)
           activeBuddies.value = sanitizeCozyBuddyList(parsedBuddies.active).filter(id =>
             ownedBuddies.value.includes(id),
           )
+          if (parsedBuddies.names) {
+            buddyCustomNames.value = sanitizeBuddyCustomNames(parsedBuddies.names)
+          }
         } catch {
           ownedBuddies.value = []
           activeBuddies.value = []
@@ -5585,6 +5640,7 @@ export function useTwilightStorage() {
     dailyLoveCardDate,
     ownedBuddies,
     activeBuddies,
+    buddyCustomNames,
 
     // Aksi
     setTheme,
@@ -5607,6 +5663,7 @@ export function useTwilightStorage() {
     buyOrEquipAccessory,
     buyOrEquipCatBreed,
     buyOrToggleCozyBuddy,
+    setCozyBuddyName,
     syncDailyLoveCardQuota,
     buyOrEquipCozyTheme,
     drawSecretCatCard,

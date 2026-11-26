@@ -1623,7 +1623,7 @@ onUnmounted(() => {
     </div>
 
     <!-- BAGIAN 2: AMBIENT SOUND MIXER INDEPENDEN (100% Offline Web Audio — Bisa Digabung dengan Radio & YouTube!) -->
-    <div class="rounded-2xl border border-white/15 bg-black/25 p-3">
+    <div class="relative rounded-2xl border border-white/15 bg-black/25 p-3">
       <div class="mb-2 flex items-center justify-between gap-2">
         <span class="font-display text-xs font-semibold text-pink-200">
           🎚️ Ambient Sound Mixer
@@ -1783,6 +1783,11 @@ onUnmounted(() => {
             {{ streamVolume }}%
           </span>
         </div>
+      </div>
+
+      <!-- Perintilan Kucing #4: Meringkuk nyaman di sudut bawah kanan Ambient Sound Mixer -->
+      <div class="mt-1 flex justify-end">
+        <MiniCatOrnament pose="curled" :voice-index="3" size-class="h-6 w-9" />
       </div>
     </div>
   </section>

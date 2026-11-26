@@ -261,6 +261,25 @@ function smartMergeCloudWithLocal(
   merged.ownedCats = unionField(cloudData.ownedCats, localData.ownedCats)
   merged.ownedCozyThemes = unionField(cloudData.ownedCozyThemes, localData.ownedCozyThemes)
   merged.ownedBuddies = unionField(cloudData.ownedBuddies, localData.ownedBuddies)
+  const cBuddyNames = (cloudData.buddyCustomNames ?? {}) as Record<string, unknown>
+  const lBuddyNames = (localData.buddyCustomNames ?? {}) as Record<string, unknown>
+  const defaultBuddyNames: Record<string, string> = { mochi: 'Mochi', kuro: 'Kuro', latte: 'Latte' }
+  const mergedBuddyNames: Record<string, string> = { ...defaultBuddyNames }
+  for (const key of ['mochi', 'kuro', 'latte']) {
+    const cVal = typeof cBuddyNames[key] === 'string' ? cBuddyNames[key].trim().slice(0, 16) : ''
+    const lVal = typeof lBuddyNames[key] === 'string' ? lBuddyNames[key].trim().slice(0, 16) : ''
+    if (cVal && cVal !== defaultBuddyNames[key]) {
+      mergedBuddyNames[key] = cVal
+    } else if (lVal && lVal !== defaultBuddyNames[key]) {
+      mergedBuddyNames[key] = lVal
+      localAdded = true
+    } else if (cVal) {
+      mergedBuddyNames[key] = cVal
+    } else if (lVal) {
+      mergedBuddyNames[key] = lVal
+    }
+  }
+  merged.buddyCustomNames = mergedBuddyNames
   const cLoveDate = typeof cloudData.dailyLoveCardDate === 'string' ? cloudData.dailyLoveCardDate : ''
   const lLoveDate = typeof localData.dailyLoveCardDate === 'string' ? localData.dailyLoveCardDate : ''
   if (cLoveDate && cLoveDate === lLoveDate) {

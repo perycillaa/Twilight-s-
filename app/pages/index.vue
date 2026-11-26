@@ -26,6 +26,7 @@ const {
   isShortcutsModalOpen,
   isMobileDevice,
   twilightFocusIcon,
+  activeBuddies,
   isNotebookOpen,
   isAlarmOpen,
   isMiniGameOpen,
@@ -1109,8 +1110,30 @@ onUnmounted(() => {
 
         <!-- KOLOM TENGAH: Pomodoro Timer (Atas) & BGM Player + Ambient Mixer (Bawah) -->
         <div class="flex flex-col gap-5 lg:col-span-5">
-          <PomodoroTimer />
-          <BgmPlayer />
+          <div
+            class="relative"
+            :class="activeBuddies.includes('kuro') ? 'mt-7 sm:mt-8' : 'mt-1.5'"
+          >
+            <!-- Kucing Teman Slot 2 (Kuro): Duduk manis di sudut atas kiri Pomodoro Timer -->
+            <CozyCatBuddies slot="kuro" placement="edge-top-left" />
+            <!-- Perintilan Kucing #1: Mengintip di tepi atas kanan Pomodoro Timer -->
+            <div class="pointer-events-auto absolute -top-[22px] right-4 z-20">
+              <MiniCatOrnament pose="peek" :voice-index="0" />
+            </div>
+            <!-- Perintilan Kucing #2: Roti kucing duduk santai di sudut bawah kiri Pomodoro Timer -->
+            <div class="pointer-events-auto absolute -bottom-[14px] left-5 z-20 hidden sm:block">
+              <MiniCatOrnament pose="loaf" :voice-index="1" size-class="h-6 w-9" />
+            </div>
+            <PomodoroTimer />
+          </div>
+
+          <div class="relative mt-2">
+            <!-- Perintilan Kucing #3: Tiduran tenang di tepi atas kanan BGM Player -->
+            <div class="pointer-events-auto absolute -top-[21px] right-5 z-20">
+              <MiniCatOrnament pose="nap" :voice-index="2" />
+            </div>
+            <BgmPlayer />
+          </div>
         </div>
 
         <!-- KOLOM KANAN: Daily Habit Tracker & Grafik Progres (meredup lembut tanpa blur saat Starlight Focus ✨ aktif) -->
@@ -1122,8 +1145,26 @@ onUnmounted(() => {
               : 'opacity-100'
           "
         >
-          <HabitTracker />
-          <ProgressChart />
+          <div class="relative mt-1.5">
+            <!-- Perintilan Kucing #5: Melambai ceria di tepi atas kiri Daily Habit Tracker -->
+            <div class="pointer-events-auto absolute -top-[22px] left-5 z-20">
+              <MiniCatOrnament pose="wave" :voice-index="4" />
+            </div>
+            <HabitTracker />
+          </div>
+
+          <div
+            class="relative"
+            :class="activeBuddies.includes('latte') ? 'mt-7 sm:mt-8' : 'mt-2'"
+          >
+            <!-- Kucing Teman Slot 3 (Latte): Duduk ceria di sudut atas kanan Grafik Progres Harian -->
+            <CozyCatBuddies slot="latte" placement="edge-top-right" />
+            <!-- Perintilan Kucing #6: Duduk manis berekor melengkung di sudut atas kiri Grafik Progres -->
+            <div class="pointer-events-auto absolute -top-[22px] left-5 z-20">
+              <MiniCatOrnament pose="sit-tail" :voice-index="5" />
+            </div>
+            <ProgressChart />
+          </div>
         </div>
       </div>
 

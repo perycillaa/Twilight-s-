@@ -1151,6 +1151,119 @@ export function useSoundEffects() {
     }
   }
 
+  /**
+   * 13. 8 Variasi Suara Meow Ringan & Berbeda untuk Perintilan Kucing Dekoratif (Mini Cat Ornaments):
+   *     - 0: "Miiw!" tinggi ceria
+   *     - 1: "Meow~" sedang hangat
+   *     - 2: "Mrrp!" trill pendek ceria
+   *     - 3: "Mew..." lembut mengantuk
+   *     - 4: "Mew?" nada penasaran naik
+   *     - 5: "Mi-ew!" kicau dua puncak imut
+   *     - 6: "Mrow~" nada rendah santai
+   *     - 7: "Prr-mew~" dengkuran halus ke nada lembut
+   *     Menghormati volume/mute utama aplikasi.
+   */
+  function playOrnamentCatMeow(voiceIndex = 0, volumeScale = 0.55): boolean {
+    const vol = Math.max(0, Math.min(1, volumeScale))
+    if (vol <= 0.005) return false
+
+    const idx = ((Math.floor(voiceIndex) % 8) + 8) % 8
+    const presets: FormantMeowOptions[] = [
+      // 0: Tinggi ceria ("Miiw!")
+      {
+        pitchCurve: [[0, 760], [0.22, 1020], [0.65, 920], [1, 740]],
+        duration: 0.24,
+        f1: [420, 1180, 620],
+        f2: [1600, 2650, 1520],
+        volumeScale: vol * 0.72,
+        vibratoRate: 8,
+        vibratoDepth: 12,
+      },
+      // 1: Sedang manis ("Meow~")
+      {
+        pitchCurve: [[0, 520], [0.28, 690], [0.7, 610], [1, 470]],
+        duration: 0.34,
+        f1: [360, 920, 520],
+        f2: [1350, 2220, 1280],
+        volumeScale: vol * 0.76,
+        vibratoRate: 6.2,
+        vibratoDepth: 10,
+      },
+      // 2: Mrrp pendek ("Mrrp!")
+      {
+        pitchCurve: [[0, 560], [0.35, 780], [0.75, 860], [1, 820]],
+        duration: 0.2,
+        f1: [340, 860, 640],
+        f2: [1280, 2150, 1680],
+        volumeScale: vol * 0.74,
+        vibratoRate: 14,
+        vibratoDepth: 18,
+        openingTrill: true,
+      },
+      // 3: Mew lembut mengantuk ("Mew...")
+      {
+        pitchCurve: [[0, 620], [0.3, 660], [0.78, 530], [1, 440]],
+        duration: 0.38,
+        f1: [380, 820, 480],
+        f2: [1420, 2040, 1200],
+        volumeScale: vol * 0.64,
+        vibratoRate: 4.8,
+        vibratoDepth: 7,
+      },
+      // 4: Nada penasaran naik ("Mew?")
+      {
+        pitchCurve: [[0, 540], [0.35, 630], [0.72, 820], [1, 940]],
+        duration: 0.28,
+        f1: [350, 960, 740],
+        f2: [1320, 2340, 1820],
+        volumeScale: vol * 0.72,
+        vibratoRate: 7,
+        vibratoDepth: 10,
+      },
+      // 5: Kicau dua puncak imut ("Mi-ew!")
+      {
+        pitchCurve: [[0, 680], [0.24, 920], [0.48, 700], [0.74, 880], [1, 640]],
+        duration: 0.31,
+        f1: [400, 1100, 580],
+        f2: [1520, 2500, 1420],
+        volumeScale: vol * 0.74,
+        vibratoRate: 9,
+        vibratoDepth: 12,
+      },
+      // 6: Rendah santai hangat ("Mrow~")
+      {
+        pitchCurve: [[0, 410], [0.25, 530], [0.68, 490], [1, 370]],
+        duration: 0.36,
+        f1: [300, 760, 430],
+        f2: [1120, 1880, 1080],
+        volumeScale: vol * 0.78,
+        vibratoRate: 5.5,
+        vibratoDepth: 9,
+        openingTrill: true,
+      },
+      // 7: Panggilan halus berkilau ("Prr-mew~")
+      {
+        pitchCurve: [[0, 600], [0.22, 740], [0.58, 860], [1, 690]],
+        duration: 0.3,
+        f1: [370, 1040, 600],
+        f2: [1450, 2420, 1480],
+        volumeScale: vol * 0.7,
+        vibratoRate: 12,
+        vibratoDepth: 15,
+        openingTrill: true,
+      },
+    ]
+
+    try {
+      const ctx = getSharedAudioContext()
+      if (!ctx) return false
+      synthesizeFormantMeow(presets[idx] ?? presets[0]!)
+      return true
+    } catch {
+      return false
+    }
+  }
+
   return {
     getSharedAudioContext,
     playBellChime,
@@ -1163,6 +1276,7 @@ export function useSoundEffects() {
     playMiniCatTapMew,
     playMiniCatShakeVoice,
     playNotebookCatMew,
+    playOrnamentCatMeow,
     startCatPurr,
     stopCatPurr,
     playMiniCatAnnoyedGrowl,
