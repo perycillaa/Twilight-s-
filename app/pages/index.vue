@@ -769,17 +769,17 @@ onUnmounted(() => {
             class="flex flex-wrap items-center gap-2 transition-opacity duration-500 sm:gap-2.5"
             :class="isZenMode ? 'opacity-40 hover:opacity-100' : 'opacity-100'"
           >
-            <!-- Pengaturan Kualitas Grafik Bergaya Game: 🍃 Ringan / ⚖️ Sedang / ✨ Tinggi -->
+            <!-- Pengaturan Kualitas Grafik 3 Tingkat: 🍃 Low (Rendah) / ⚖️ Medium (Sedang) / ✨ High (Tinggi) -->
             <button
               type="button"
-              :title="`Kualitas Grafik: ${graphicsConfig.label} — Klik untuk ganti antara 🍃 Ringan, ⚖️ Sedang, dan ✨ Tinggi`"
+              :title="`Kualitas Grafik: ${graphicsConfig.label} — Klik untuk ganti antara 🍃 Low (Rendah), ⚖️ Medium (Sedang), dan ✨ High (Tinggi)`"
               class="btn-bouncy inline-flex cursor-pointer items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-semibold transition"
               :class="
                 graphicsQuality === 'low'
-                  ? 'border-emerald-300/70 bg-emerald-400/25 text-emerald-100 shadow-sm'
+                  ? 'cozy-secondary-btn shadow-sm'
                   : graphicsQuality === 'medium'
-                    ? 'border-amber-200/60 bg-amber-300/20 text-amber-100 shadow-sm'
-                    : 'cozy-pill-btn border-pink-200/50 bg-pink-300/20 text-pink-100 shadow-sm'
+                    ? 'cozy-pill-btn shadow-sm'
+                    : 'cozy-pill-btn shadow-sm'
               "
               @click="cycleGraphicsQuality"
             >

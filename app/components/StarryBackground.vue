@@ -780,32 +780,47 @@ function seedThemeParticles() {
 
   canvasParticles = Array.from({ length: count }, (_, idx) => {
     const isRain = mode === 'midnight-rain' || mode === 'rain-overlay'
-    const isRising = mode === 'biolum-ocean' || mode === 'honey-library'
+    const isRising = mode === 'biolum-ocean'
+    const isHoney = mode === 'honey-library'
+    const variant = idx % 4
+    // Honey Library: variant 0 & 1 = tetesan madu turun sangat pelan, variant 2 = hex sarang lebah tipis melayang, variant 3 = warm amber dust naik lembut
+    const honeyVy =
+      variant === 0 || variant === 1
+        ? 0.24 + Math.random() * 0.34
+        : variant === 2
+          ? 0.1 + Math.random() * 0.16
+          : -(0.18 + Math.random() * 0.28)
     return {
       x: Math.random() * w,
       y: Math.random() * h,
-      vx: isRain ? -1.4 - Math.random() * 1.1 : (Math.random() - 0.5) * 0.7,
+      vx: isRain ? -1.4 - Math.random() * 1.1 : (Math.random() - 0.5) * 0.55,
       vy: isRain
         ? 7.5 + Math.random() * 5.2
         : mode === 'neon-night-city'
           ? 3.8 + Math.random() * 3.4
-          : isRising
-            ? -(0.32 + Math.random() * 0.65)
-            : 0.45 + Math.random() * 0.9,
+          : isHoney
+            ? honeyVy
+            : isRising
+              ? -(0.32 + Math.random() * 0.65)
+              : 0.45 + Math.random() * 0.9,
       size: isRain
         ? 14 + Math.random() * 16
         : mode === 'autumn-cafe' || mode === 'sakura-lantern'
           ? 7 + Math.random() * 7
-          : mode === 'winter-frost'
-            ? 5 + Math.random() * 6
-            : mode === 'pastel-cloudland'
-              ? 8 + Math.random() * 10
-              : 3.5 + Math.random() * 6.5,
+          : isHoney
+            ? variant === 2
+              ? 12 + Math.random() * 12
+              : 4.5 + Math.random() * 4.5
+            : mode === 'winter-frost'
+              ? 5 + Math.random() * 6
+              : mode === 'pastel-cloudland'
+                ? 8 + Math.random() * 10
+                : 3.5 + Math.random() * 6.5,
       rot: Math.random() * Math.PI * 2,
-      vRot: (Math.random() - 0.5) * 0.032,
+      vRot: isHoney ? (Math.random() - 0.5) * 0.008 : (Math.random() - 0.5) * 0.032,
       phase: idx * 0.73 + Math.random() * 4,
       alpha: 0.45 + Math.random() * 0.35,
-      variant: idx % 4,
+      variant,
       life: Math.random() * 100,
       maxLife: 70 + Math.random() * 90,
     }
@@ -890,14 +905,40 @@ function drawSakuraPetal(ctx: CanvasRenderingContext2D, r: number) {
   ctx.closePath()
 }
 
+function drawHoneyDroplet(ctx: CanvasRenderingContext2D, r: number) {
+  ctx.beginPath()
+  ctx.moveTo(0, -r * 1.15)
+  ctx.bezierCurveTo(r * 0.78, -r * 0.15, r * 0.85, r * 0.85, 0, r)
+  ctx.bezierCurveTo(-r * 0.85, r * 0.85, -r * 0.78, -r * 0.15, 0, -r * 1.15)
+  ctx.closePath()
+}
+
+function drawHoneycombHex(ctx: CanvasRenderingContext2D, r: number) {
+  ctx.beginPath()
+  for (let i = 0; i < 6; i++) {
+    const a = (Math.PI / 3) * i - Math.PI / 6
+    const x = Math.cos(a) * r
+    const y = Math.sin(a) * r
+    if (i === 0) ctx.moveTo(x, y)
+    else ctx.lineTo(x, y)
+  }
+  ctx.closePath()
+}
+
 function drawThemeCanvasFrame(nowMs: number) {
   if (isLowGraphics.value || document.hidden) {
     stopThemeCanvasLoop()
+    const canvas = themeCanvasRef.value
+    if (canvas && isLowGraphics.value) {
+      const clearCtx = canvas.getContext('2d')
+      clearCtx?.clearRect(0, 0, canvasWidth, canvasHeight)
+    }
     return
   }
   canvasRafId = requestAnimationFrame(drawThemeCanvasFrame)
 
-  const targetFps = graphicsQuality.value === 'high' ? 45 : 30
+  // High: 60 FPS penuh | Medium: 30 FPS ringan | Low: RAF dijeda total
+  const targetFps = graphicsQuality.value === 'high' ? 60 : 30
   const minInterval = 1000 / targetFps
   const dt = nowMs - lastCanvasFrameMs
   if (dt < minInterval) return
@@ -1102,30 +1143,66 @@ function drawThemeCanvasFrame(nowMs: number) {
     }
 
     if (mode === 'honey-library') {
-      // Tetesan kilau madu keemasan & warm dust motes (Light: #B45309 / #D97706)
-      p.y += p.vy * 0.65 * step
-      p.x += Math.sin(timeSec * 0.7 + p.phase) * 0.35 * step
-      if (p.y < -16) {
-        p.y = h + 16
+      // Tema Honey Library yang lembut & cozy:
+      // - variant 0 & 1: tetesan madu keemasan transparan (golden honey droplets) jatuh sangat pelan
+      // - variant 2: segienam sarang lebah tipis (subtle honeycomb hex, opacity 0.08–0.18)
+      // - variant 3: kilau debu hangat (warm amber dust) melayang pelan ke atas
+      p.y += p.vy * step
+      p.x += Math.sin(timeSec * 0.55 + p.phase) * 0.25 * step
+      p.rot += p.vRot * step
+
+      if (p.vy > 0 && p.y > h + 28) {
+        p.y = -24
+        p.x = Math.random() * w
+      } else if (p.vy < 0 && p.y < -20) {
+        p.y = h + 20
         p.x = Math.random() * w
       }
-      const pulse = 0.45 + 0.45 * Math.sin(timeSec * 2 + p.phase)
+
+      const pulse = 0.55 + 0.45 * Math.sin(timeSec * 1.4 + p.phase)
       ctx.save()
       ctx.translate(p.x, p.y)
-      ctx.globalAlpha = isLight ? pulse * 0.76 : pulse * 0.82
-      ctx.fillStyle = isLight
-        ? p.variant % 2 === 0
-          ? '#b45309'
-          : '#d97706'
-        : p.variant % 2 === 0
-          ? '#fde68a'
-          : '#fbbf24'
-      if (p.variant === 0) {
-        drawFourPointStar(ctx, p.size * 0.85)
+
+      if (p.variant === 0 || p.variant === 1) {
+        // Golden honey droplet transparan lembut
+        const dropR = Math.max(3.6, p.size * 0.78)
+        const dropGrad = ctx.createLinearGradient(0, -dropR, 0, dropR)
+        if (isLight) {
+          dropGrad.addColorStop(0, 'rgba(253, 230, 138, 0.72)')
+          dropGrad.addColorStop(1, 'rgba(245, 158, 11, 0.52)')
+        } else {
+          dropGrad.addColorStop(0, 'rgba(254, 240, 138, 0.68)')
+          dropGrad.addColorStop(1, 'rgba(245, 158, 11, 0.46)')
+        }
+        ctx.globalAlpha = (isLight ? 0.62 : 0.68) * pulse
+        ctx.fillStyle = dropGrad
+        drawHoneyDroplet(ctx, dropR)
         ctx.fill()
-      } else {
+        ctx.strokeStyle = isLight ? 'rgba(180, 83, 9, 0.32)' : 'rgba(254, 243, 199, 0.42)'
+        ctx.lineWidth = 0.9
+        ctx.stroke()
+        // Kilau putih mungil di sisi tetesan madu
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.72)'
         ctx.beginPath()
-        ctx.arc(0, 0, Math.max(2.2, p.size * 0.48), 0, Math.PI * 2)
+        ctx.arc(-dropR * 0.24, dropR * 0.12, Math.max(0.9, dropR * 0.2), 0, Math.PI * 2)
+        ctx.fill()
+      } else if (p.variant === 2) {
+        // Segienam sarang lebah sangat tipis (opacity 0.08–0.18 agar tetap elegan & tidak ramai)
+        ctx.rotate(p.rot)
+        const hexAlpha = 0.08 + 0.1 * (0.5 + 0.5 * Math.sin(timeSec * 0.9 + p.phase))
+        ctx.globalAlpha = hexAlpha
+        ctx.fillStyle = isLight ? '#f59e0b' : '#fde68a'
+        ctx.strokeStyle = isLight ? '#b45309' : '#fcd34d'
+        ctx.lineWidth = 1.2
+        drawHoneycombHex(ctx, p.size)
+        ctx.fill()
+        ctx.globalAlpha = Math.min(0.18, hexAlpha * 1.25)
+        ctx.stroke()
+      } else {
+        // Warm amber dust (kilau debu cahaya hangat perpustakaan)
+        ctx.globalAlpha = (isLight ? 0.52 : 0.64) * pulse
+        ctx.fillStyle = isLight ? '#d97706' : '#fde68a'
+        drawFourPointStar(ctx, Math.max(3, p.size * 0.55))
         ctx.fill()
       }
       ctx.restore()
@@ -2113,479 +2190,14 @@ onUnmounted(() => {
     </template>
   </div>
 
-  <!-- LAPISAN 2 (z-20, tembus klik / pointer-events-none): Ornamen Gantungan Sudut Atas Sesuai Tema + Bintang Jatuh -->
+  <!-- LAPISAN 2 (z-20, tembus klik / pointer-events-none): Ornamen Gantungan Sudut & Tepi Atas Melimpah + Bintang Jatuh -->
   <div
     aria-hidden="true"
     style="contain: strict"
     class="pointer-events-none fixed inset-0 z-20 overflow-hidden"
   >
-    <!-- === ORNAMEN SUDUT ATAS 1: 🌊 BIOLUMINESCENT OCEAN (Kerang Mutiara & Ubur-ubur Kristal Biru Laut) === -->
-    <template v-if="activeCozyTheme === 'biolum-ocean'">
-      <div class="absolute left-3 top-0 flex items-start gap-4 opacity-95 sm:left-6">
-        <div class="animate-jelly-bob pt-2" style="--jelly-duration: 5.2s; --jelly-delay: 0s">
-          <svg class="h-16 w-12 drop-shadow-[0_4px_12px_rgba(14,116,144,0.45)] sm:h-20 sm:w-14" viewBox="0 0 56 80" fill="none">
-            <path d="M10 30 C10 14, 46 14, 46 30 C42 35, 14 35, 10 30 Z" :fill="isDarkTheme ? 'rgba(0,245,212,0.38)' : 'rgba(14,116,144,0.28)'" :stroke="isDarkTheme ? '#5eead4' : '#0e7490'" stroke-width="2" />
-            <ellipse cx="28" cy="22" rx="10" ry="5" :fill="isDarkTheme ? '#99f6e4' : '#0284c7'" opacity="0.65" />
-            <path d="M16 33 Q12 50 18 68" :stroke="isDarkTheme ? '#22d3ee' : '#0369a1'" stroke-width="1.8" stroke-linecap="round" />
-            <path d="M24 34 Q28 52 22 74" :stroke="isDarkTheme ? '#00f5d4' : '#0d9488'" stroke-width="2" stroke-linecap="round" />
-            <path d="M33 34 Q30 52 36 72" :stroke="isDarkTheme ? '#5eead4' : '#0284c7'" stroke-width="1.8" stroke-linecap="round" />
-            <path d="M41 33 Q45 48 39 64" :stroke="isDarkTheme ? '#22d3ee' : '#0e7490'" stroke-width="1.6" stroke-linecap="round" />
-          </svg>
-        </div>
-        <!-- Gantungan Kerang Mutiara -->
-        <div class="animate-gentle-sway hidden flex-col items-center sm:flex" style="--sway-duration: 5.8s; --sway-delay: 0.9s">
-          <div class="h-7 w-[1.8px]" :style="{ backgroundColor: isDarkTheme ? '#5eead4' : '#0e7490' }" />
-          <svg class="h-11 w-11 drop-shadow-[0_3px_10px_rgba(14,116,144,0.4)]" viewBox="0 0 44 44" fill="none">
-            <path d="M6 26 C6 12, 38 12, 38 26 L30 34 H14 Z" :fill="isDarkTheme ? '#ccfbf1' : '#e0f2fe'" :stroke="isDarkTheme ? '#00f5d4' : '#0e7490'" stroke-width="2" stroke-linejoin="round" />
-            <path d="M22 14 V33 M14 16 L18 33 M30 16 L26 33" :stroke="isDarkTheme ? '#0d9488' : '#0369a1'" stroke-width="1.3" opacity="0.65" />
-            <circle cx="22" cy="24" r="4.8" fill="#ffffff" :stroke="isDarkTheme ? '#22d3ee' : '#0284c7'" stroke-width="1.6" />
-          </svg>
-        </div>
-      </div>
-
-      <div class="absolute right-3 top-0 flex items-start gap-4 opacity-95 sm:right-6">
-        <div class="animate-gentle-sway hidden flex-col items-center sm:flex" style="--sway-duration: 5.4s; --sway-delay: 0.4s">
-          <div class="h-8 w-[1.8px]" :style="{ backgroundColor: isDarkTheme ? '#22d3ee' : '#0369a1' }" />
-          <svg class="h-10 w-10 drop-shadow-[0_3px_10px_rgba(14,116,144,0.4)]" viewBox="0 0 44 44" fill="none">
-            <path d="M6 26 C6 12, 38 12, 38 26 L30 34 H14 Z" :fill="isDarkTheme ? '#cffafe' : '#e0f2fe'" :stroke="isDarkTheme ? '#22d3ee' : '#0e7490'" stroke-width="2" stroke-linejoin="round" />
-            <circle cx="22" cy="24" r="4.6" fill="#ffffff" :stroke="isDarkTheme ? '#00f5d4' : '#0d9488'" stroke-width="1.6" />
-          </svg>
-        </div>
-        <div class="animate-jelly-bob pt-2" style="--jelly-duration: 4.6s; --jelly-delay: 1.1s">
-          <svg class="h-14 w-11 drop-shadow-[0_4px_12px_rgba(14,116,144,0.45)] sm:h-18 sm:w-13" viewBox="0 0 56 80" fill="none">
-            <path d="M12 28 C12 13, 44 13, 44 28 C40 33, 16 33, 12 28 Z" :fill="isDarkTheme ? 'rgba(34,211,238,0.38)' : 'rgba(2,132,199,0.28)'" :stroke="isDarkTheme ? '#67e8f9' : '#0369a1'" stroke-width="2" />
-            <ellipse cx="28" cy="21" rx="9" ry="4.5" :fill="isDarkTheme ? '#cffafe' : '#0d9488'" opacity="0.6" />
-            <path d="M18 31 Q15 48 20 66" :stroke="isDarkTheme ? '#00f5d4' : '#0e7490'" stroke-width="1.8" stroke-linecap="round" />
-            <path d="M28 32 Q32 50 26 70" :stroke="isDarkTheme ? '#38bdf8' : '#0369a1'" stroke-width="1.9" stroke-linecap="round" />
-            <path d="M38 31 Q41 46 36 62" :stroke="isDarkTheme ? '#5eead4' : '#0d9488'" stroke-width="1.6" stroke-linecap="round" />
-          </svg>
-        </div>
-      </div>
-    </template>
-
-    <!-- === ORNAMEN SUDUT ATAS 2: 🍵 MATCHA GARDEN (Lonceng Angin Kaca Furin & Ranting Daun Teh) === -->
-    <template v-else-if="activeCozyTheme === 'matcha-garden'">
-      <div class="absolute left-2 top-0 flex items-start gap-3 opacity-95 sm:left-5 sm:gap-5">
-        <div class="animate-gentle-sway flex flex-col items-center" style="--sway-duration: 5.2s; --sway-delay: 0.1s">
-          <div class="h-5 w-[1.8px] sm:h-8" :style="{ backgroundColor: isDarkTheme ? '#86efac' : '#15803d' }" />
-          <svg class="h-14 w-10 drop-shadow-[0_3px_10px_rgba(21,128,61,0.38)]" viewBox="0 0 40 60" fill="none">
-            <path d="M10 22 C10 10, 30 10, 30 22 C30 26, 28 28, 20 28 C12 28, 10 26, 10 22 Z" :fill="isDarkTheme ? 'rgba(187,247,208,0.45)' : 'rgba(134,239,172,0.72)'" :stroke="isDarkTheme ? '#86efac' : '#15803d'" stroke-width="1.9" />
-            <circle cx="20" cy="24" r="2.4" :fill="isDarkTheme ? '#fde68a' : '#b45309'" />
-            <line x1="20" y1="26" x2="20" y2="36" :stroke="isDarkTheme ? '#bbf7d0' : '#15803d'" stroke-width="1.5" />
-            <rect x="15.5" y="36" width="9" height="18" rx="2" :fill="isDarkTheme ? '#fde68a' : '#fef3c7'" :stroke="isDarkTheme ? '#4ade80' : '#15803d'" stroke-width="1.5" />
-            <path d="M20 40 V50" stroke="#15803d" stroke-width="1.3" stroke-linecap="round" />
-          </svg>
-        </div>
-        <div class="animate-gentle-sway hidden flex-col items-center sm:flex" style="--sway-duration: 6s; --sway-delay: 0.8s">
-          <svg class="h-12 w-14 drop-shadow-[0_2px_8px_rgba(21,128,61,0.35)]" viewBox="0 0 56 48" fill="none">
-            <path d="M4 2 Q22 14 44 10" :stroke="isDarkTheme ? '#86efac' : '#166534'" stroke-width="2.4" stroke-linecap="round" />
-            <path d="M16 10 C12 20, 18 28, 24 22 C26 16, 22 12, 16 10 Z" :fill="isDarkTheme ? '#4ade80' : '#15803d'" :stroke="isDarkTheme ? '#dcfce7' : '#064e3b'" stroke-width="1.1" />
-            <path d="M32 11 C30 22, 38 30, 44 22 C45 15, 39 11, 32 11 Z" :fill="isDarkTheme ? '#86efac' : '#22c55e'" :stroke="isDarkTheme ? '#dcfce7' : '#14532d'" stroke-width="1.1" />
-          </svg>
-        </div>
-      </div>
-
-      <div class="absolute right-2 top-0 flex items-start gap-3 opacity-95 sm:right-5 sm:gap-5">
-        <div class="animate-gentle-sway hidden flex-col items-center sm:flex" style="--sway-duration: 5.7s; --sway-delay: 0.6s">
-          <svg class="h-12 w-14 drop-shadow-[0_2px_8px_rgba(21,128,61,0.35)]" viewBox="0 0 56 48" fill="none">
-            <path d="M52 2 Q34 14 12 10" :stroke="isDarkTheme ? '#86efac' : '#166534'" stroke-width="2.4" stroke-linecap="round" />
-            <path d="M40 10 C44 20, 38 28, 32 22 C30 16, 34 12, 40 10 Z" :fill="isDarkTheme ? '#4ade80' : '#15803d'" :stroke="isDarkTheme ? '#dcfce7' : '#064e3b'" stroke-width="1.1" />
-            <path d="M24 11 C26 22, 18 30, 12 22 C11 15, 17 11, 24 11 Z" :fill="isDarkTheme ? '#bbf7d0' : '#22c55e'" :stroke="isDarkTheme ? '#dcfce7' : '#14532d'" stroke-width="1.1" />
-          </svg>
-        </div>
-        <div class="animate-gentle-sway flex flex-col items-center" style="--sway-duration: 5.4s; --sway-delay: 0.3s">
-          <div class="h-6 w-[1.8px] sm:h-9" :style="{ backgroundColor: isDarkTheme ? '#86efac' : '#15803d' }" />
-          <svg class="h-14 w-10 drop-shadow-[0_3px_10px_rgba(21,128,61,0.38)]" viewBox="0 0 40 60" fill="none">
-            <path d="M10 22 C10 10, 30 10, 30 22 C30 26, 28 28, 20 28 C12 28, 10 26, 10 22 Z" :fill="isDarkTheme ? 'rgba(167,243,208,0.45)' : 'rgba(134,239,172,0.72)'" :stroke="isDarkTheme ? '#86efac' : '#15803d'" stroke-width="1.9" />
-            <circle cx="20" cy="24" r="2.4" :fill="isDarkTheme ? '#fde68a' : '#b45309'" />
-            <line x1="20" y1="26" x2="20" y2="36" :stroke="isDarkTheme ? '#bbf7d0' : '#15803d'" stroke-width="1.5" />
-            <rect x="15.5" y="36" width="9" height="18" rx="2" :fill="isDarkTheme ? '#dcfce7' : '#f0fdf4'" :stroke="isDarkTheme ? '#4ade80' : '#15803d'" stroke-width="1.5" />
-          </svg>
-        </div>
-      </div>
-    </template>
-
-    <!-- === ORNAMEN SUDUT ATAS 3: 🍂 COZY AUTUMN CAFE (Daun Maple Oranye-Merah & Biji Pohon Ek / Acorn) === -->
-    <template v-else-if="activeCozyTheme === 'autumn-cafe'">
-      <div class="absolute left-3 top-0 flex items-start gap-4 opacity-95 sm:left-6">
-        <div class="animate-gentle-sway flex flex-col items-center" style="--sway-duration: 5.2s; --sway-delay: 0.2s">
-          <div class="h-6 w-[1.8px] sm:h-9" :style="{ backgroundColor: isDarkTheme ? '#fde68a' : '#9a3412' }" />
-          <!-- Daun Maple Oranye-Merah -->
-          <svg class="h-11 w-11 drop-shadow-[0_3px_10px_rgba(180,83,9,0.45)]" viewBox="0 0 36 36" fill="none">
-            <path d="M18 3 L21.5 12 L31 10 L25 18 L32 24 L22 25 L18 33 L14 25 L4 24 L11 18 L5 10 L14.5 12 Z" :fill="isDarkTheme ? '#fb923c' : '#c2410c'" :stroke="isDarkTheme ? '#fef3c7' : '#7c2d12'" stroke-width="1.5" stroke-linejoin="round" />
-            <path d="M18 9 V32" stroke="#7c2d12" stroke-width="1.3" stroke-linecap="round" />
-          </svg>
-        </div>
-        <!-- Biji Pohon Ek (Acorn) -->
-        <div class="animate-gentle-sway hidden flex-col items-center sm:flex" style="--sway-duration: 5.9s; --sway-delay: 0.8s">
-          <div class="h-9 w-[1.8px]" :style="{ backgroundColor: isDarkTheme ? '#fdba74' : '#78350f' }" />
-          <svg class="h-10 w-9 drop-shadow-[0_3px_10px_rgba(120,53,15,0.42)]" viewBox="0 0 36 42" fill="none">
-            <path d="M18 4 C18 8, 19 10, 18 12" stroke="#78350f" stroke-width="2.4" stroke-linecap="round" />
-            <path d="M7 18 C7 11, 29 11, 29 18 Z" fill="#92400e" :stroke="isDarkTheme ? '#fde68a' : '#451a03'" stroke-width="1.6" />
-            <path d="M9 18 H27 C27 29, 23 35, 18 38 C13 35, 9 29, 9 18 Z" fill="#d97706" :stroke="isDarkTheme ? '#fef3c7' : '#78350f'" stroke-width="1.6" />
-            <ellipse cx="14" cy="24" rx="2" ry="4" fill="#fef3c7" opacity="0.5" />
-          </svg>
-        </div>
-      </div>
-
-      <div class="absolute right-3 top-0 flex items-start gap-4 opacity-95 sm:right-6">
-        <div class="animate-gentle-sway hidden flex-col items-center sm:flex" style="--sway-duration: 5.6s; --sway-delay: 0.5s">
-          <div class="h-8 w-[1.8px]" :style="{ backgroundColor: isDarkTheme ? '#fdba74' : '#78350f' }" />
-          <svg class="h-10 w-9 drop-shadow-[0_3px_10px_rgba(120,53,15,0.42)]" viewBox="0 0 36 42" fill="none">
-            <path d="M18 4 C18 8, 19 10, 18 12" stroke="#78350f" stroke-width="2.4" stroke-linecap="round" />
-            <path d="M7 18 C7 11, 29 11, 29 18 Z" fill="#7c2d12" :stroke="isDarkTheme ? '#fde68a' : '#451a03'" stroke-width="1.6" />
-            <path d="M9 18 H27 C27 29, 23 35, 18 38 C13 35, 9 29, 9 18 Z" fill="#ea580c" :stroke="isDarkTheme ? '#fef3c7' : '#78350f'" stroke-width="1.6" />
-          </svg>
-        </div>
-        <div class="animate-gentle-sway flex flex-col items-center" style="--sway-duration: 5.1s; --sway-delay: 0.1s">
-          <div class="h-5 w-[1.8px] sm:h-8" :style="{ backgroundColor: isDarkTheme ? '#fde68a' : '#9a3412' }" />
-          <svg class="h-11 w-11 drop-shadow-[0_3px_10px_rgba(180,83,9,0.45)]" viewBox="0 0 36 36" fill="none">
-            <path d="M18 3 L21.5 12 L31 10 L25 18 L32 24 L22 25 L18 33 L14 25 L4 24 L11 18 L5 10 L14.5 12 Z" :fill="isDarkTheme ? '#f59e0b' : '#b91c1c'" :stroke="isDarkTheme ? '#fef3c7' : '#7c2d12'" stroke-width="1.5" stroke-linejoin="round" />
-          </svg>
-        </div>
-      </div>
-    </template>
-
-    <!-- === ORNAMEN SUDUT ATAS 4: 🌸 SAKURA LANTERN (Lampion Kertas Sakura & Ranting Bunga Sakura) === -->
-    <template v-else-if="activeCozyTheme === 'sakura-lantern'">
-      <div class="absolute left-2 top-0 flex items-start gap-3 opacity-95 sm:left-5">
-        <div class="animate-gentle-sway flex flex-col items-center" style="--sway-duration: 5.2s; --sway-delay: 0.2s">
-          <div class="h-5 w-[1.8px] sm:h-8" :style="{ backgroundColor: isDarkTheme ? '#fbcfe8' : '#9d174d' }" />
-          <svg class="h-12 w-10 drop-shadow-[0_3px_12px_rgba(190,24,93,0.45)]" viewBox="0 0 40 48" fill="none">
-            <ellipse cx="20" cy="22" rx="12" ry="15" :fill="isDarkTheme ? '#f472b6' : '#ec4899'" :stroke="isDarkTheme ? '#fbcfe8' : '#831843'" stroke-width="1.8" />
-            <ellipse cx="20" cy="24" rx="6" ry="8" fill="#fef08a" opacity="0.88" />
-            <line x1="14" y1="8" x2="26" y2="8" stroke="#831843" stroke-width="2.6" stroke-linecap="round" />
-            <line x1="14" y1="36" x2="26" y2="36" stroke="#831843" stroke-width="2.6" stroke-linecap="round" />
-            <line x1="20" y1="37" x2="20" y2="45" :stroke="isDarkTheme ? '#fde68a' : '#be185d'" stroke-width="2" stroke-linecap="round" />
-          </svg>
-        </div>
-        <svg class="hidden h-12 w-16 drop-shadow-[0_2px_8px_rgba(190,24,93,0.35)] sm:block" viewBox="0 0 64 48" fill="none">
-          <path d="M0 6 Q24 14 54 10" :stroke="isDarkTheme ? '#f472b6' : '#831843'" stroke-width="2.4" stroke-linecap="round" />
-          <circle cx="22" cy="14" r="5.5" :fill="isDarkTheme ? '#fbcfe8' : '#f472b6'" :stroke="isDarkTheme ? '#f472b6' : '#9d174d'" stroke-width="1.1" />
-          <circle cx="22" cy="14" r="2" fill="#fef08a" />
-          <circle cx="42" cy="13" r="6" :fill="isDarkTheme ? '#f9a8d4' : '#ec4899'" :stroke="isDarkTheme ? '#fbcfe8' : '#831843'" stroke-width="1.1" />
-          <circle cx="42" cy="13" r="2" fill="#fef08a" />
-        </svg>
-      </div>
-
-      <div class="absolute right-2 top-0 flex items-start gap-3 opacity-95 sm:right-5">
-        <svg class="hidden h-12 w-16 drop-shadow-[0_2px_8px_rgba(190,24,93,0.35)] sm:block" viewBox="0 0 64 48" fill="none">
-          <path d="M64 6 Q40 14 10 10" :stroke="isDarkTheme ? '#f472b6' : '#831843'" stroke-width="2.4" stroke-linecap="round" />
-          <circle cx="42" cy="14" r="5.5" :fill="isDarkTheme ? '#fbcfe8' : '#f472b6'" :stroke="isDarkTheme ? '#f472b6' : '#9d174d'" stroke-width="1.1" />
-          <circle cx="42" cy="14" r="2" fill="#fef08a" />
-          <circle cx="22" cy="13" r="6" :fill="isDarkTheme ? '#f9a8d4' : '#ec4899'" :stroke="isDarkTheme ? '#fbcfe8' : '#831843'" stroke-width="1.1" />
-          <circle cx="22" cy="13" r="2" fill="#fef08a" />
-        </svg>
-        <div class="animate-gentle-sway flex flex-col items-center" style="--sway-duration: 5.6s; --sway-delay: 0.6s">
-          <div class="h-6 w-[1.8px] sm:h-9" :style="{ backgroundColor: isDarkTheme ? '#fbcfe8' : '#9d174d' }" />
-          <svg class="h-12 w-10 drop-shadow-[0_3px_12px_rgba(190,24,93,0.45)]" viewBox="0 0 40 48" fill="none">
-            <ellipse cx="20" cy="22" rx="12" ry="15" :fill="isDarkTheme ? '#e879f9' : '#db2777'" :stroke="isDarkTheme ? '#fbcfe8' : '#831843'" stroke-width="1.8" />
-            <ellipse cx="20" cy="24" rx="6" ry="8" fill="#fef08a" opacity="0.9" />
-            <line x1="14" y1="8" x2="26" y2="8" stroke="#701a75" stroke-width="2.6" stroke-linecap="round" />
-            <line x1="14" y1="36" x2="26" y2="36" stroke="#701a75" stroke-width="2.6" stroke-linecap="round" />
-            <line x1="20" y1="37" x2="20" y2="45" :stroke="isDarkTheme ? '#fde68a' : '#be185d'" stroke-width="2" stroke-linecap="round" />
-          </svg>
-        </div>
-      </div>
-    </template>
-
-    <!-- === ORNAMEN SUDUT ATAS 5: 🍯 HONEY LIBRARY (Lentera Buku Kuningan Antik & Sarang/Lebah Madu) === -->
-    <template v-else-if="activeCozyTheme === 'honey-library'">
-      <div class="absolute left-3 top-0 flex items-start gap-4 opacity-95 sm:left-6">
-        <div class="animate-gentle-sway flex flex-col items-center" style="--sway-duration: 6.2s; --sway-delay: 0s">
-          <div class="h-7 w-[2px] sm:h-10" :style="{ backgroundColor: isDarkTheme ? '#fcd34d' : '#92400e' }" />
-          <!-- Lentera Buku Kuningan Antik -->
-          <svg class="h-13 w-12 drop-shadow-[0_3px_12px_rgba(180,83,9,0.45)]" viewBox="0 0 48 52" fill="none">
-            <path d="M14 8 H34 L38 14 H10 Z" fill="#92400e" :stroke="isDarkTheme ? '#fde68a' : '#451a03'" stroke-width="1.6" />
-            <rect x="11" y="14" width="26" height="24" rx="4" fill="#fef3c7" stroke="#b45309" stroke-width="2" />
-            <!-- Ikon buku terbuka di dalam lentera -->
-            <path d="M15 28 Q19 22 24 25 Q29 22 33 28 V33 Q29 28 24 31 Q19 28 15 33 Z" fill="#f59e0b" stroke="#78350f" stroke-width="1.2" />
-            <rect x="14" y="38" width="20" height="4" rx="2" fill="#92400e" />
-          </svg>
-        </div>
-        <!-- Sarang & Lebah Madu Mini -->
-        <div class="animate-gentle-sway hidden flex-col items-center sm:flex" style="--sway-duration: 5.2s; --sway-delay: 0.9s">
-          <div class="h-9 w-[1.8px]" :style="{ backgroundColor: isDarkTheme ? '#fde68a' : '#b45309' }" />
-          <svg class="h-10 w-10 drop-shadow-[0_3px_8px_rgba(180,83,9,0.4)]" viewBox="0 0 40 40" fill="none">
-            <polygon points="20,4 32,11 32,25 20,32 8,25 8,11" fill="#fbbf24" stroke="#78350f" stroke-width="1.8" />
-            <polygon points="20,10 27,14 27,22 20,26 13,22 13,14" fill="#fef08a" stroke="#b45309" stroke-width="1.2" />
-          </svg>
-        </div>
-      </div>
-
-      <div class="absolute right-3 top-0 flex items-start gap-4 opacity-95 sm:right-6">
-        <div class="animate-gentle-sway hidden flex-col items-center sm:flex" style="--sway-duration: 5.5s; --sway-delay: 0.4s">
-          <div class="h-8 w-[1.8px]" :style="{ backgroundColor: isDarkTheme ? '#fde68a' : '#b45309' }" />
-          <!-- Lebah Madu Mini Imut -->
-          <svg class="h-10 w-10 drop-shadow-[0_3px_8px_rgba(180,83,9,0.4)]" viewBox="0 0 40 40" fill="none">
-            <ellipse cx="16" cy="14" rx="6" ry="4" fill="#fffbeb" stroke="#b45309" stroke-width="1.2" />
-            <ellipse cx="24" cy="14" rx="6" ry="4" fill="#fffbeb" stroke="#b45309" stroke-width="1.2" />
-            <ellipse cx="20" cy="23" rx="10" ry="7" fill="#fbbf24" stroke="#451a03" stroke-width="1.6" />
-            <line x1="17" y1="16.5" x2="17" y2="29.5" stroke="#451a03" stroke-width="2.2" />
-            <line x1="23" y1="16.5" x2="23" y2="29.5" stroke="#451a03" stroke-width="2.2" />
-          </svg>
-        </div>
-        <div class="animate-gentle-sway flex flex-col items-center" style="--sway-duration: 6.6s; --sway-delay: 0.7s">
-          <div class="h-7 w-[2px] sm:h-10" :style="{ backgroundColor: isDarkTheme ? '#fcd34d' : '#92400e' }" />
-          <svg class="h-13 w-12 drop-shadow-[0_3px_12px_rgba(180,83,9,0.45)]" viewBox="0 0 48 52" fill="none">
-            <path d="M14 8 H34 L38 14 H10 Z" fill="#92400e" :stroke="isDarkTheme ? '#fde68a' : '#451a03'" stroke-width="1.6" />
-            <rect x="11" y="14" width="26" height="24" rx="4" fill="#fef3c7" stroke="#b45309" stroke-width="2" />
-            <circle cx="24" cy="26" r="6" fill="#fbbf24" />
-            <circle cx="24" cy="26" r="3" fill="#fffbeb" />
-            <rect x="14" y="38" width="20" height="4" rx="2" fill="#92400e" />
-          </svg>
-        </div>
-      </div>
-    </template>
-
-    <!-- === ORNAMEN SUDUT ATAS 6: 🌧️ MIDNIGHT RAINY WINDOW (Awan Hujan Biru Tua, Tetesan Kristal & Payung Mini) === -->
-    <template v-else-if="activeCozyTheme === 'midnight-rain'">
-      <div class="absolute left-3 top-0 flex items-start gap-4 opacity-95 sm:left-6">
-        <!-- Gantungan Awan Hujan & Tetesan Air Kristal -->
-        <div class="animate-gentle-sway flex flex-col items-center" style="--sway-duration: 5.6s; --sway-delay: 0.2s">
-          <div class="h-6 w-[1.8px] sm:h-9" :style="{ backgroundColor: isDarkTheme ? '#93c5fd' : '#1d4ed8' }" />
-          <svg class="h-13 w-14 drop-shadow-[0_3px_10px_rgba(29,78,216,0.4)]" viewBox="0 0 56 52" fill="none">
-            <path d="M12 24 H44 C49 24 52 21 52 17 C52 13 49 10 45 10 C43 5 38 3 33 5 C29 2 23 3 20 7 C15 6 10 9 10 14 C7 15 6 17 6 19 C6 22 8.5 24 12 24 Z" :fill="isDarkTheme ? '#3b82f6' : '#1e40af'" :stroke="isDarkTheme ? '#bfdbfe' : '#172554'" stroke-width="1.8" />
-            <path d="M18 31 C18 31 15 36 15 38 A3 3 0 0 0 21 38 C21 36 18 31 18 31 Z" :fill="isDarkTheme ? '#bae6fd' : '#2563eb'" />
-            <path d="M28 34 C28 34 25 39 25 41 A3 3 0 0 0 31 41 C31 39 28 34 28 34 Z" :fill="isDarkTheme ? '#60a5fa' : '#0284c7'" />
-            <path d="M38 31 C38 31 35 36 35 38 A3 3 0 0 0 41 38 C41 36 38 31 38 31 Z" :fill="isDarkTheme ? '#bae6fd' : '#2563eb'" />
-          </svg>
-        </div>
-        <!-- Gantungan Payung Mini -->
-        <div class="animate-gentle-sway hidden flex-col items-center sm:flex" style="--sway-duration: 5.0s; --sway-delay: 0.9s">
-          <div class="h-8 w-[1.8px]" :style="{ backgroundColor: isDarkTheme ? '#93c5fd' : '#1e40af' }" />
-          <svg class="h-11 w-11 drop-shadow-[0_3px_10px_rgba(29,78,216,0.4)]" viewBox="0 0 44 44" fill="none">
-            <path d="M6 23 C6 12, 38 12, 38 23 Q32 19 27 23 Q22 19 17 23 Q12 19 6 23 Z" :fill="isDarkTheme ? '#60a5fa' : '#2563eb'" :stroke="isDarkTheme ? '#e0f2fe' : '#172554'" stroke-width="1.8" stroke-linejoin="round" />
-            <path d="M22 22 V35 C22 38, 17 38, 17 35" :stroke="isDarkTheme ? '#fde68a' : '#1e3a8a'" stroke-width="2.2" stroke-linecap="round" />
-          </svg>
-        </div>
-      </div>
-
-      <div class="absolute right-3 top-0 flex items-start gap-4 opacity-95 sm:right-6">
-        <div class="animate-gentle-sway hidden flex-col items-center sm:flex" style="--sway-duration: 5.3s; --sway-delay: 0.5s">
-          <div class="h-8 w-[1.8px]" :style="{ backgroundColor: isDarkTheme ? '#93c5fd' : '#1e40af' }" />
-          <svg class="h-11 w-11 drop-shadow-[0_3px_10px_rgba(29,78,216,0.4)]" viewBox="0 0 44 44" fill="none">
-            <path d="M6 23 C6 12, 38 12, 38 23 Q32 19 27 23 Q22 19 17 23 Q12 19 6 23 Z" :fill="isDarkTheme ? '#38bdf8' : '#1d4ed8'" :stroke="isDarkTheme ? '#e0f2fe' : '#172554'" stroke-width="1.8" stroke-linejoin="round" />
-            <path d="M22 22 V35 C22 38, 27 38, 27 35" :stroke="isDarkTheme ? '#fde68a' : '#1e3a8a'" stroke-width="2.2" stroke-linecap="round" />
-          </svg>
-        </div>
-        <div class="animate-gentle-sway flex flex-col items-center" style="--sway-duration: 5.8s; --sway-delay: 0.1s">
-          <div class="h-5 w-[1.8px] sm:h-8" :style="{ backgroundColor: isDarkTheme ? '#93c5fd' : '#1d4ed8' }" />
-          <svg class="h-13 w-14 drop-shadow-[0_3px_10px_rgba(29,78,216,0.4)]" viewBox="0 0 56 52" fill="none">
-            <path d="M12 24 H44 C49 24 52 21 52 17 C52 13 49 10 45 10 C43 5 38 3 33 5 C29 2 23 3 20 7 C15 6 10 9 10 14 C7 15 6 17 6 19 C6 22 8.5 24 12 24 Z" :fill="isDarkTheme ? '#2563eb' : '#1e40af'" :stroke="isDarkTheme ? '#bfdbfe' : '#172554'" stroke-width="1.8" />
-            <path d="M20 31 C20 31 17 36 17 38 A3 3 0 0 0 23 38 C23 36 20 31 20 31 Z" :fill="isDarkTheme ? '#bae6fd' : '#0284c7'" />
-            <path d="M35 33 C35 33 32 38 32 40 A3 3 0 0 0 38 40 C38 38 35 33 35 33 Z" :fill="isDarkTheme ? '#60a5fa' : '#2563eb'" />
-          </svg>
-        </div>
-      </div>
-    </template>
-
-    <!-- === ORNAMEN SUDUT ATAS 7: ☁️ PASTEL CLOUDLAND (Awan Kapas & Pelangi Pastel Ber-Outline Jelas) === -->
-    <template v-else-if="activeCozyTheme === 'pastel-cloudland'">
-      <div class="absolute left-3 top-0 flex items-start gap-4 opacity-95 sm:left-6">
-        <div class="animate-gentle-sway flex flex-col items-center" style="--sway-duration: 5.8s; --sway-delay: 0.2s">
-          <div class="h-6 w-[1.8px] sm:h-9" :style="{ backgroundColor: isDarkTheme ? '#bfdbfe' : '#2563eb' }" />
-          <!-- Awan Kapas & Pelangi Pastel -->
-          <svg class="h-12 w-15 drop-shadow-[0_3px_10px_rgba(37,99,235,0.3)]" viewBox="0 0 60 46" fill="none">
-            <path d="M12 30 A18 18 0 0 1 48 30" stroke="#f472b6" stroke-width="3.5" stroke-linecap="round" />
-            <path d="M16 30 A14 14 0 0 1 44 30" stroke="#fbbf24" stroke-width="3.2" stroke-linecap="round" />
-            <path d="M20 30 A10 10 0 0 1 40 30" stroke="#38bdf8" stroke-width="3.2" stroke-linecap="round" />
-            <path d="M8 36 H25 C28 36 30 34 30 31 C30 28 28 26 25 26 C23 23 19 22 16 24 C13 23 9 25 9 29 C6.5 29.5 6 31.5 6 33 C6 34.8 7 36 8 36 Z" fill="#ffffff" :stroke="isDarkTheme ? '#93c5fd' : '#2563eb'" stroke-width="1.6" />
-            <path d="M35 36 H52 C54.5 36 56 34 56 31.5 C56 29 54 27 51.5 27 C50 24 46 23 43 25 C40 24 36.5 26 36.5 29.5 C34.5 30 33.5 31.8 33.5 33.2 C33.5 34.8 34.2 36 35 36 Z" fill="#ffffff" :stroke="isDarkTheme ? '#c4b5fd' : '#6366f1'" stroke-width="1.6" />
-          </svg>
-        </div>
-      </div>
-
-      <div class="absolute right-3 top-0 flex items-start gap-4 opacity-95 sm:right-6">
-        <div class="animate-gentle-sway flex flex-col items-center" style="--sway-duration: 6.1s; --sway-delay: 0.6s">
-          <div class="h-6 w-[1.8px] sm:h-9" :style="{ backgroundColor: isDarkTheme ? '#c4b5fd' : '#4f46e5' }" />
-          <svg class="h-12 w-15 drop-shadow-[0_3px_10px_rgba(79,70,229,0.3)]" viewBox="0 0 60 46" fill="none">
-            <path d="M12 28 H46 C51 28 54 25 54 21 C54 17 51 14 47 14 C45 9 40 7 35 9 C31 6 25 7 22 11 C17 10 12 13 12 18 C9 19 8 21 8 23 C8 26 10 28 12 28 Z" fill="#ffffff" :stroke="isDarkTheme ? '#93c5fd' : '#1d4ed8'" stroke-width="1.8" />
-            <path d="M22 33 L23.2 36.2 L26.4 37.4 L23.2 38.6 L22 41.8 L20.8 38.6 L17.6 37.4 L20.8 36.2 Z" fill="#f472b6" />
-            <path d="M38 32 L39.2 35.2 L42.4 36.4 L39.2 37.6 L38 40.8 L36.8 37.6 L33.6 36.4 L36.8 35.2 Z" fill="#38bdf8" />
-          </svg>
-        </div>
-      </div>
-    </template>
-
-    <!-- === ORNAMEN SUDUT ATAS 8: ❄️ WINTER FROST (Kepingan Salju Kristal Es Biru Es) === -->
-    <template v-else-if="activeCozyTheme === 'winter-frost'">
-      <div class="absolute left-3 top-0 flex items-start gap-3 opacity-95 sm:left-6 sm:gap-5">
-        <div class="animate-gentle-sway flex flex-col items-center" style="--sway-duration: 5.4s; --sway-delay: 0.2s">
-          <div class="h-6 w-[1.8px] sm:h-9" :style="{ backgroundColor: isDarkTheme ? '#bae6fd' : '#0284c7' }" />
-          <svg class="h-10 w-10 drop-shadow-[0_3px_10px_rgba(2,132,199,0.42)]" viewBox="0 0 36 36" fill="none">
-            <path d="M18 3 V33 M3 18 H33 M7.5 7.5 L28.5 28.5 M28.5 7.5 L7.5 28.5" :stroke="isDarkTheme ? '#e0f2fe' : '#0284c7'" stroke-width="2.2" stroke-linecap="round" />
-            <circle cx="18" cy="18" r="4" :fill="isDarkTheme ? '#bae6fd' : '#38bdf8'" :stroke="isDarkTheme ? '#ffffff' : '#1d4ed8'" stroke-width="1.3" />
-          </svg>
-        </div>
-        <svg class="hidden h-12 w-12 drop-shadow-[0_2px_8px_rgba(2,132,199,0.35)] sm:block" viewBox="0 0 48 48" fill="none">
-          <polygon points="8,0 14,0 11,34" :fill="isDarkTheme ? 'rgba(224,242,254,0.75)' : 'rgba(56,189,248,0.65)'" :stroke="isDarkTheme ? 'none' : '#0369a1'" stroke-width="1" />
-          <polygon points="20,0 28,0 24,44" :fill="isDarkTheme ? 'rgba(186,230,253,0.85)' : 'rgba(14,165,233,0.72)'" :stroke="isDarkTheme ? 'none' : '#0369a1'" stroke-width="1" />
-          <polygon points="34,0 40,0 37,26" :fill="isDarkTheme ? 'rgba(224,242,254,0.7)' : 'rgba(56,189,248,0.62)'" :stroke="isDarkTheme ? 'none' : '#0369a1'" stroke-width="1" />
-        </svg>
-      </div>
-
-      <div class="absolute right-3 top-0 flex items-start gap-3 opacity-95 sm:right-6 sm:gap-5">
-        <svg class="hidden h-12 w-12 drop-shadow-[0_2px_8px_rgba(2,132,199,0.35)] sm:block" viewBox="0 0 48 48" fill="none">
-          <polygon points="8,0 14,0 11,26" :fill="isDarkTheme ? 'rgba(224,242,254,0.7)' : 'rgba(56,189,248,0.62)'" :stroke="isDarkTheme ? 'none' : '#0369a1'" stroke-width="1" />
-          <polygon points="20,0 28,0 24,44" :fill="isDarkTheme ? 'rgba(186,230,253,0.85)' : 'rgba(14,165,233,0.72)'" :stroke="isDarkTheme ? 'none' : '#0369a1'" stroke-width="1" />
-          <polygon points="34,0 40,0 37,34" :fill="isDarkTheme ? 'rgba(224,242,254,0.75)' : 'rgba(56,189,248,0.65)'" :stroke="isDarkTheme ? 'none' : '#0369a1'" stroke-width="1" />
-        </svg>
-        <div class="animate-gentle-sway flex flex-col items-center" style="--sway-duration: 5.8s; --sway-delay: 0.7s">
-          <div class="h-5 w-[1.8px] sm:h-8" :style="{ backgroundColor: isDarkTheme ? '#bae6fd' : '#0284c7' }" />
-          <svg class="h-10 w-10 drop-shadow-[0_3px_10px_rgba(2,132,199,0.42)]" viewBox="0 0 36 36" fill="none">
-            <path d="M18 3 V33 M3 18 H33 M7.5 7.5 L28.5 28.5 M28.5 7.5 L7.5 28.5" :stroke="isDarkTheme ? '#e0f2fe' : '#1d4ed8'" stroke-width="2.2" stroke-linecap="round" />
-            <circle cx="18" cy="18" r="4" :fill="isDarkTheme ? '#7dd3fc' : '#60a5fa'" :stroke="isDarkTheme ? '#ffffff' : '#1e3a8a'" stroke-width="1.3" />
-          </svg>
-        </div>
-      </div>
-    </template>
-
-    <!-- === ORNAMEN SUDUT ATAS 9: 💎 ASTRAL CRYSTAL (Kristal Ungu Ametis & Cincin Planet) === -->
-    <template v-else-if="activeCozyTheme === 'astral-palace'">
-      <div class="absolute left-3 top-0 flex items-start gap-4 opacity-95 sm:left-6">
-        <div class="animate-gentle-sway flex flex-col items-center" style="--sway-duration: 5.4s; --sway-delay: 0s">
-          <div class="h-5 w-[1.8px] sm:h-8" :style="{ backgroundColor: isDarkTheme ? '#c4b5fd' : '#7e22ce' }" />
-          <svg class="h-12 w-9 drop-shadow-[0_3px_12px_rgba(126,34,206,0.48)]" viewBox="0 0 36 48" fill="none">
-            <polygon points="18,2 32,20 18,46 4,20" :fill="isDarkTheme ? 'rgba(167,139,250,0.42)' : 'rgba(147,51,234,0.34)'" :stroke="isDarkTheme ? '#c4b5fd' : '#6b21a8'" stroke-width="1.9" />
-            <polyline points="18,2 18,46" :stroke="isDarkTheme ? '#34d399' : '#059669'" stroke-width="1.5" />
-            <polyline points="4,20 18,24 32,20" :stroke="isDarkTheme ? '#ffffff' : '#581c87'" stroke-width="1.4" opacity="0.85" />
-          </svg>
-        </div>
-        <!-- Cincin Planet Bercahaya -->
-        <div class="animate-gentle-sway hidden flex-col items-center sm:flex" style="--sway-duration: 6.1s; --sway-delay: 0.8s">
-          <div class="h-8 w-[1.8px]" :style="{ backgroundColor: isDarkTheme ? '#6ee7b7' : '#059669' }" />
-          <svg class="h-10 w-13 drop-shadow-[0_3px_10px_rgba(126,34,206,0.4)]" viewBox="0 0 52 40" fill="none">
-            <circle cx="26" cy="20" r="10" :fill="isDarkTheme ? '#a78bfa' : '#7e22ce'" :stroke="isDarkTheme ? '#fef08a' : '#4c1d95'" stroke-width="1.5" />
-            <ellipse cx="26" cy="20" rx="22" ry="6.5" transform="rotate(-18 26 20)" :stroke="isDarkTheme ? '#fde047' : '#d97706'" stroke-width="2.2" fill="none" />
-          </svg>
-        </div>
-      </div>
-
-      <div class="absolute right-3 top-0 flex items-start gap-4 opacity-95 sm:right-6">
-        <div class="animate-gentle-sway hidden flex-col items-center sm:flex" style="--sway-duration: 5.9s; --sway-delay: 0.4s">
-          <div class="h-8 w-[1.8px]" :style="{ backgroundColor: isDarkTheme ? '#fde047' : '#7e22ce' }" />
-          <svg class="h-10 w-13 drop-shadow-[0_3px_10px_rgba(5,150,105,0.4)]" viewBox="0 0 52 40" fill="none">
-            <circle cx="26" cy="20" r="10" :fill="isDarkTheme ? '#34d399' : '#059669'" :stroke="isDarkTheme ? '#fef08a' : '#064e3b'" stroke-width="1.5" />
-            <ellipse cx="26" cy="20" rx="22" ry="6.5" transform="rotate(18 26 20)" :stroke="isDarkTheme ? '#c4b5fd' : '#7e22ce'" stroke-width="2.2" fill="none" />
-          </svg>
-        </div>
-        <div class="animate-gentle-sway flex flex-col items-center" style="--sway-duration: 5.7s; --sway-delay: 0.9s">
-          <div class="h-5 w-[1.8px] sm:h-8" :style="{ backgroundColor: isDarkTheme ? '#6ee7b7' : '#7e22ce' }" />
-          <svg class="h-12 w-9 drop-shadow-[0_3px_12px_rgba(126,34,206,0.48)]" viewBox="0 0 36 48" fill="none">
-            <polygon points="18,2 32,20 18,46 4,20" :fill="isDarkTheme ? 'rgba(52,211,153,0.38)' : 'rgba(126,34,206,0.32)'" :stroke="isDarkTheme ? '#6ee7b7' : '#581c87'" stroke-width="1.9" />
-            <polyline points="18,2 18,46" :stroke="isDarkTheme ? '#fde047' : '#d97706'" stroke-width="1.5" />
-            <polyline points="4,20 18,24 32,20" :stroke="isDarkTheme ? '#ffffff' : '#581c87'" stroke-width="1.4" opacity="0.85" />
-          </svg>
-        </div>
-      </div>
-    </template>
-
-    <!-- === ORNAMEN SUDUT ATAS 10: 🌃 NEON NIGHT CITY (Papan Neon Mini Cyan & Magenta) === -->
-    <template v-else-if="activeCozyTheme === 'neon-night-city'">
-      <div class="absolute left-3 top-0 flex items-start gap-3 opacity-95 sm:left-6">
-        <div class="animate-gentle-sway flex flex-col items-center" style="--sway-duration: 5.2s; --sway-delay: 0s">
-          <div class="h-5 w-[2px] sm:h-7" :style="{ backgroundColor: isDarkTheme ? '#00f5d4' : '#0e7490' }" />
-          <svg class="h-11 w-14 drop-shadow-[0_3px_12px_rgba(14,116,144,0.45)]" viewBox="0 0 56 44" fill="none">
-            <rect x="4" y="4" width="48" height="34" rx="8" :fill="isDarkTheme ? 'rgba(9,5,20,0.88)' : 'rgba(30,27,75,0.9)'" :stroke="isDarkTheme ? '#00f5d4' : '#06b6d4'" stroke-width="2.2" />
-            <path d="M28 11 L30.4 17.6 L37 20 L30.4 22.4 L28 29 L25.6 22.4 L19 20 L25.6 17.6 Z" fill="#ff2a85" />
-            <line x1="11" y1="32" x2="45" y2="32" stroke="#00f5d4" stroke-width="1.8" />
-          </svg>
-        </div>
-      </div>
-
-      <div class="absolute right-3 top-0 flex items-start gap-3 opacity-95 sm:right-6">
-        <div class="animate-gentle-sway flex flex-col items-center" style="--sway-duration: 5.6s; --sway-delay: 0.6s">
-          <div class="h-5 w-[2px] sm:h-7" :style="{ backgroundColor: isDarkTheme ? '#ff2a85' : '#be185d' }" />
-          <svg class="h-11 w-14 drop-shadow-[0_3px_12px_rgba(190,24,93,0.45)]" viewBox="0 0 56 44" fill="none">
-            <rect x="4" y="4" width="48" height="34" rx="8" :fill="isDarkTheme ? 'rgba(9,5,20,0.88)' : 'rgba(30,27,75,0.9)'" :stroke="isDarkTheme ? '#ff2a85' : '#ec4899'" stroke-width="2.2" />
-            <circle cx="28" cy="20" r="8" stroke="#00f5d4" stroke-width="2.2" />
-            <circle cx="28" cy="20" r="3" fill="#ff2a85" />
-          </svg>
-        </div>
-      </div>
-    </template>
-
-    <!-- === ORNAMEN SUDUT ATAS 11: DEFAULT / TWILIGHT / BERRY / OCEAN (Bulan Sabit Emas & Bintang Berlian Kontras) === -->
-    <template v-else>
-      <!-- 1. Hiasan Gantung Kiri Atas (Bulan Sabit Emas + Bintang Berlian) -->
-      <div class="absolute left-2 top-0 flex items-start gap-3 opacity-95 sm:left-5 sm:gap-5">
-        <div
-          class="animate-gentle-sway flex flex-col items-center"
-          style="--sway-duration: 5.4s; --sway-delay: 0.2s"
-        >
-          <div class="h-6 w-[1.8px] sm:h-10" :style="{ backgroundColor: isDarkTheme ? '#fbcfe8' : activeBg.moon }" />
-          <svg class="-mt-1 h-9 w-9 drop-shadow-[0_3px_10px_rgba(109,40,217,0.35)] sm:h-10 sm:w-10" viewBox="0 0 40 40" fill="none">
-            <path
-              d="M25 6C17.5 7.5 12 14 12 21.5C12 28 16.5 33.5 22.5 35.5C14.8 36 7.5 29.8 6.5 22C5.5 13.5 11.8 6 20.5 5.2C22.2 5 23.8 5.4 25 6Z"
-              :fill="isDarkTheme ? activeBg.moon : '#d97706'"
-              :stroke="isDarkTheme ? 'none' : '#78350f'"
-              stroke-width="1.3"
-            />
-            <path d="M27 18 L28.4 21.6 L32 23 L28.4 24.4 L27 28 L25.6 24.4 L22 23 L25.6 21.6 Z" :fill="activeBg.charmAccent" />
-          </svg>
-        </div>
-
-        <div
-          class="animate-gentle-sway hidden flex-col items-center sm:flex"
-          style="--sway-duration: 4.6s; --sway-delay: 1.1s"
-        >
-          <div class="h-5 w-[1.8px]" :style="{ backgroundColor: isDarkTheme ? '#fbcfe8' : activeBg.charmAccent }" />
-          <svg class="-mt-0.5 h-7 w-7 drop-shadow-[0_3px_8px_rgba(109,40,217,0.35)]" viewBox="0 0 32 32" fill="none">
-            <path
-              d="M16 3 L19.4 11.2 L28.2 12 L21.5 17.8 L23.5 26.5 L16 21.9 L8.5 26.5 L10.5 17.8 L3.8 12 L12.6 11.2 Z"
-              :fill="activeBg.charmAccent"
-              :stroke="isDarkTheme ? '#ffffff' : activeBg.moon"
-              stroke-width="1.4"
-              stroke-linejoin="round"
-            />
-          </svg>
-        </div>
-      </div>
-
-      <!-- 2. Hiasan Gantung Kanan Atas -->
-      <div class="absolute right-2 top-0 flex items-start gap-3 opacity-95 sm:right-5 sm:gap-5">
-        <div
-          class="animate-gentle-sway hidden flex-col items-center sm:flex"
-          style="--sway-duration: 4.9s; --sway-delay: 0.5s"
-        >
-          <div class="h-10 w-[1.8px]" :style="{ backgroundColor: isDarkTheme ? '#fbcfe8' : activeBg.charmAccent }" />
-          <svg class="-mt-1 h-7 w-7 drop-shadow-[0_3px_8px_rgba(109,40,217,0.35)]" viewBox="0 0 32 32" fill="none">
-            <path
-              d="M16 3 L19.4 11.2 L28.2 12 L21.5 17.8 L23.5 26.5 L16 21.9 L8.5 26.5 L10.5 17.8 L3.8 12 L12.6 11.2 Z"
-              :fill="activeBg.charmAccent"
-              :stroke="isDarkTheme ? '#ffffff' : activeBg.moon"
-              stroke-width="1.4"
-              stroke-linejoin="round"
-            />
-          </svg>
-        </div>
-
-        <div
-          class="animate-gentle-sway flex flex-col items-center"
-          style="--sway-duration: 6.2s; --sway-delay: 0.1s"
-        >
-          <div class="h-5 w-[1.8px] sm:h-8" :style="{ backgroundColor: isDarkTheme ? '#fde68a' : '#b45309' }" />
-          <svg
-            class="-mt-1 h-11 w-11 drop-shadow-[0_3px_10px_rgba(180,83,9,0.35)] sm:h-12 sm:w-12"
-            viewBox="0 0 64 64"
-            fill="none"
-          >
-            <path
-              d="M42 8C30 10 21 20.5 21 33C21 43.5 27.8 52.5 37.5 56C25 56.8 13 46.8 11.5 34C10 20.2 20 8 34 6.8C36.8 6.5 39.5 7 42 8Z"
-              :fill="isDarkTheme ? activeBg.moon : '#d97706'"
-              :stroke="isDarkTheme ? 'none' : '#78350f'"
-              stroke-width="1.8"
-            />
-            <line x1="36" y1="15" x2="36" y2="27" :stroke="isDarkTheme ? '#ffffff' : activeBg.moon" stroke-width="1.6" opacity="0.9" />
-            <path
-              d="M36 25 L37.8 29.8 L42.8 31.5 L37.8 33.2 L36 38 L34.2 33.2 L29.2 31.5 L34.2 29.8 Z"
-              :fill="activeBg.charmAccent"
-            />
-          </svg>
-        </div>
-      </div>
-    </template>
+    <!-- Ornamen Gantungan Atas Estetik (Kiri 4, Tengah-Atas 3 mini, Kanan 4 — 13 Tema & Palet, Pastel di Terang / Glow di Gelap) -->
+    <TopHangingOrnaments />
 
     <!-- 3. EFEK BINTANG JATUH (disembunyikan pada laut dalam, perpustakaan indoor, & matcha; 0% Ringan, 50% Sedang, 100% Tinggi) -->
     <template v-if="!isLowGraphics && showSkyStarsAndMeteors">

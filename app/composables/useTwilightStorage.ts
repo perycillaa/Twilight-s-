@@ -26,33 +26,33 @@ export interface GraphicsQualityMeta {
 export const GRAPHICS_QUALITY_OPTIONS: Record<GraphicsQuality, GraphicsQualityMeta> = {
   low: {
     id: 'low',
-    label: 'Ringan',
+    label: 'Low',
     icon: '🍃',
     maxDpr: 1,
-    targetFps: 28,
+    targetFps: 0,
     particleScale: 0,
     enableCursorDust: false,
-    toastText: '⚙️ Grafik: 🍃 Ringan — Paling hemat baterai & anti-lag (28 FPS, tanpa blur)',
+    toastText: '⚙️ Grafik: 🍃 Low (Rendah) — Canvas jeda, tanpa blur/jejak kursor, hemat CPU/GPU',
   },
   medium: {
     id: 'medium',
-    label: 'Sedang',
+    label: 'Medium',
     icon: '⚖️',
-    maxDpr: 1.35,
-    targetFps: 40,
+    maxDpr: 1.25,
+    targetFps: 30,
     particleScale: 0.5,
     enableCursorDust: false,
-    toastText: '⚙️ Grafik: ⚖️ Sedang — Seimbang untuk HP (40 FPS, 50% partikel, blur ringan)',
+    toastText: '⚙️ Grafik: ⚖️ Medium (Sedang) — Seimbang & ringan (30 FPS, 50% partikel)',
   },
   high: {
     id: 'high',
-    label: 'Tinggi',
+    label: 'High',
     icon: '✨',
     maxDpr: 2,
     targetFps: 60,
     particleScale: 1,
     enableCursorDust: true,
-    toastText: '⚙️ Grafik: ✨ Tinggi — Visual maksimal penuh (60 FPS, 100% efek & kilau)',
+    toastText: '⚙️ Grafik: ✨ High (Tinggi) — Visual maksimal penuh (60 FPS, 100% efek & kilau)',
   },
 }
 
@@ -4263,7 +4263,7 @@ export function useTwilightStorage() {
         userName.value = savedUserName.trim()
       }
 
-      // 11. Muat Pengaturan Kualitas Grafik (atau auto-detect: Sedang di HP/layar sentuh, Tinggi di PC/Laptop)
+      // 11. Muat Pengaturan Kualitas Grafik (atau auto-detect ramah perangkat seluler & spek rendah)
       const savedGraphics = localStorage.getItem(STORAGE_KEYS.GRAPHICS_QUALITY)
       const savedBattery = localStorage.getItem(STORAGE_KEYS.BATTERY_SAVER)
       if (isValidGraphicsQuality(savedGraphics)) {
@@ -4271,11 +4271,19 @@ export function useTwilightStorage() {
       } else if (savedBattery === 'true') {
         graphicsQuality.value = 'low'
       } else {
+        const prefersReduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
         const isMobileAuto =
           (window.matchMedia?.('(pointer: coarse)').matches ?? false) ||
           window.innerWidth < 768 ||
           /Android|iPhone|iPad|iPod|Mobile|Tablet/i.test(navigator.userAgent)
-        graphicsQuality.value = isMobileAuto ? 'medium' : 'high'
+        const lowCoreCount = typeof navigator.hardwareConcurrency === 'number' && navigator.hardwareConcurrency <= 4
+        if (prefersReduced) {
+          graphicsQuality.value = 'low'
+        } else if (isMobileAuto || lowCoreCount) {
+          graphicsQuality.value = 'medium'
+        } else {
+          graphicsQuality.value = 'high'
+        }
       }
       isBatterySaverMode.value = graphicsQuality.value === 'low'
       applyGraphicsQualityToDocument(graphicsQuality.value)

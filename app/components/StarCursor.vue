@@ -164,6 +164,8 @@ const activeThemeColors = computed(() => {
 })
 
 const cursorFilterStyle = computed<string>(() => {
+  // Di mode Low (Rendah), hilangkan filter drop-shadow berat agar bebas beban GPU
+  if (graphicsConfig.value.particleScale <= 0) return 'none'
   const glow = activeThemeColors.value.glow
   if (isDarkTheme.value) {
     return `drop-shadow(0 0 6px var(--cursor-glow, ${glow})) drop-shadow(0 0 13px var(--cursor-glow, ${glow}))`
@@ -205,7 +207,7 @@ watch([theme, activeCozyTheme, isDarkTheme, activeCursor], () => {
 })
 
 function spawnTapRipple(x: number, y: number) {
-  if (!isEnabled.value || document.hidden) return
+  if (!isEnabled.value || graphicsConfig.value.particleScale <= 0 || document.hidden) return
   const spec = activeShapeSpec.value
   const id = ++rippleIdCounter
   const next: TapRipple = {

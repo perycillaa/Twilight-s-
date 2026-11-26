@@ -2541,26 +2541,35 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 
 /* --- PENGATURAN KUALITAS GRAFIK (RINGAN / SEDANG / TINGGI) --- */
 
-/* 1. Mode Ringan (Low): matikan backdrop-blur (ganti semi-transparan solid estetik) & jeda seluruh animasi berat */
+/* 1. Mode Low (Rendah): matikan backdrop-blur berat, kurangi shadow, & jeda animasi dekoratif (hemat CPU/GPU) */
 html[data-graphics-quality="low"] .glass-card,
 html[data-graphics-quality="low"] header {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
-  background-color: var(--card-bg, rgba(34, 21, 64, 0.86)) !important;
+  background-color: var(--card-bg-solid, rgba(34, 21, 64, 0.94)) !important;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12) !important;
 }
 
+html[data-graphics-quality="low"] .backdrop-blur-xl,
+html[data-graphics-quality="low"] .backdrop-blur-lg,
 html[data-graphics-quality="low"] .backdrop-blur-md,
-html[data-graphics-quality="low"] .backdrop-blur-sm {
+html[data-graphics-quality="low"] .backdrop-blur-sm,
+html[data-graphics-quality="low"] .backdrop-blur-xs {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
 }
 
-/* 2. Mode Sedang (Medium): gunakan efek kaca blur ringan (4px) agar GPU HP tetap seimbang */
+/* 2. Mode Medium (Sedang): blur kaca ringan (4px) & kurangi shadow berat agar HP tetap seimbang di 30 FPS */
 html[data-graphics-quality="medium"] .glass-card,
 html[data-graphics-quality="medium"] header,
+html[data-graphics-quality="medium"] .backdrop-blur-xl,
 html[data-graphics-quality="medium"] .backdrop-blur-md {
   backdrop-filter: blur(4px) !important;
   -webkit-backdrop-filter: blur(4px) !important;
+}
+
+html[data-graphics-quality="medium"] .shadow-2xl {
+  box-shadow: 0 10px 24px -6px rgba(15, 23, 42, 0.22) !important;
 }
 
 /* Jeda seluruh animasi dekoratif otomatis saat Alt-Tab / tab tidak terlihat agar GPU langsung bebas & kembali tanpa lag! */
