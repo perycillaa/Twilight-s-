@@ -2419,14 +2419,45 @@ export function useTwilightStorage() {
       currentHigh = gameHighScore.value
     }
 
-    // 1. Hadiah dasar penyelesaian ronde (+5 🐟 selama kuota hadiah game < 3/3)
+    // 1. Tambah kuota main (+1) & hadiah dasar (+5 🐟) HANYA saat ronde selesai penuh 50 detik!
     let baseRewardCoins = 0
     if (payload.gameId === 'fishing') {
+      if (fishingPlayCount.value >= MAX_GAME_DAILY_PLAYS) {
+        return {
+          isNewRecord: false,
+          baseRewardCoins: 0,
+          fishBonusCoins: 0,
+          totalCoinsAwarded: 0,
+          affectionGained: 0,
+          claimsUsed: fishingRewardCount.value,
+          maxClaims: MAX_GAME_DAILY_REWARDS,
+          playsUsed: fishingPlayCount.value,
+          maxPlays: MAX_GAME_DAILY_PLAYS,
+          highScore: fishingHighScore.value,
+        }
+      }
+      fishingPlayCount.value = Math.min(MAX_GAME_DAILY_PLAYS, fishingPlayCount.value + 1)
       if (fishingRewardCount.value < MAX_GAME_DAILY_REWARDS) {
         baseRewardCoins = GAME_COMPLETION_BASE_COINS
         fishingRewardCount.value = Math.min(MAX_GAME_DAILY_REWARDS, fishingRewardCount.value + 1)
       }
     } else {
+      if (catcherPlayCount.value >= MAX_GAME_DAILY_PLAYS) {
+        return {
+          isNewRecord: false,
+          baseRewardCoins: 0,
+          fishBonusCoins: 0,
+          totalCoinsAwarded: 0,
+          affectionGained: 0,
+          claimsUsed: catcherRewardCount.value,
+          maxClaims: MAX_GAME_DAILY_REWARDS,
+          playsUsed: catcherPlayCount.value,
+          maxPlays: MAX_GAME_DAILY_PLAYS,
+          highScore: gameHighScore.value,
+        }
+      }
+      catcherPlayCount.value = Math.min(MAX_GAME_DAILY_PLAYS, catcherPlayCount.value + 1)
+      gameDailyPlayCount.value = catcherPlayCount.value
       if (catcherRewardCount.value < MAX_GAME_DAILY_REWARDS) {
         baseRewardCoins = GAME_COMPLETION_BASE_COINS
         catcherRewardCount.value = Math.min(MAX_GAME_DAILY_REWARDS, catcherRewardCount.value + 1)

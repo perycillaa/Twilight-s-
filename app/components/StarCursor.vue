@@ -106,43 +106,43 @@ const activeThemeColors = computed(() => {
       case 'matcha-garden':
         return dark
           ? { fill: '#4ade80', secondary: '#86efac', stroke: '#ecfdf5', glow: 'rgba(74, 222, 128, 0.82)' }
-          : { fill: '#16a34a', secondary: '#4ade80', stroke: '#14532d', glow: 'rgba(20, 83, 45, 0.36)' }
+          : { fill: '#bbf7d0', secondary: '#86efac', stroke: '#166534', glow: 'rgba(255, 255, 255, 0.9)' }
       case 'autumn-cafe':
         return dark
           ? { fill: '#fb923c', secondary: '#fbbf24', stroke: '#fef3c7', glow: 'rgba(251, 146, 60, 0.84)' }
-          : { fill: '#ea580c', secondary: '#f59e0b', stroke: '#7c2d12', glow: 'rgba(124, 45, 18, 0.36)' }
+          : { fill: '#fed7aa', secondary: '#fdba74', stroke: '#9a3412', glow: 'rgba(255, 255, 255, 0.9)' }
       case 'honey-library':
         return dark
           ? { fill: '#fcd34d', secondary: '#fde68a', stroke: '#fffbeb', glow: 'rgba(252, 211, 77, 0.84)' }
-          : { fill: '#d97706', secondary: '#f59e0b', stroke: '#78350f', glow: 'rgba(120, 53, 15, 0.36)' }
+          : { fill: '#fef08a', secondary: '#fde047', stroke: '#92400e', glow: 'rgba(255, 255, 255, 0.9)' }
       case 'sakura-lantern':
         return dark
           ? { fill: '#f472b6', secondary: '#fda4af', stroke: '#fff1f2', glow: 'rgba(244, 114, 182, 0.84)' }
-          : { fill: '#e11d48', secondary: '#f472b6', stroke: '#881337', glow: 'rgba(136, 19, 55, 0.36)' }
+          : { fill: '#fbcfe8', secondary: '#fda4af', stroke: '#9d174d', glow: 'rgba(255, 255, 255, 0.9)' }
       case 'midnight-rain':
         return dark
           ? { fill: '#60a5fa', secondary: '#93c5fd', stroke: '#eff6ff', glow: 'rgba(96, 165, 250, 0.84)' }
-          : { fill: '#2563eb', secondary: '#60a5fa', stroke: '#1e3a8a', glow: 'rgba(30, 58, 138, 0.36)' }
+          : { fill: '#bfdbfe', secondary: '#93c5fd', stroke: '#1e40af', glow: 'rgba(255, 255, 255, 0.9)' }
       case 'biolum-ocean':
         return dark
           ? { fill: '#00f5d4', secondary: '#22d3ee', stroke: '#ecfeff', glow: 'rgba(0, 245, 212, 0.88)' }
-          : { fill: '#0d9488', secondary: '#14b8a6', stroke: '#115e59', glow: 'rgba(17, 94, 89, 0.38)' }
+          : { fill: '#99f6e4', secondary: '#a5f3fc', stroke: '#115e59', glow: 'rgba(255, 255, 255, 0.9)' }
       case 'winter-frost':
         return dark
           ? { fill: '#7dd3fc', secondary: '#bae6fd', stroke: '#ffffff', glow: 'rgba(125, 211, 252, 0.86)' }
-          : { fill: '#0284c7', secondary: '#38bdf8', stroke: '#075985', glow: 'rgba(7, 89, 133, 0.36)' }
+          : { fill: '#e0f2fe', secondary: '#bae6fd', stroke: '#075985', glow: 'rgba(255, 255, 255, 0.9)' }
       case 'pastel-cloudland':
         return dark
           ? { fill: '#93c5fd', secondary: '#c4b5fd', stroke: '#ffffff', glow: 'rgba(147, 197, 253, 0.84)' }
-          : { fill: '#3b82f6', secondary: '#8b5cf6', stroke: '#1d4ed8', glow: 'rgba(29, 78, 216, 0.36)' }
+          : { fill: '#dbeafe', secondary: '#e9d5ff', stroke: '#1d4ed8', glow: 'rgba(255, 255, 255, 0.9)' }
       case 'astral-palace':
         return dark
           ? { fill: '#34d399', secondary: '#fde047', stroke: '#fef9c3', glow: 'rgba(52, 211, 153, 0.88)' }
-          : { fill: '#059669', secondary: '#7c3aed', stroke: '#064e3b', glow: 'rgba(6, 78, 59, 0.36)' }
+          : { fill: '#a7f3d0', secondary: '#ddd6fe', stroke: '#065f46', glow: 'rgba(255, 255, 255, 0.9)' }
       case 'neon-night-city':
         return dark
           ? { fill: '#00f5d4', secondary: '#ff2a85', stroke: '#f0fdfa', glow: 'rgba(0, 245, 212, 0.9)' }
-          : { fill: '#db2777', secondary: '#0891b2', stroke: '#831843', glow: 'rgba(131, 24, 67, 0.38)' }
+          : { fill: '#f5d0fe', secondary: '#a5f3fc', stroke: '#86198f', glow: 'rgba(255, 255, 255, 0.9)' }
     }
   }
 
@@ -150,17 +150,17 @@ const activeThemeColors = computed(() => {
   if (base === 'sakura') {
     return dark
       ? { fill: '#f472b6', secondary: '#fbcfe8', stroke: '#fff1f2', glow: 'rgba(244, 114, 182, 0.82)' }
-      : { fill: '#ec4899', secondary: '#f472b6', stroke: '#be185d', glow: 'rgba(190, 24, 93, 0.35)' }
+      : { fill: '#fbcfe8', secondary: '#f9a8d4', stroke: '#9d174d', glow: 'rgba(255, 255, 255, 0.9)' }
   }
   if (base === 'ocean') {
     return dark
       ? { fill: '#38bdf8', secondary: '#7dd3fc', stroke: '#f0f9ff', glow: 'rgba(56, 189, 248, 0.84)' }
-      : { fill: '#0284c7', secondary: '#38bdf8', stroke: '#0369a1', glow: 'rgba(3, 105, 161, 0.36)' }
+      : { fill: '#bae6fd', secondary: '#7dd3fc', stroke: '#0369a1', glow: 'rgba(255, 255, 255, 0.9)' }
   }
   // Palet Ungu Default Twilight
   return dark
     ? { fill: '#a78bfa', secondary: '#c4b5fd', stroke: '#f5f3ff', glow: 'rgba(167, 139, 250, 0.8)' }
-    : { fill: '#8b5cf6', secondary: '#a78bfa', stroke: '#5b21b6', glow: 'rgba(91, 33, 182, 0.35)' }
+    : { fill: '#c4b5fd', secondary: '#ddd6fe', stroke: '#5b21b6', glow: 'rgba(255, 255, 255, 0.9)' }
 })
 
 const cursorFilterStyle = computed<string>(() => {
@@ -168,8 +168,11 @@ const cursorFilterStyle = computed<string>(() => {
   if (isDarkTheme.value) {
     return `drop-shadow(0 0 6px var(--cursor-glow, ${glow})) drop-shadow(0 0 13px var(--cursor-glow, ${glow}))`
   }
-  return `drop-shadow(0 1.5px 3px var(--cursor-glow, ${glow})) drop-shadow(0 0 1px rgba(15, 23, 42, 0.28))`
+  return 'drop-shadow(0 1px 2px rgba(255, 255, 255, 0.9)) drop-shadow(0 1px 1.5px rgba(15, 23, 42, 0.14))'
 })
+
+// Ketebalan outline: 1.8px rapi di Vibe Terang, 2.0px tajam di Vibe Gelap
+const cursorStrokeWidth = computed<number>(() => (isDarkTheme.value ? 2 : 1.8))
 
 // CSS var strings dengan fallback reaktif agar selalu sinkron di setiap render
 const cursorFillVar = computed(() => `var(--cursor-fill, ${activeThemeColors.value.fill})`)
@@ -251,7 +254,7 @@ function handleMouseMove(event: MouseEvent) {
     const spec = activeShapeSpec.value
     const tones: TrailTone[] = isDarkTheme.value
       ? ['primary', 'secondary', 'primary', 'stroke']
-      : ['primary', 'secondary', 'stroke']
+      : ['primary', 'secondary']
     const tone = tones[Math.floor(Math.random() * tones.length)] ?? 'primary'
 
     const id = ++trailIdCounter
@@ -421,20 +424,20 @@ onUnmounted(() => {
               d="M18 3.5 L21.9 12.6 L31.8 13.6 L24.3 20.1 L26.5 29.8 L18 24.7 L9.5 29.8 L11.7 20.1 L4.2 13.6 L14.1 12.6 Z"
               :fill="cursorFillVar"
               :stroke="cursorStrokeVar"
-              stroke-width="2.1"
+              :stroke-width="cursorStrokeWidth"
               stroke-linejoin="round"
             />
-            <circle cx="15" cy="15" r="2.1" :fill="cursorHighlightFill" opacity="0.95" />
+            <circle cx="15" cy="15" r="2.2" :fill="cursorHighlightFill" opacity="0.96" />
           </g>
 
           <!-- 2. 🐾 Cat Paw -->
           <g v-else-if="activeCursor === 'cat-paw'">
-            <ellipse cx="18" cy="23.5" rx="7.8" ry="6" :fill="cursorFillVar" :stroke="cursorStrokeVar" stroke-width="1.9" />
-            <ellipse cx="9.2" cy="15.5" rx="3.2" ry="4" transform="rotate(-18 9.2 15.5)" :fill="cursorSecondaryVar" :stroke="cursorStrokeVar" stroke-width="1.7" />
-            <ellipse cx="15" cy="11.2" rx="3.2" ry="4.2" transform="rotate(-6 15 11.2)" :fill="cursorSecondaryVar" :stroke="cursorStrokeVar" stroke-width="1.7" />
-            <ellipse cx="21.4" cy="11.2" rx="3.2" ry="4.2" transform="rotate(6 21.4 11.2)" :fill="cursorSecondaryVar" :stroke="cursorStrokeVar" stroke-width="1.7" />
-            <ellipse cx="26.8" cy="15.5" rx="3.2" ry="4" transform="rotate(18 26.8 15.5)" :fill="cursorSecondaryVar" :stroke="cursorStrokeVar" stroke-width="1.7" />
-            <ellipse cx="18" cy="24" rx="3.3" ry="2.1" :fill="cursorHighlightFill" opacity="0.82" />
+            <ellipse cx="18" cy="23.5" rx="7.8" ry="6" :fill="cursorFillVar" :stroke="cursorStrokeVar" :stroke-width="cursorStrokeWidth" />
+            <ellipse cx="9.2" cy="15.5" rx="3.2" ry="4" transform="rotate(-18 9.2 15.5)" :fill="cursorSecondaryVar" :stroke="cursorStrokeVar" :stroke-width="cursorStrokeWidth - 0.1" />
+            <ellipse cx="15" cy="11.2" rx="3.2" ry="4.2" transform="rotate(-6 15 11.2)" :fill="cursorSecondaryVar" :stroke="cursorStrokeVar" :stroke-width="cursorStrokeWidth - 0.1" />
+            <ellipse cx="21.4" cy="11.2" rx="3.2" ry="4.2" transform="rotate(6 21.4 11.2)" :fill="cursorSecondaryVar" :stroke="cursorStrokeVar" :stroke-width="cursorStrokeWidth - 0.1" />
+            <ellipse cx="26.8" cy="15.5" rx="3.2" ry="4" transform="rotate(18 26.8 15.5)" :fill="cursorSecondaryVar" :stroke="cursorStrokeVar" :stroke-width="cursorStrokeWidth - 0.1" />
+            <ellipse cx="18" cy="24" rx="3.3" ry="2.1" :fill="cursorHighlightFill" opacity="0.88" />
           </g>
 
           <!-- 3. 🌧️ Raindrop Ripple -->
@@ -443,10 +446,10 @@ onUnmounted(() => {
               d="M18 4 C18 4, 29 16.5, 29 22.8 C29 28.8, 24.1 33, 18 33 C11.9 33, 7 28.8, 7 22.8 C7 16.5, 18 4, 18 4 Z"
               :fill="cursorFillVar"
               :stroke="cursorStrokeVar"
-              stroke-width="2.1"
+              :stroke-width="cursorStrokeWidth"
               stroke-linejoin="round"
             />
-            <path d="M13.5 22.5 C13.5 19, 15.5 16.5, 17 14" :stroke="cursorHighlightFill" stroke-width="2.2" stroke-linecap="round" opacity="0.9" />
+            <path d="M13.5 22.5 C13.5 19, 15.5 16.5, 17 14" :stroke="cursorHighlightFill" stroke-width="2.2" stroke-linecap="round" opacity="0.95" />
           </g>
 
           <!-- 4. 🍂 Maple Leaf -->
@@ -455,11 +458,11 @@ onUnmounted(() => {
               d="M18 4 L21 12 L29 10 L24 17 L31 20 L23 24 L25 29 L18 26 L11 29 L13 24 L5 20 L12 17 L7 10 L15 12 Z"
               :fill="cursorFillVar"
               :stroke="cursorStrokeVar"
-              stroke-width="1.9"
+              :stroke-width="cursorStrokeWidth"
               stroke-linejoin="round"
             />
-            <path d="M18 26 V33" :stroke="cursorStrokeVar" stroke-width="2.2" stroke-linecap="round" />
-            <path d="M18 11 V24" :stroke="cursorHighlightFill" stroke-width="1.5" stroke-linecap="round" opacity="0.88" />
+            <path d="M18 26 V33" :stroke="cursorStrokeVar" :stroke-width="cursorStrokeWidth" stroke-linecap="round" />
+            <path d="M18 11 V24" :stroke="cursorHighlightFill" stroke-width="1.5" stroke-linecap="round" opacity="0.92" />
           </g>
 
           <!-- 5. 🌸 Sakura Petal -->
@@ -468,10 +471,10 @@ onUnmounted(() => {
               d="M18 6 C25 8, 30 16, 25 25 C22 29, 18 32, 18 32 C18 32, 14 29, 11 25 C6 16, 11 8, 18 6 Z"
               :fill="cursorFillVar"
               :stroke="cursorStrokeVar"
-              stroke-width="2"
+              :stroke-width="cursorStrokeWidth"
             />
             <path d="M18 6 L16.2 10.5 L18 9.2 L19.8 10.5 Z" :fill="cursorHighlightFill" />
-            <path d="M18 12 V26" :stroke="cursorSecondaryVar" stroke-width="1.7" stroke-linecap="round" />
+            <path d="M18 12 V26" :stroke="isDarkTheme ? cursorSecondaryVar : cursorHighlightFill" stroke-width="1.6" stroke-linecap="round" />
           </g>
 
           <!-- 6. 🍵 Matcha Whisk / Leaf -->
@@ -480,11 +483,11 @@ onUnmounted(() => {
               d="M7 28 C9 12, 20 6, 30 6 C29 18, 22 29, 7 28 Z"
               :fill="cursorFillVar"
               :stroke="cursorStrokeVar"
-              stroke-width="2"
+              :stroke-width="cursorStrokeWidth"
               stroke-linejoin="round"
             />
             <path d="M7 28 Q17 18 27 9" :stroke="cursorHighlightFill" stroke-width="1.8" stroke-linecap="round" />
-            <path d="M14 22 L19 23 M18 17 L23 18" :stroke="cursorHighlightFill" stroke-width="1.4" stroke-linecap="round" opacity="0.9" />
+            <path d="M14 22 L19 23 M18 17 L23 18" :stroke="cursorHighlightFill" stroke-width="1.4" stroke-linecap="round" opacity="0.92" />
           </g>
 
           <!-- 7. 🪼 Jellyfish Glow -->
@@ -493,10 +496,10 @@ onUnmounted(() => {
               d="M7 18 C7 9.5, 29 9.5, 29 18 C25 20.5, 11 20.5, 7 18 Z"
               :fill="cursorFillVar"
               :stroke="cursorStrokeVar"
-              stroke-width="1.9"
+              :stroke-width="cursorStrokeWidth"
             />
-            <path d="M12 20 Q10 25 12 30 M18 20.5 Q18 26 17 31 M24 20 Q26 25 24 30" :stroke="isDarkTheme ? cursorSecondaryVar : cursorStrokeVar" stroke-width="2.1" stroke-linecap="round" />
-            <ellipse cx="14.5" cy="14" rx="3" ry="1.6" :fill="cursorHighlightFill" opacity="0.85" />
+            <path d="M12 20 Q10 25 12 30 M18 20.5 Q18 26 17 31 M24 20 Q26 25 24 30" :stroke="isDarkTheme ? cursorSecondaryVar : cursorStrokeVar" :stroke-width="cursorStrokeWidth" stroke-linecap="round" />
+            <ellipse cx="14.5" cy="14" rx="3" ry="1.6" :fill="cursorHighlightFill" opacity="0.9" />
           </g>
 
           <!-- 8. ✒️ Golden Quill -->
@@ -505,11 +508,11 @@ onUnmounted(() => {
               d="M7 30 L13 18 C16 11, 23 6, 30 5 C28 13, 24 20, 17 24 L7 30 Z"
               :fill="cursorFillVar"
               :stroke="cursorStrokeVar"
-              stroke-width="1.9"
+              :stroke-width="cursorStrokeWidth"
               stroke-linejoin="round"
             />
-            <path d="M7 30 L27 8" :stroke="cursorStrokeVar" stroke-width="1.8" stroke-linecap="round" />
-            <circle cx="9" cy="28" r="1.8" :fill="cursorSecondaryVar" />
+            <path d="M7 30 L27 8" :stroke="cursorStrokeVar" :stroke-width="cursorStrokeWidth" stroke-linecap="round" />
+            <circle cx="9" cy="28" r="1.8" :fill="cursorHighlightFill" />
           </g>
 
           <!-- 9. ☁️ Fluffy Cloud -->
@@ -518,22 +521,22 @@ onUnmounted(() => {
               d="M11 26 H25 C28.5 26, 31 23.5, 31 20.2 C31 17.2, 28.8 14.8, 25.8 14.5 C24.8 10.6, 21.3 8, 17.2 8 C12.4 8, 8.6 11.7, 8.5 16.4 C6.2 17.3, 4.8 19.3, 4.8 21.6 C4.8 24.2, 7.2 26, 11 26 Z"
               :fill="isDarkTheme ? cursorSecondaryVar : cursorFillVar"
               :stroke="cursorStrokeVar"
-              stroke-width="2"
+              :stroke-width="cursorStrokeWidth"
               stroke-linejoin="round"
             />
-            <circle cx="15" cy="18.5" r="1.35" :fill="isDarkTheme ? '#0f172a' : '#ffffff'" />
-            <circle cx="21" cy="18.5" r="1.35" :fill="isDarkTheme ? '#0f172a' : '#ffffff'" />
-            <path d="M16.8 20.5 Q18 22 19.2 20.5" :stroke="isDarkTheme ? '#0f172a' : '#ffffff'" stroke-width="1.4" stroke-linecap="round" />
+            <circle cx="15" cy="18.5" r="1.35" :fill="isDarkTheme ? '#0f172a' : cursorStrokeVar" />
+            <circle cx="21" cy="18.5" r="1.35" :fill="isDarkTheme ? '#0f172a' : cursorStrokeVar" />
+            <path d="M16.8 20.5 Q18 22 19.2 20.5" :stroke="isDarkTheme ? '#0f172a' : cursorStrokeVar" stroke-width="1.4" stroke-linecap="round" />
           </g>
 
           <!-- 10. ❄️ Ice Crystal -->
           <g v-else-if="activeCursor === 'ice-crystal'">
-            <g :stroke="isDarkTheme ? cursorFillVar : cursorStrokeVar" stroke-width="2.5" stroke-linecap="round">
+            <g :stroke="isDarkTheme ? cursorFillVar : cursorStrokeVar" stroke-width="2.2" stroke-linecap="round">
               <line x1="18" y1="4" x2="18" y2="32" />
               <line x1="6" y1="11" x2="30" y2="25" />
               <line x1="30" y1="11" x2="6" y2="25" />
             </g>
-            <polygon points="18,12 23,18 18,24 13,18" :fill="cursorSecondaryVar" :stroke="cursorStrokeVar" stroke-width="1.8" />
+            <polygon points="18,12 23,18 18,24 13,18" :fill="cursorFillVar" :stroke="cursorStrokeVar" :stroke-width="cursorStrokeWidth" />
           </g>
 
           <!-- 11. 💎 Astral Prism -->
@@ -542,11 +545,11 @@ onUnmounted(() => {
               points="18,3 30,14 18,33 6,14"
               :fill="cursorFillVar"
               :stroke="cursorStrokeVar"
-              stroke-width="2.1"
+              :stroke-width="cursorStrokeWidth"
               stroke-linejoin="round"
             />
-            <polyline points="6,14 18,17 30,14" :stroke="cursorSecondaryVar" stroke-width="1.6" />
-            <line x1="18" y1="3" x2="18" y2="33" :stroke="cursorHighlightFill" stroke-width="1.4" opacity="0.8" />
+            <polyline points="6,14 18,17 30,14" :stroke="isDarkTheme ? cursorSecondaryVar : cursorStrokeVar" stroke-width="1.5" opacity="0.85" />
+            <line x1="18" y1="3" x2="18" y2="33" :stroke="cursorHighlightFill" stroke-width="1.5" opacity="0.85" />
           </g>
 
           <!-- 12. ⚡ Cyber Neon Bolt -->
@@ -555,10 +558,10 @@ onUnmounted(() => {
               d="M21 3 L7 19 H17 L14 33 L29 16 H19 Z"
               :fill="cursorFillVar"
               :stroke="cursorStrokeVar"
-              stroke-width="2.2"
+              :stroke-width="cursorStrokeWidth"
               stroke-linejoin="round"
             />
-            <path d="M19 8 L12 17 H18" :stroke="cursorHighlightFill" stroke-width="1.6" stroke-linecap="round" opacity="0.9" />
+            <path d="M19 8 L12 17 H18" :stroke="cursorHighlightFill" stroke-width="1.6" stroke-linecap="round" opacity="0.95" />
           </g>
         </svg>
       </div>

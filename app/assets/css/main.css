@@ -1325,12 +1325,12 @@ html[data-theme="twilight"] {
   --cursor-glow: rgba(167, 139, 250, 0.8);
 }
 
-/* Default Twilight — Palet Ungu (☀️ Vibe Terang) */
+/* Default Twilight — Palet Ungu (☀️ Vibe Terang: pastel lavender lembut + outline ungu tua rapi) */
 html[data-theme="twilight"][data-theme-mode="light"] {
-  --cursor-fill: #8b5cf6;
-  --cursor-secondary: #a78bfa;
+  --cursor-fill: #c4b5fd;
+  --cursor-secondary: #ddd6fe;
   --cursor-stroke: #5b21b6;
-  --cursor-glow: rgba(91, 33, 182, 0.35);
+  --cursor-glow: rgba(255, 255, 255, 0.9);
 }
 
 /* Default Twilight — Palet Pink Berry (🌙 Vibe Gelap) */
@@ -1341,12 +1341,12 @@ html[data-theme="sakura"] {
   --cursor-glow: rgba(244, 114, 182, 0.82);
 }
 
-/* Default Twilight — Palet Pink Berry (☀️ Vibe Terang) */
+/* Default Twilight — Palet Pink Berry (☀️ Vibe Terang: pastel pink sakura lembut + outline rose tua rapi) */
 html[data-theme="sakura"][data-theme-mode="light"] {
-  --cursor-fill: #ec4899;
-  --cursor-secondary: #f472b6;
-  --cursor-stroke: #be185d;
-  --cursor-glow: rgba(190, 24, 93, 0.35);
+  --cursor-fill: #fbcfe8;
+  --cursor-secondary: #f9a8d4;
+  --cursor-stroke: #9d174d;
+  --cursor-glow: rgba(255, 255, 255, 0.9);
 }
 
 /* Default Twilight — Palet Biru (🌙 Vibe Gelap) */
@@ -1357,15 +1357,15 @@ html[data-theme="ocean"] {
   --cursor-glow: rgba(56, 189, 248, 0.84);
 }
 
-/* Default Twilight — Palet Biru (☀️ Vibe Terang) */
+/* Default Twilight — Palet Biru (☀️ Vibe Terang: pastel biru langit lembut + outline biru laut tua rapi) */
 html[data-theme="ocean"][data-theme-mode="light"] {
-  --cursor-fill: #0284c7;
-  --cursor-secondary: #38bdf8;
+  --cursor-fill: #bae6fd;
+  --cursor-secondary: #7dd3fc;
   --cursor-stroke: #0369a1;
-  --cursor-glow: rgba(3, 105, 161, 0.36);
+  --cursor-glow: rgba(255, 255, 255, 0.9);
 }
 
-/* Tema Toko & Milestone (🌙 Vibe Gelap & ☀️ Vibe Terang) */
+/* Tema Toko & Milestone (🌙 Vibe Gelap & ☀️ Vibe Terang Pastel Lembut) */
 html[data-cozy-theme="matcha-garden"] {
   --cursor-fill: #4ade80;
   --cursor-secondary: #86efac;
@@ -1373,10 +1373,10 @@ html[data-cozy-theme="matcha-garden"] {
   --cursor-glow: rgba(74, 222, 128, 0.82);
 }
 html[data-cozy-theme="matcha-garden"][data-theme-mode="light"] {
-  --cursor-fill: #16a34a;
-  --cursor-secondary: #4ade80;
-  --cursor-stroke: #14532d;
-  --cursor-glow: rgba(20, 83, 45, 0.36);
+  --cursor-fill: #bbf7d0;
+  --cursor-secondary: #86efac;
+  --cursor-stroke: #166534;
+  --cursor-glow: rgba(255, 255, 255, 0.9);
 }
 
 html[data-cozy-theme="autumn-cafe"] {
@@ -1386,10 +1386,10 @@ html[data-cozy-theme="autumn-cafe"] {
   --cursor-glow: rgba(251, 146, 60, 0.84);
 }
 html[data-cozy-theme="autumn-cafe"][data-theme-mode="light"] {
-  --cursor-fill: #ea580c;
-  --cursor-secondary: #f59e0b;
-  --cursor-stroke: #7c2d12;
-  --cursor-glow: rgba(124, 45, 18, 0.36);
+  --cursor-fill: #fed7aa;
+  --cursor-secondary: #fdba74;
+  --cursor-stroke: #9a3412;
+  --cursor-glow: rgba(255, 255, 255, 0.9);
 }
 
 html[data-cozy-theme="honey-library"] {
@@ -1399,10 +1399,10 @@ html[data-cozy-theme="honey-library"] {
   --cursor-glow: rgba(252, 211, 77, 0.84);
 }
 html[data-cozy-theme="honey-library"][data-theme-mode="light"] {
-  --cursor-fill: #d97706;
-  --cursor-secondary: #f59e0b;
-  --cursor-stroke: #78350f;
-  --cursor-glow: rgba(120, 53, 15, 0.36);
+  --cursor-fill: #fef08a;
+  --cursor-secondary: #fde047;
+  --cursor-stroke: #92400e;
+  --cursor-glow: rgba(255, 255, 255, 0.9);
 }
 
 html[data-cozy-theme="sakura-lantern"] {
@@ -1412,10 +1412,10 @@ html[data-cozy-theme="sakura-lantern"] {
   --cursor-glow: rgba(244, 114, 182, 0.84);
 }
 html[data-cozy-theme="sakura-lantern"][data-theme-mode="light"] {
-  --cursor-fill: #e11d48;
-  --cursor-secondary: #f472b6;
-  --cursor-stroke: #881337;
-  --cursor-glow: rgba(136, 19, 55, 0.36);
+  --cursor-fill: #fbcfe8;
+  --cursor-secondary: #fda4af;
+  --cursor-stroke: #9d174d;
+  --cursor-glow: rgba(255, 255, 255, 0.9);
 }
 
 html[data-cozy-theme="midnight-rain"] {
@@ -1425,10 +1425,10 @@ html[data-cozy-theme="midnight-rain"] {
   --cursor-glow: rgba(96, 165, 250, 0.84);
 }
 html[data-cozy-theme="midnight-rain"][data-theme-mode="light"] {
-  --cursor-fill: #2563eb;
-  --cursor-secondary: #60a5fa;
-  --cursor-stroke: #1e3a8a;
-  --cursor-glow: rgba(30, 58, 138, 0.36);
+  --cursor-fill: #bfdbfe;
+  --cursor-secondary: #93c5fd;
+  --cursor-stroke: #1e40af;
+  --cursor-glow: rgba(255, 255, 255, 0.9);
 }
 
 html[data-cozy-theme="biolum-ocean"] {
@@ -1438,10 +1438,10 @@ html[data-cozy-theme="biolum-ocean"] {
   --cursor-glow: rgba(0, 245, 212, 0.88);
 }
 html[data-cozy-theme="biolum-ocean"][data-theme-mode="light"] {
-  --cursor-fill: #0d9488;
-  --cursor-secondary: #14b8a6;
+  --cursor-fill: #99f6e4;
+  --cursor-secondary: #a5f3fc;
   --cursor-stroke: #115e59;
-  --cursor-glow: rgba(17, 94, 89, 0.38);
+  --cursor-glow: rgba(255, 255, 255, 0.9);
 }
 
 html[data-cozy-theme="winter-frost"] {
@@ -1451,10 +1451,10 @@ html[data-cozy-theme="winter-frost"] {
   --cursor-glow: rgba(125, 211, 252, 0.86);
 }
 html[data-cozy-theme="winter-frost"][data-theme-mode="light"] {
-  --cursor-fill: #0284c7;
-  --cursor-secondary: #38bdf8;
+  --cursor-fill: #e0f2fe;
+  --cursor-secondary: #bae6fd;
   --cursor-stroke: #075985;
-  --cursor-glow: rgba(7, 89, 133, 0.36);
+  --cursor-glow: rgba(255, 255, 255, 0.9);
 }
 
 html[data-cozy-theme="pastel-cloudland"] {
@@ -1464,10 +1464,10 @@ html[data-cozy-theme="pastel-cloudland"] {
   --cursor-glow: rgba(147, 197, 253, 0.84);
 }
 html[data-cozy-theme="pastel-cloudland"][data-theme-mode="light"] {
-  --cursor-fill: #3b82f6;
-  --cursor-secondary: #8b5cf6;
+  --cursor-fill: #dbeafe;
+  --cursor-secondary: #e9d5ff;
   --cursor-stroke: #1d4ed8;
-  --cursor-glow: rgba(29, 78, 216, 0.36);
+  --cursor-glow: rgba(255, 255, 255, 0.9);
 }
 
 html[data-cozy-theme="astral-palace"] {
@@ -1477,10 +1477,10 @@ html[data-cozy-theme="astral-palace"] {
   --cursor-glow: rgba(52, 211, 153, 0.88);
 }
 html[data-cozy-theme="astral-palace"][data-theme-mode="light"] {
-  --cursor-fill: #059669;
-  --cursor-secondary: #7c3aed;
-  --cursor-stroke: #064e3b;
-  --cursor-glow: rgba(6, 78, 59, 0.36);
+  --cursor-fill: #a7f3d0;
+  --cursor-secondary: #ddd6fe;
+  --cursor-stroke: #065f46;
+  --cursor-glow: rgba(255, 255, 255, 0.9);
 }
 
 html[data-cozy-theme="neon-night-city"] {
@@ -1490,10 +1490,10 @@ html[data-cozy-theme="neon-night-city"] {
   --cursor-glow: rgba(0, 245, 212, 0.9);
 }
 html[data-cozy-theme="neon-night-city"][data-theme-mode="light"] {
-  --cursor-fill: #db2777;
-  --cursor-secondary: #0891b2;
-  --cursor-stroke: #831843;
-  --cursor-glow: rgba(131, 24, 67, 0.38);
+  --cursor-fill: #f5d0fe;
+  --cursor-secondary: #a5f3fc;
+  --cursor-stroke: #86198f;
+  --cursor-glow: rgba(255, 255, 255, 0.9);
 }
 
 /* 1. 🍵 MATCHA GARDEN (☀️ Mode Terang Pastel) */

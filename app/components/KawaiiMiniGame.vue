@@ -29,7 +29,6 @@ const {
   catcherRewardCount,
   fishingRewardCount,
   syncMiniGameDailyQuota,
-  consumeMiniGamePlayFor,
   recordMiniGameRoundResult,
   triggerVibration,
 } = useTwilightStorage()
@@ -202,9 +201,10 @@ let bobberTargetX = 330
 let bobberTargetY = WATER_Y + 26
 let timingPos = 0.5 // 0..1
 let timingDir = 1
-let timingSpeed = 1.45
-let greenZoneStart = 0.34
-let greenZoneEnd = 0.66
+let timingSpeed = 0.68
+let greenZoneStart = 0.31
+let greenZoneEnd = 0.69
+const FISHING_EDGE_TOLERANCE = 0.025
 let pendingCatchKind: FishingCatchKind = 'blue-fish'
 let caughtFlyStart = 0
 let caughtFlyEmoji = '🐟'
@@ -532,27 +532,37 @@ function stopGameLoop() {
   }
 }
 
-function switchGameTab(nextGame: MiniGameId) {
-  if (phase.value === 'playing') return
-  if (activeGame.value === nextGame) return
-  activeGame.value = nextGame
+function cancelActiveRound() {
+  stopGameLoop()
+  isRoundRewardProcessed = false
   phase.value = 'ready'
   roundSummary.value = null
   score.value = 0
   fishCaughtCount.value = 0
   starsCollectedCount.value = 0
   remainingSeconds.value = GAME_ROUND_DURATION_SECONDS
+  fallingObjects = []
+  floatingTexts = []
+  particles = []
+  keysPressed.left = false
+  keysPressed.right = false
   fishingState = 'idle'
   fishingUiState.value = 'idle'
   fishingHintText.value = 'Lempar kail ke laut untuk mulai memancing!'
+}
+
+function switchGameTab(nextGame: MiniGameId) {
+  if (activeGame.value === nextGame) return
+  // Jika berpindah tab di tengah ronde, batalkan sesi bersih tanpa mengubah kuota main maupun memberi hadiah
+  cancelActiveRound()
+  activeGame.value = nextGame
   requestAnimationFrame(() => drawCurrentScene(performance.now()))
 }
 
-/** Mulai ronde baru berdurasi 50 detik untuk game aktif (batas 3x main/hari per game) */
+/** Mulai ronde baru berdurasi 50 detik (kuota main 0/3 BARU bertambah saat timer selesai penuh ke 0d) */
 function startNewRound() {
   syncMiniGameDailyQuota()
   if (isPlayQuotaFull.value) return
-  if (!consumeMiniGamePlayFor(activeGame.value)) return
 
   stopGameLoop()
   isRoundRewardProcessed = false
@@ -650,8 +660,10 @@ function triggerFishingAction() {
   }
 
   if (fishingState === 'bite') {
-    // 3. Cek posisi indikator di Zona Hijau!
-    const inGreen = timingPos >= greenZoneStart && timingPos <= greenZoneEnd
+    // 3. Cek posisi indikator di Zona Hijau (dengan sedikit toleransi tepi agar nyaman ditarik!)
+    const inGreen =
+      timingPos >= greenZoneStart - FISHING_EDGE_TOLERANCE &&
+      timingPos <= greenZoneEnd + FISHING_EDGE_TOLERANCE
     if (inGreen) {
       fishingState = 'caught'
       fishingUiState.value = 'caught'
@@ -1029,14 +1041,14 @@ function updateFishingFrame(now: number, dt: number) {
       fishingState = 'waiting'
       fishingUiState.value = 'waiting'
       fishingStateStart = now
-      fishingWaitDurationMs = 950 + Math.random() * 1450
+      fishingWaitDurationMs = 1200 + Math.random() * 1000 // Santai: 1,2 – 2,2 detik
       spawnSplashBurst(bobberX, bobberY, 7)
       fishingHintText.value = 'Menunggu ikan menyambar kail...'
     }
   } else if (fishingState === 'waiting') {
     bobberY = bobberTargetY + Math.sin(now * 0.0055) * 3
     if (stateElapsed >= fishingWaitDurationMs) {
-      // Ikan menyambar! Buka Zona Hijau timing bar
+      // Ikan menyambar! Buka Zona Hijau timing bar (kecepatan jarum ~48% lebih lambat & zona lebih lega 32%–38%)
       fishingState = 'bite'
       fishingUiState.value = 'bite'
       fishingStateStart = now
@@ -1047,24 +1059,24 @@ function updateFishingFrame(now: number, dt: number) {
       const roll = Math.random()
       if (roll < 0.36) {
         pendingCatchKind = 'blue-fish'
-        timingSpeed = 1.25
-        greenZoneStart = 0.33
-        greenZoneEnd = 0.67
+        timingSpeed = 0.64
+        greenZoneStart = 0.31 // lebar 38%
+        greenZoneEnd = 0.69
       } else if (roll < 0.6) {
         pendingCatchKind = 'golden-fish'
-        timingSpeed = 1.55
-        greenZoneStart = 0.36
-        greenZoneEnd = 0.64
+        timingSpeed = 0.78
+        greenZoneStart = 0.34 // lebar 32%
+        greenZoneEnd = 0.66
       } else if (roll < 0.82) {
         pendingCatchKind = 'starfish'
-        timingSpeed = 1.32
-        greenZoneStart = 0.34
-        greenZoneEnd = 0.66
+        timingSpeed = 0.68
+        greenZoneStart = 0.32 // lebar 36%
+        greenZoneEnd = 0.68
       } else {
         pendingCatchKind = 'pearl-shell'
-        timingSpeed = 1.48
-        greenZoneStart = 0.35
-        greenZoneEnd = 0.65
+        timingSpeed = 0.74
+        greenZoneStart = 0.33 // lebar 34%
+        greenZoneEnd = 0.67
       }
 
       spawnSplashBurst(bobberX, bobberY, 9)
@@ -1082,8 +1094,8 @@ function updateFishingFrame(now: number, dt: number) {
       timingPos = 0
       timingDir = 1
     }
-    // Jika terlalu lama tidak ditarik (> 3.8 detik), ikan lepas otomatis
-    if (stateElapsed > 3800) {
+    // Kesempatan menarik cukup santai (~6,2 detik) sebelum ikan lepas otomatis
+    if (stateElapsed > 6200) {
       fishingState = 'missed'
       fishingUiState.value = 'missed'
       fishingStateStart = now
@@ -2459,8 +2471,8 @@ function handleKeyUp(event: KeyboardEvent) {
 }
 
 function closeMiniGame() {
-  stopGameLoop()
-  phase.value = 'ready'
+  // Jika ditutup di tengah ronde (ESC / tombol X / klik luar), batalkan bersih tanpa ubah kuota & tanpa hadiah
+  cancelActiveRound()
   isMiniGameOpen.value = false
 }
 
@@ -2472,10 +2484,7 @@ watch([isMiniGameOpen, isDarkTheme, activeCozyTheme, theme, mainCatType, mainCat
       requestAnimationFrame(() => drawCurrentScene(performance.now()))
     }
   } else {
-    stopGameLoop()
-    phase.value = 'ready'
-    keysPressed.left = false
-    keysPressed.right = false
+    cancelActiveRound()
   }
 })
 
@@ -2577,15 +2586,14 @@ onUnmounted(() => {
           </div>
         </div>
 
-        <!-- Tab Switcher 2 Game -->
+        <!-- Tab Switcher 2 Game (bebas pindah tab; jika di tengah ronde otomatis batal tanpa mengurangi kuota) -->
         <div
           class="relative z-10 flex items-center gap-2 border-b px-4 py-2"
           style="border-color: var(--border-subtle); background: var(--card-bg-solid)"
         >
           <button
             type="button"
-            :disabled="phase === 'playing'"
-            class="flex-1 cursor-pointer rounded-full border px-3 py-1.5 text-xs font-bold transition disabled:cursor-not-allowed disabled:opacity-65"
+            class="flex-1 cursor-pointer rounded-full border px-3 py-1.5 text-xs font-bold transition"
             :class="activeGame === 'catcher' ? 'cozy-active-btn border-transparent shadow-sm' : 'cozy-tab-inactive'"
             @click="switchGameTab('catcher')"
           >
@@ -2593,8 +2601,7 @@ onUnmounted(() => {
           </button>
           <button
             type="button"
-            :disabled="phase === 'playing'"
-            class="flex-1 cursor-pointer rounded-full border px-3 py-1.5 text-xs font-bold transition disabled:cursor-not-allowed disabled:opacity-65"
+            class="flex-1 cursor-pointer rounded-full border px-3 py-1.5 text-xs font-bold transition"
             :class="activeGame === 'fishing' ? 'cozy-active-btn border-transparent shadow-sm' : 'cozy-tab-inactive'"
             @click="switchGameTab('fishing')"
           >
