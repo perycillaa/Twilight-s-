@@ -75,6 +75,25 @@ function mapFirebaseUser(user: User | null): FirebaseProfileUser | null {
   }
 }
 
+/** Bersihkan seluruh properti `undefined` secara rekursif agar Firestore `setDoc()` tidak pernah menolak data */
+function stripUndefinedDeep<T>(value: T): T {
+  if (value === null || value === undefined || typeof value !== 'object') {
+    return value
+  }
+  if (Array.isArray(value)) {
+    return value
+      .filter(item => item !== undefined)
+      .map(item => stripUndefinedDeep(item)) as unknown as T
+  }
+  const result: Record<string, unknown> = {}
+  for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+    if (v !== undefined) {
+      result[k] = stripUndefinedDeep(v)
+    }
+  }
+  return result as T
+}
+
 /** Inisialisasi Firebase App, Auth (browserLocalPersistence) & Firestore (IndexedDB Offline Multi-Tab Cache) */
 function ensureFirebaseClient(): { app: FirebaseApp; auth: Auth; db: Firestore } | null {
   if (!import.meta.client) return null
@@ -91,8 +110,9 @@ function ensureFirebaseClient(): { app: FirebaseApp; auth: Auth; db: Firestore }
 
   if (!firebaseDb) {
     try {
-      // Aktifkan Offline Persistence resmi Firebase v10+ berbasis IndexedDB + dukungan multi-tab
+      // Aktifkan Offline Persistence resmi Firebase v10+ berbasis IndexedDB + abaikan field undefined
       firebaseDb = initializeFirestore(firebaseApp, {
+        ignoreUndefinedProperties: true,
         localCache: persistentLocalCache({
           tabManager: persistentMultipleTabManager(),
         }),
@@ -110,7 +130,7 @@ function ensureFirebaseClient(): { app: FirebaseApp; auth: Auth; db: Firestore }
  * Composable Firebase Auth (Login Google) & Cloud Firestore Auto-Sync + Offline Persistence:
  * - Login 1 klik dengan akun Google (popup + fallback redirect untuk browser HP ketat)
  * - Penyimpanan offline otomatis berbasis IndexedDB (perubahan saat offline otomatis terunggah saat online lagi)
- * - Sinkronisasi real-time antar PC & HP lewat Firestore `onSnapshot` pada dokumen `users/{uid}/twilights/state`
+ * - Sinkronisasi real-time antar PC & HP lewat Firestore `onSnapshot` pada dokumen `users/{uid}`
  */
 export function useFirebaseCloudSync() {
   const firebaseUser = useState<FirebaseProfileUser | null>('twilights-fb-user', () => null)
@@ -121,7 +141,15 @@ export function useFirebaseCloudSync() {
   const firebaseErrorMessage = useState<string>('twilights-fb-error', () => '')
   const isBrowserOnline = useState<boolean>('twilights-browser-online', () => true)
 
+  /** Dokumen utama pengguna: `users/{uid}` (cocok dengan aturan Firestore `match /users/{userId}`) */
   function getUserStateDocRef(uid: string) {
+    const client = ensureFirebaseClient()
+    if (!client) return null
+    return doc(client.db, 'users', uid)
+  }
+
+  /** Dokumen legacy opsional (migrasi aman jika akun sebelumnya sempat menyimpan di subkoleksi) */
+  function getLegacyUserStateDocRef(uid: string) {
     const client = ensureFirebaseClient()
     if (!client) return null
     return doc(client.db, 'users', uid, 'twilights', 'state')
@@ -151,10 +179,11 @@ export function useFirebaseCloudSync() {
 
     try {
       const nowMs = Date.now()
+      const cleanSnapshot = stripUndefinedDeep(snapshot)
       await setDoc(
         ref,
         {
-          data: snapshot,
+          data: cleanSnapshot,
           updatedAtMs: nowMs,
           updatedBySession: CLIENT_SESSION_ID,
           updatedAt: serverTimestamp(),
@@ -176,15 +205,25 @@ export function useFirebaseCloudSync() {
       }
       return true
     } catch (err) {
+      const code = (err as { code?: string })?.code ?? ''
       const msg = err instanceof Error ? err.message : 'Gagal menyinkronkan ke Firestore'
-      firebaseErrorMessage.value = msg
+      console.warn('[Twilight Firebase Sync] Gagal menulis ke Firestore:', code, msg, err)
+      firebaseErrorMessage.value = code ? `${code}: ${msg}` : msg
       firebaseSyncStatus.value = navigator.onLine ? 'error' : 'offline'
       if (manualTrigger) {
-        registeredCallbacks?.onToast?.(
-          navigator.onLine
-            ? '⚠️ Sinkronisasi cloud tertunda — cek aturan Firestore atau koneksi internet.'
-            : '📡 Mode Offline: progres tetap tersimpan lokal & akan sync otomatis saat online!',
-        )
+        if (!navigator.onLine) {
+          registeredCallbacks?.onToast?.(
+            '📡 Mode Offline: progres tetap tersimpan lokal & akan sync otomatis saat online!',
+          )
+        } else if (code === 'permission-denied') {
+          registeredCallbacks?.onToast?.(
+            '🔒 Izin Firestore ditolak (permission-denied) — pastikan Rules mengizinkan users/{uid} untuk user login.',
+          )
+        } else {
+          registeredCallbacks?.onToast?.(
+            `⚠️ Sinkronisasi cloud gagal (${code || 'error'}) — cek koneksi atau Rules Firestore.`,
+          )
+        }
       }
       return false
     }
@@ -211,7 +250,7 @@ export function useFirebaseCloudSync() {
 
     firebaseSyncStatus.value = navigator.onLine ? 'syncing' : 'offline'
 
-    // 1. Cek dokumen awal di Firestore (atau cache offline IndexedDB jika sedang offline)
+    // 1. Cek dokumen awal di `users/{uid}` (dengan migrasi halus dari path lama bila ada)
     try {
       const initialSnap = await getDoc(ref)
       if (initialSnap.exists()) {
@@ -226,13 +265,42 @@ export function useFirebaseCloudSync() {
           firebaseSyncStatus.value = navigator.onLine ? 'synced' : 'offline'
         }
       } else {
-        // Akun Google pertama kali masuk -> langsung unggah progres lokal agar tidak ada data hilang
-        const localSnap = registeredCallbacks?.getLocalSnapshot()
-        if (localSnap) {
-          await writeSnapshotToFirestore(localSnap, false)
+        // Coba cek dokumen legacy `users/{uid}/twilights/state` secara aman sebelum unggah progres lokal
+        let migratedFromLegacy = false
+        try {
+          const legacyRef = getLegacyUserStateDocRef(profile.uid)
+          if (legacyRef) {
+            const legacySnap = await getDoc(legacyRef)
+            if (legacySnap.exists()) {
+              const legacyRaw = legacySnap.data() as {
+                data?: Record<string, unknown>
+                updatedAtMs?: number
+              }
+              if (legacyRaw?.data && typeof legacyRaw.data === 'object') {
+                lastAppliedRemoteTimestamp = Number(legacyRaw.updatedAtMs) || Date.now()
+                registeredCallbacks?.applyRemoteSnapshot(legacyRaw.data, profile)
+                await writeSnapshotToFirestore(legacyRaw.data, false)
+                migratedFromLegacy = true
+              }
+            }
+          }
+        } catch {
+          // Abaikan bila Rules hanya membuka `users/{uid}` tanpa subkoleksi
+        }
+
+        if (!migratedFromLegacy) {
+          // Akun Google pertama kali masuk -> langsung unggah progres lokal agar tidak ada data hilang
+          const localSnap = registeredCallbacks?.getLocalSnapshot()
+          if (localSnap) {
+            await writeSnapshotToFirestore(localSnap, false)
+          }
         }
       }
-    } catch {
+    } catch (err) {
+      const code = (err as { code?: string })?.code ?? ''
+      const msg = err instanceof Error ? err.message : String(err)
+      console.warn('[Twilight Firebase Sync] Gagal memuat dokumen awal:', code, msg)
+      firebaseErrorMessage.value = code ? `${code}: ${msg}` : msg
       // Tetap lanjutkan pasang onSnapshot agar langsung sinkron saat koneksi pulih
       firebaseSyncStatus.value = navigator.onLine ? 'error' : 'offline'
     }
