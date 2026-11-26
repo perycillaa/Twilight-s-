@@ -816,16 +816,51 @@ export function useFirebaseCloudSync() {
     return await writeSnapshotToFirestore(snapshot, true)
   }
 
-  /** Paksa unggah snapshot tertentu langsung ke `users/{uid}` (digunakan tombol pemulihan progres sementara) */
+  /**
+   * Paksa tulis ulang objek nested `data` pada dokumen `users/{uid}` (sejajar `appVersion: 2`, `updatedAt`, dll.)
+   * tanpa deep-merge sisa key lama, lalu pastikan write benar-benar selesai sebelum reload.
+   */
   async function forceUploadSnapshotToFirestore(
     snapshot: Record<string, unknown>,
   ): Promise<boolean> {
     if (!import.meta.client) return false
     const user = firebaseUser.value
     if (!user) return false
+
+    const ref = getUserStateDocRef(user.uid)
+    if (!ref) return false
+
     clearPendingSyncTimer()
     setInitialSyncFlag(true)
-    return await writeSnapshotToFirestore(snapshot, false, true)
+    firebaseErrorMessage.value = ''
+    firebaseSyncStatus.value = navigator.onLine ? 'syncing' : 'offline'
+
+    try {
+      const nowMs = Date.now()
+      const cleanSnapshot = stripUndefinedDeep(snapshot)
+      // Tulis tepat ke nested map `data` pada `users/{uid}` sejajar `appVersion: 2` (tanpa merge sisa field lama)
+      await setDoc(ref, {
+        data: cleanSnapshot,
+        updatedAtMs: nowMs,
+        updatedBySession: CLIENT_SESSION_ID,
+        updatedAt: serverTimestamp(),
+        profileEmail: user.email,
+        profileName: user.displayName,
+        appVersion: 2,
+      })
+
+      lastAppliedRemoteTimestamp = Math.max(lastAppliedRemoteTimestamp, nowMs)
+      firebaseLastSyncedAt.value = new Date(nowMs).toISOString()
+      firebaseSyncStatus.value = navigator.onLine ? 'synced' : 'offline'
+      return true
+    } catch (err) {
+      const code = (err as { code?: string })?.code ?? ''
+      const msg = err instanceof Error ? err.message : 'Gagal menulis data pemulihan ke Firestore'
+      console.warn('[Twilight Firebase Sync] Gagal force-upload pemulihan ke users/{uid}.data:', code, msg, err)
+      firebaseErrorMessage.value = code ? `${code}: ${msg}` : msg
+      firebaseSyncStatus.value = navigator.onLine ? 'error' : 'offline'
+      return false
+    }
   }
 
   return {

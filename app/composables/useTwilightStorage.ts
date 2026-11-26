@@ -5155,10 +5155,10 @@ export function useTwilightStorage() {
       isStarCursorEnabled.value = true
     }
 
-    // Simpan segera ke localStorage
+    // Simpan segera ke seluruh key localStorage utama yang dibaca aplikasi
     persistAll(false)
 
-    // Paksa unggah langsung ke Cloud Firestore (`users/{uid}`) jika sedang login Google
+    // Paksa tulis langsung ke nested map `data` pada dokumen Cloud Firestore `users/{uid}`
     let syncedToCloud = false
     if (firebaseUser.value) {
       syncedToCloud = await forceUploadSnapshotToFirestore(buildStateSnapshot())
@@ -5172,11 +5172,18 @@ export function useTwilightStorage() {
     )
     showMiniToast(
       syncedToCloud
-        ? '✅ Progres berhasil dipulihkan & langsung tersimpan ke Cloud Firestore (users/{uid})! ☁️✨'
+        ? '✅ Progres berhasil ditulis ke users/{uid}.data & localStorage! Memuat ulang halaman...'
         : firebaseUser.value
-          ? '✅ Progres dipulihkan ke lokal! Klik Sinkronkan jika cloud masih tertunda.'
-          : '✅ Progres dipulihkan ke localStorage! Login Google agar langsung tersinkron ke Cloud.',
+          ? '⚠️ Progres dipulihkan ke localStorage, namun gagal menulis ke Firestore. Cek koneksi/Rules lalu coba lagi.'
+          : '✅ Progres dipulihkan ke localStorage! Memuat ulang halaman...',
     )
+
+    // Reload halaman setelah setDoc selesai (atau jika mode lokal) agar seluruh state & tampilan langsung segar
+    if (import.meta.client && (syncedToCloud || !firebaseUser.value)) {
+      setTimeout(() => {
+        window.location.reload()
+      }, 450)
+    }
 
     return { ok: true, syncedToCloud }
   }
