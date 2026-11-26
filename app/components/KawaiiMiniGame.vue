@@ -3,7 +3,7 @@ import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { getCatBreedPalette, type CatBreedPalette } from '~/composables/useCatThemeStyle'
 import { useSoundEffects } from '~/composables/useSoundEffects'
 import {
-  CAT_BREEDS_CATALOG,
+  CAT_BREEDS,
   GAME_COMPLETION_BASE_COINS,
   GAME_ROUND_DURATION_SECONDS,
   MAX_GAME_DAILY_PLAYS,
@@ -123,15 +123,25 @@ const roundSummary = ref<RoundSummaryData | null>(null)
 const fishingUiState = ref<FishingSubState>('idle')
 const fishingHintText = ref<string>('Lempar kail ke laut untuk mulai memancing!')
 
+const CAT_BREED_ICONS: Record<string, string> = {
+  'snowy-white': '🐱',
+  'misty-tabby': '🩶',
+  'marmalade-ginger': '🧡',
+  'matcha-calico': '🐾',
+  'midnight-tuxedo': '🐈‍⬛',
+  'mocha-siamese': '🤎',
+  'twilight-lilac': '💜',
+}
+
 // Info Ras Kucing Utama yang sedang dipakai
-const activeMainCatInfo = computed(() => {
-  return (
-    CAT_BREEDS_CATALOG.find(item => item.id === mainCatType.value) ?? {
-      id: 'snowy-white',
-      name: 'Kucing Putih Salju',
-      icon: '🐱',
-    }
-  )
+const activeMainCatInfo = computed<{ id: string; name: string; icon: string }>(() => {
+  const found = CAT_BREEDS.find(item => item.id === mainCatType.value)
+  const id = found?.id ?? 'snowy-white'
+  return {
+    id,
+    name: found?.name ?? 'Kucing Putih Salju',
+    icon: CAT_BREED_ICONS[id] ?? '🐱',
+  }
 })
 
 // Kuota & Rekor terpisah per game
