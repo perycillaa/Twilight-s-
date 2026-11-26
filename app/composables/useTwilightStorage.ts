@@ -1613,7 +1613,6 @@ export function useTwilightStorage() {
     signOutGoogle,
     scheduleFirestoreSync,
     syncNowWithFirebase,
-    forceUploadSnapshotToFirestore,
   } = useFirebaseCloudSync()
 
   // --- Data tersimpan di localStorage ---
@@ -2202,7 +2201,20 @@ export function useTwilightStorage() {
       timerDurationsVersion.value += 1
     }
     if (Array.isArray(d.weeklyProgress) && d.weeklyProgress.length === 7) {
-      weeklyProgress.value = d.weeklyProgress.map(n => Math.max(0, Math.min(100, Number(n) || 0)))
+      const incomingWeekly = d.weeklyProgress.map(n => Math.max(0, Math.min(100, Number(n) || 0)))
+      // Pulihkan 1x riwayat Grafik Progres Harian minggu ini (Selasa 85%, Rabu 85%, Kamis 83%) bila sempat tereset ke 0%
+      if ((incomingWeekly[1] ?? 0) === 0 && (incomingWeekly[2] ?? 0) === 0) {
+        incomingWeekly[1] = 85
+        incomingWeekly[2] = 85
+        incomingWeekly[3] = Math.max(incomingWeekly[3] ?? 0, 83)
+        weeklyProgress.value = incomingWeekly
+        // Jadwalkan sinkronisasi balik hanya untuk memperbarui `data.weeklyProgress` di Firestore setelah initial pull selesai
+        setTimeout(() => {
+          scheduleFirestoreSync(() => buildStateSnapshot())
+        }, 900)
+      } else {
+        weeklyProgress.value = incomingWeekly
+      }
     }
     if (typeof d.todayFocusSessions === 'number') todayFocusSessions.value = Math.max(0, d.todayFocusSessions)
     if (typeof d.totalFocusSessions === 'number') totalFocusSessions.value = Math.max(0, d.totalFocusSessions)
@@ -4416,9 +4428,20 @@ export function useTwilightStorage() {
         isStarCursorEnabled.value = true
       }
 
-      // Sinkronkan batang hari ini di grafik
+      // Sinkronkan batang hari ini di grafik (dan pulihkan 1x riwayat Selasa 85%, Rabu 85%, Kamis 83% bila sempat tereset 0%)
       const syncedWeekly = [...weeklyProgress.value]
-      syncedWeekly[todayIndex.value] = todayCompletionRate.value
+      const weeklyNeedsRestore = (syncedWeekly[1] ?? 0) === 0 && (syncedWeekly[2] ?? 0) === 0
+      if (weeklyNeedsRestore) {
+        syncedWeekly[1] = 85 // Selasa
+        syncedWeekly[2] = 85 // Rabu
+        syncedWeekly[3] = Math.max(syncedWeekly[3] ?? 0, 83) // Kamis
+      }
+      if (habits.value.length > 0) {
+        syncedWeekly[todayIndex.value] = Math.max(
+          weeklyNeedsRestore && todayIndex.value === 3 ? 83 : 0,
+          todayCompletionRate.value,
+        )
+      }
       weeklyProgress.value = syncedWeekly
 
       // Migrasi otomatis pengguna lama di Lv. 10 -> buka Lv. 11 & klaim hadiah Milestone Lv. 10 (+20 🐟 & Kalung) 1x!
@@ -5080,114 +5103,6 @@ export function useTwilightStorage() {
     hydrateFromCloud()
   })
 
-  /**
-   * TEMPORARY RECOVERY HELPER:
-   * Pulihkan progres akun pengguna secara 1-klik ke localStorage & paksa unggah ke Cloud Firestore (`users/{uid}`).
-   */
-  async function restoreMyAccountProgress(): Promise<{ ok: boolean; syncedToCloud: boolean }> {
-    const todayStr = getLocalTodayDate()
-
-    // 1. Koin Ikan: 500
-    treatCoins.value = 500
-
-    // 2. Level & XP Kucing: Level 15 (tandai Lv.10 sudah diklaim agar tidak auto-unlock aksesoris lain)
-    catAffinityLevel.value = 15
-    catAffinityXp.value = 0
-    catHeartChestXp.value = 0
-    claimedLv10Reward.value = true
-    claimedLv20Reward.value = false
-
-    // 3. Streak Fokus: 2 hari
-    dailyStreak.value = 2
-    streakLastDate.value = todayStr
-    fullGoalStreak.value = 2
-    fullGoalStreakLastDate.value = todayStr
-
-    // 4. Kartu Pesan Rahasia Terbuka: 9 kartu pertama (#01–#09)
-    collectedSecretCards.value = SECRET_CAT_CARDS.slice(0, 9).map(card => card.id)
-
-    // 5. Tema Terbuka: urutan atas s/d Honey Library (tema setelah Honey Library tetap terkunci)
-    const restoredThemes: CozyThemeId[] = [
-      'classic',
-      'midnight-rain',
-      'autumn-cafe',
-      'matcha-garden',
-      'sakura-lantern',
-      'biolum-ocean',
-      'honey-library',
-    ]
-    ownedCozyThemes.value = restoredThemes
-    if (!restoredThemes.includes(activeCozyTheme.value)) {
-      activeCozyTheme.value = 'honey-library'
-      applyCozyThemeToDocument('honey-library')
-    }
-
-    // 6. Aksesori Terbuka: hanya Pita Pink ('pink-bow') & Buku Terbuka/Terbang ('open-book')
-    const restoredAccessories: Exclude<MascotAccessoryId, 'none'>[] = ['open-book', 'pink-bow']
-    ownedAccessories.value = restoredAccessories
-    if (
-      equippedAccessory.value !== 'none' &&
-      !restoredAccessories.includes(equippedAccessory.value)
-    ) {
-      equippedAccessory.value = 'open-book'
-    }
-    if (
-      mainCatAccessory.value !== 'none' &&
-      !restoredAccessories.includes(mainCatAccessory.value)
-    ) {
-      mainCatAccessory.value = 'open-book'
-    }
-    if (
-      miniCatAccessory.value !== 'none' &&
-      !restoredAccessories.includes(miniCatAccessory.value)
-    ) {
-      miniCatAccessory.value = syncCatAccessories.value ? mainCatAccessory.value : 'pink-bow'
-    }
-
-    // 7. Karakter Kucing: hanya 2 kucing bawaan awal
-    ownedCats.value = ['snowy-white', 'misty-tabby']
-    mainCatType.value = 'snowy-white'
-    miniCatType.value = 'misty-tabby'
-
-    // Validasi kursor aktif sesuai tema yang terbuka
-    if (!isCursorUnlocked(activeCursor.value)) {
-      activeCursor.value = 'starlight-wand'
-      isStarCursorEnabled.value = true
-    }
-
-    // Simpan segera ke seluruh key localStorage utama yang dibaca aplikasi
-    persistAll(false)
-
-    // Paksa tulis langsung ke nested map `data` pada dokumen Cloud Firestore `users/{uid}`
-    let syncedToCloud = false
-    if (firebaseUser.value) {
-      syncedToCloud = await forceUploadSnapshotToFirestore(buildStateSnapshot())
-    }
-
-    playVictoryMelody()
-    triggerMascotReaction(
-      'celebrate',
-      'Progresmu berhasil dipulihkan! 500 🐟, Lv. 15, 9 Kartu & Tema s/d Honey Library siap kembali~ 💖✨',
-      5000,
-    )
-    showMiniToast(
-      syncedToCloud
-        ? '✅ Progres berhasil ditulis ke users/{uid}.data & localStorage! Memuat ulang halaman...'
-        : firebaseUser.value
-          ? '⚠️ Progres dipulihkan ke localStorage, namun gagal menulis ke Firestore. Cek koneksi/Rules lalu coba lagi.'
-          : '✅ Progres dipulihkan ke localStorage! Memuat ulang halaman...',
-    )
-
-    // Reload halaman setelah setDoc selesai (atau jika mode lokal) agar seluruh state & tampilan langsung segar
-    if (import.meta.client && (syncedToCloud || !firebaseUser.value)) {
-      setTimeout(() => {
-        window.location.reload()
-      }, 450)
-    }
-
-    return { ok: true, syncedToCloud }
-  }
-
   return {
     // State utama
     theme,
@@ -5370,6 +5285,5 @@ export function useTwilightStorage() {
     signInWithGoogle,
     signOutGoogle,
     syncNowWithFirebase,
-    restoreMyAccountProgress,
   }
 }

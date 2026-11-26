@@ -60,20 +60,7 @@ const {
   signInWithGoogle,
   signOutGoogle,
   syncNowWithFirebase,
-  restoreMyAccountProgress,
 } = useTwilightStorage()
-
-const isRestoringMyProgress = ref<boolean>(false)
-
-async function handleRestoreMyAccountProgress() {
-  if (isRestoringMyProgress.value) return
-  isRestoringMyProgress.value = true
-  try {
-    await restoreMyAccountProgress()
-  } finally {
-    isRestoringMyProgress.value = false
-  }
-}
 
 const {
   canInstallPwa,
@@ -1235,17 +1222,6 @@ onUnmounted(() => {
             @click="triggerRestorePicker"
           >
             📂 Restore
-          </button>
-
-          <!-- TEMPORARY RECOVERY BUTTON: Pemulihan progres 1-klik ke localStorage & Cloud Firestore -->
-          <button
-            type="button"
-            :disabled="isRestoringMyProgress"
-            title="Pulihkan progres akun (500 🐟, Lv. 15, Streak 2h, 9 Kartu, Tema s/d Honey Library, Pita & Buku) lalu simpan ke Cloud Firestore"
-            class="cozy-active-btn btn-bouncy cursor-pointer rounded-full px-3 py-1 text-[11px] font-bold shadow-sm disabled:opacity-60"
-            @click="handleRestoreMyAccountProgress"
-          >
-            {{ isRestoringMyProgress ? '⏳ Memulihkan...' : '🛠️ Pulihkan Progres Saya' }}
           </button>
 
           <!-- Input file tersembunyi untuk memuat file JSON backup -->
